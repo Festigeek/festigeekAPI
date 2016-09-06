@@ -8,8 +8,10 @@ use Crypt;
 use Response;
 use JWTAuth;
 
-use Illuminate\Http\Request;
 use App\User;
+use App\Mail\RegisterMail;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
@@ -94,11 +96,7 @@ class UserController extends Controller
             return Response::json(['error' => 'User already exists.'], HttpResponse::HTTP_CONFLICT);
         }
 
-        \Mail::send('emails.activate', ['registration_token' => $newuser->registration_token, 'username' => $newuser->username],
-            function($message) use ($newuser){
-                $message->to($newuser->email, $newuser->username)
-                    ->subject(\Lang::get('festigeek.notify_registration'));
-            });
+        Mail::to($newuser->email, $newuser->username)->send(new RegisterMail($newuser));
 
         $token = JWTAuth::fromUser($newuser);
         return Response::json(compact('token'));
