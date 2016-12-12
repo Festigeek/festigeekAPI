@@ -22,11 +22,19 @@ class DatabaseSeeder extends Seeder
         //Delete users and create an activated admin user with password "1234"
         Model::unguard();
 
+        // Countries
+
+        DB::table('addresses')->delete();
+        DB::table('countries')->delete();
         DB::unprepared(Storage::disk('local')->get('data/countries.sql'));
+
+        //Roles
 
         DB::table('user_has_roles')->delete();
         DB::table('roles')->delete();
         $role = Role::create(['name' => 'admin']);
+
+        // Users
 
         DB::table('users')->delete();
         $adminUser = User::create(['username' => 'Admin', 'email' => 'admin@festigeek.ch', 'password' => '1234', 'activated' => 1, 'birthdate' => '1934-09-04']);
@@ -35,45 +43,39 @@ class DatabaseSeeder extends Seeder
         User::create(['username' => 'User', 'email' => 'user@festigeek.ch', 'password' => '1234', 'activated' => 1, 'birthdate' => '1998-08-27']);
         User::create(['username' => 'Drupal', 'email' => 'drupal@festigeek.ch', 'drupal_password' => '$S$DBJ/pPIJxOOl6qX7Cd09KtwzeHo75xYw.n3nVPiz3g8wcjdNAUO1', 'activated' => 0, 'birthdate' => '2000-01-01']);
 
+        // Adresses
+
         Address::create(['user_id' => '1', 'country_id' => '229',  'street' => 'Route de Cheseaux 1',  'npa' => '1400',  'city' => 'Yverdon-Les-Bains']);
 
+        // ContentsTypes
 
+        // DB::table('contents_types')->delete();
+        // ContentsType::create(['name' => 'Page']);
+        // ContentsType::create(['name' => 'Article']);
 
+        // DatasTypes
 
-        // Create products
-        // DB::table('products')->delete();
-        // Product::create([
-        //     'name' => 'Menu burger 1',
-        //     'description' => 'Burger (Cheddar, salade mesclun, sauce à discretion), frites et boisson',
-        //     'price' => '13'
-        // ]);
-        // Product::create([
-        //     'name' => 'Menu burger 1',
-        //     'description' => 'Burger (Fromage de chèvre, chorizo, miel, oignons caramélisés, salade mesclun, sauce à discretion), frites et boisson',
-        //     'price' => '13'
-        // ]);
-        // Product::create([
-        //     'name' => 'Menu burger 2',
-        //     'description' => 'Burger (Cheddar, bacon, oignons caramélisés, guacamole maison, salade mesclun, sauce à discretion), frites et boisson',
-        //     'price' => '13'
-        // ]);
-        // Product::create([
-        //     'name' => 'Déjeuner',
-        //     'description' => 'brunch composé de tartines (pain tresse), confitures, lait, chocolat en poudre, jus d’orange et café soluble',
-        //     'price' => '5'
-        // ]);
+        // DB::table('datas_types')->delete();
+        // DatasType::create(['name' => 'Texte Brut']);
+        // DatasType::create(['name' => 'HTML']);
 
-        // Add event
-        // DB::table('events')->delete();
-        // Event::create([
-        //     'date' => '2016-05-06 16:00:00',
-        //     'date_end' => '2016-05-08 18:30:00',
-        //     'name' => 'LAN 2016',
-        //     'description' => 'LAN Festigeek, édition 2016'
-        // ]);
+        // Datas
 
-        // Add countries
-        DB::unprepared(Storage::disk('local')->get('data/countries.sql'));
+        // Data::create([]);
+
+        // Contents
+
+        // Content::create([]);
+
+        // Links
+
+        // $lien1 = Link::create(['display_text' => "L'association", 'content_id' => '1']);
+        // $lien2 = Link::create(['display_text' => "Contact", 'url' => '/contact']);
+
+        // Menus
+
+        // Menu::create(['name' => 'Principal'])->sync([$lien1, $lien2]);
+
 
         Model::reguard();
     }
