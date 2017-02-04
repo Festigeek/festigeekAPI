@@ -111,7 +111,7 @@ class UserController extends Controller
      * @return Response
      */
     public function index(Request $request) {
-        $users = User::all();
+        $users = User::all()->makeHidden(['QRCode']);
         return response()->json($users);
     }
 
