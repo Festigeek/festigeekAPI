@@ -14,11 +14,11 @@ class CreateTeamsUsersTable extends Migration
     public function up()
     {
         //
-        Schema::create('teams_users', function (Blueprint $table) {
+        Schema::create('team_user', function (Blueprint $table) {
             $table->increments('id');
             $table->integer('user_id')->unsigned();
             $table->integer('team_id')->unsigned();
-            $table->integer('events_product_id')->unsigned()->nullable();
+            $table->integer('event_product_id')->unsigned()->nullable();
             $table->boolean('captain')->default(false);
             $table->timestamps();
 
@@ -30,8 +30,8 @@ class CreateTeamsUsersTable extends Migration
                 ->references('id')->on('teams')
                 ->onDelete('cascade');
 
-            $table->foreign('events_product_id')
-                ->references('id')->on('teams_users')
+            $table->foreign('event_product_id')
+                ->references('id')->on('event_product')
                 ->onDelete('cascade');
         });
     }
@@ -44,6 +44,6 @@ class CreateTeamsUsersTable extends Migration
     public function down()
     {
         //
-        Schema::drop('teams_users');
+        Schema::drop('team_user');
     }
 }
