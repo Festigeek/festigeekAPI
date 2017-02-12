@@ -1,12 +1,18 @@
 <?php
 
+use App\Address;
+use App\Event;
+use App\Order;
+use App\Product;
+use App\ProductType;
+use App\Team;
+use App\User;
+
+use Carbon\Carbon;
 use Illuminate\Database\Seeder;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Permission\Models\Role;
-use Spatie\Permission\Models\Permission;
 
-use App\User;
-use App\Address;
 
 class DatabaseSeeder extends Seeder
 {
@@ -22,6 +28,10 @@ class DatabaseSeeder extends Seeder
         //Delete users and create an activated admin user with password "1234"
         Model::unguard();
 
+        //////////////////
+        // AUTHENTICATION
+        //////////////////
+
         // Countries
 
         DB::table('addresses')->delete();
@@ -32,7 +42,7 @@ class DatabaseSeeder extends Seeder
 
         DB::table('user_has_roles')->delete();
         DB::table('roles')->delete();
-        $role = Role::create(['name' => 'admin']);
+        Role::create(['name' => 'admin']);
 
         // Users
 
@@ -46,6 +56,43 @@ class DatabaseSeeder extends Seeder
         // Adresses
 
         Address::create(['user_id' => '1', 'country_id' => '229',  'street' => 'Route de Cheseaux 1',  'npa' => '1400',  'city' => 'Yverdon-Les-Bains']);
+
+        //////////////////
+        //   E-COMMERCE
+        //////////////////
+
+        // Product_types
+
+        ProductType::create(['name' => 'Inscription']);
+        ProductType::create(['name' => 'Repas']);
+
+        // Products
+
+        $p1 = Product::create(['name' => 'League Of Legend', 'description' => 'Inscription LoL 2017.', 'price' => '15.00', 'product_type_id' => '1']);
+        $p2 = Product::create(['name' => 'Hearthstone', 'description' => 'Inscription Hearthstone 2017.', 'price' => '15.00', 'product_type_id' => '1']);
+        $p3 = Product::create(['name' => 'Repas midi', 'description' => "Bon d'achat pour un Burger Festigeek !", 'price' => '10.00', 'product_type_id' => '2']);
+        $p4 = Product::create(['name' => 'Petit-déjeuner', 'description' => "Bon d'achat pour un petit-déjeuner.", 'price' => '5.00', 'product_type_id' => '2']);
+
+        // Orders
+
+        Order::create(['state' => '1', 'user_id' => '1'])->products()->sync([$p1->id, $p3->id => ['amount' => '2']]);
+        Order::create(['state' => '0', 'user_id' => '2'])->products()->sync([$p2->id, $p3->id, $p4->id]);
+
+        // Events
+
+        Event::create(['name' => 'LAN 2017',
+            'begins_at' => Carbon::create(2017, 05, 26, 20)->toDateTimeString(),
+            'ends_at' => Carbon::create(2017, 05, 28, 18)->toDateTimeString()])
+            ->products()->sync([$p1->id, $p2->id]);
+
+        // Teams
+
+        Team::create(['name' => "RageQuit"])->users()->sync([$adminUser->id => ['captain' => true, 'event_product_id' => '1']]);
+
+
+        //////////////////
+        //     CMS
+        //////////////////
 
         // ContentsTypes
 

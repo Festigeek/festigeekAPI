@@ -4,14 +4,16 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Address extends Model
+class Order extends Model
 {
     /**
-     * The attributes that are not mass assignable.
+     * The attributes that are mass assignable.
      *
      * @var array
      */
-    protected $guarded = ['id'];
+    protected $fillable = [
+        'data'
+    ];
 
     /**
      * The attributes excluded from the model's JSON form.
@@ -19,11 +21,11 @@ class Address extends Model
      * @var array
      */
     protected $hidden = [
-        'user_id', 'created_at'
+        'user_id'
     ];
 
     /**
-     * Get the user record associated with the address.
+     * Get the user record associated with the order.
      */
     public function user()
     {
@@ -31,10 +33,10 @@ class Address extends Model
     }
 
     /**
-     * Get the country of the address.
+     * Get the products of the order.
      */
-    public function country()
+    public function products()
     {
-        return $this->belongsTo('App\Country');
+        return $this->belongsToMany('App\Product')->withPivot('amount', 'data');
     }
 }

@@ -54,6 +54,22 @@ class User extends Authenticatable implements JWTSubject
     ];
 
     /**
+     * Get the addresses for the user. (if many used)
+     */
+    protected function addresses()
+    {
+        return $this->hasMany('App\Address');
+    }
+
+    /**
+     * Get the teams of the user.
+     */
+    protected function teams()
+    {
+        return $this->belongsToMany('App\Team')->withPivot('captain')->withTimestamps();
+    }
+
+    /**
      * MUTATOR: Passwords must always be hashed
      *
      * @param $password
@@ -139,14 +155,6 @@ class User extends Authenticatable implements JWTSubject
         QrCode::margin(0);
         QrCode::backgroundColor(250,250,250);
         return base64_encode(QrCode::encoding('UTF-8')->merge('/storage/app/logo_carre.jpg', .2)->generate($payload));
-    }
-
-    /**
-     * Get the addresses for the user. (if many used)
-     */
-    protected function addresses()
-    {
-        return $this->hasMany('App\Address');
     }
 
     /**

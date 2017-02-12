@@ -18,6 +18,7 @@ class CreateProductsTable extends Migration
             $table->increments('id');
             $table->string('name', 255);
             $table->text('description')->nullable();
+            $table->float('price', 8, 2)->default(0);
             $table->integer('product_type_id')->unsigned();
             $table->binary('data')->nullable();
             $table->timestamps();

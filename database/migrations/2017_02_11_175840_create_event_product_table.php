@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateEventsProductsTable extends Migration
+class CreateEventProductTable extends Migration
 {
     /**
      * Run the migrations.
@@ -16,7 +16,7 @@ class CreateEventsProductsTable extends Migration
         //
         Schema::create('event_product', function (Blueprint $table) {
             $table->increments('id');
-            $table->float('price', 8, 2);
+            $table->float('price', 8, 2)->nullable();
             $table->integer('product_id')->unsigned();
             $table->integer('event_id')->unsigned();
             $table->timestamps();
