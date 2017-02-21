@@ -2,6 +2,9 @@
 
 use Illuminate\Http\Request;
 
+/* List of patterns */
+Route::pattern('id', '\d+');
+
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -36,6 +39,16 @@ Route::post('qrcode/decrypt', 'QrcodeController@decrypt');
  * Resource: Address
  */
 Route::resource('users.addresses', 'UserAddressController');
+
+/*
+ * Resource: Products
+ */
+Route::resource('productTypes', 'ProductTypesController', ['only' => [
+    'index'
+]]);
+Route::resource('products', 'ProductController');
+Route::resource('productTypes/{id}/products', 'ProductController@index');
+
 
 /*
  * ===============================================================================================================
