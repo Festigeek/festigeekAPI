@@ -36,13 +36,10 @@
         ]
     },
     "scripts": {
-        "post-root-package-install": [
-            "php -r \"file_exists('.env') || copy('.env.example', '.env');\""
-        ],
-        "post-create-project-cmd": [
-            "php artisan key:generate"
-        ],
         "post-install-cmd": [
+            "php -r \"file_exists('.env') || copy('.env.example', '.env');\"",
+            "php artisan fg:generateKey",
+            "php artisan jwt:secret",
             "Illuminate\\Foundation\\ComposerScripts::postInstall",
             "php artisan optimize"
         ],
@@ -53,8 +50,5 @@
     },
     "config": {
         "preferred-install": "dist"
-    },
-    "suggest": {
-        "festigeekAPI":"Run artisan 'key-generate' & 'jwt:secret' after first composer install."
     }
 }

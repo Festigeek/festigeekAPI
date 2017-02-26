@@ -36,7 +36,7 @@ class DatabaseSeeder extends Seeder
 
         DB::table('addresses')->delete();
         DB::table('countries')->delete();
-        DB::unprepared(Storage::disk('local')->get('data/countries.sql'));
+        DB::unprepared(file_get_contents('database/scripts/data/countries.sql'));
 
         //Roles
 
