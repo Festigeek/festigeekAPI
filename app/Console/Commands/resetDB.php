@@ -42,18 +42,39 @@ class resetDB extends Command
     {
         $confirmed = $this->option('force') || $this->confirm('This will DESTROY your database then recreate it with default data. Are you sure you want to do it ?');
         if ($confirmed) {
-            // Destroy existing database
-            Model::unguard();
-            DB::raw(file_get_contents('database/scripts/resetDB.sql'));
-            Model::reguard();
+            // Destroy tables in existing database
+            $droplist = [];
+            $colname = 'Tables_in_' . env('DB_DATABASE');
+
+            $tables = DB::select('SHOW TABLES');
+            foreach($tables as $table) {
+                $droplist[] = $table->$colname;
+            }
+
+            if(!empty($droplist)) {
+                $droplist = implode(', ', $droplist);
+                $sql = 'DROP TABLE ' . $droplist . ';';
+
+                DB::beginTransaction();
+                //turn off referential integrity
+                DB::statement('SET FOREIGN_KEY_CHECKS = 0');
+                DB::statement($sql);
+                //turn referential integrity back on
+                DB::statement('SET FOREIGN_KEY_CHECKS = 1');
+                DB::commit();
+            }
 
             // Re-creating with default values
+            $this->call('cache:clear');
             $this->call('migrate');
+
+            $this->comment(PHP_EOL . 'Seeding database...');
             $this->call('db:seed');
+
             $this->comment('Database correctly reseted.');
         }
         else {
-            return $this->comment('Duh. I though I could destroy everything... (._.)');
+            return $this->comment(PHP_EOL . 'Duh. I though I could destroy everything... (._.)');
         }
     }
 }
