@@ -43,7 +43,7 @@ class generateAppKey extends Command
 
         if (file_exists($path)) {
             // check if there is already a secret set first
-            if (! Str::contains(file_get_contents($path), 'APP_KEY')) {
+            if (!Str::contains(file_get_contents($path), 'APP_KEY=')) {
                 $this->call('key:generate');
             } else {
                 // let's be sure you want to do this, unless you already told us to force it
