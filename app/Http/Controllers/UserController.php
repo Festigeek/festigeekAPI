@@ -20,12 +20,13 @@ class UserController extends Controller
     {
         $this->middleware('jwt.auth', ['except' => ['authenticate', 'register', 'test']]);
         $this->middleware('auth.activated', ['except' => ['authenticate', 'register', 'activate', 'test']]);
+        $this->middleware('role:admin', ['only' => ['index']]);
     }
 
     public function authenticate(Request $request) {
         $credentials = $request->only('email', 'password');
-        $token = false;
-        $response = [];
+//        $token = false;
+//        $response = [];
 
         if (!$token = JWTAuth::attempt($credentials)) {
             // We do not use the ORM because the property 'drupal_password' is hidden, and we need it.
@@ -124,9 +125,7 @@ class UserController extends Controller
     public function show($id) {
         //TODO: Check access permission
         $user = User::findOrFail($id);
-//        $response = compact('user');
-//        $response['user']['qrCode'] = $user->getQRCode();
-        return response()->json($user);
+        return response()->json(compact('user'));
     }
 
     public function test(Request $request) {
