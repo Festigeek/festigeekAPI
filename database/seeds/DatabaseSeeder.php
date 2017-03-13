@@ -5,13 +5,14 @@ use App\Event;
 use App\Order;
 use App\Product;
 use App\ProductType;
+use App\Role;
+use App\Permission;
 use App\Team;
 use App\User;
 
 use Carbon\Carbon;
 use Illuminate\Database\Seeder;
 use Illuminate\Database\Eloquent\Model;
-use Spatie\Permission\Models\Role;
 
 
 class DatabaseSeeder extends Seeder
@@ -34,21 +35,30 @@ class DatabaseSeeder extends Seeder
 
         // Countries
 
-        DB::table('addresses')->delete();
-        DB::table('countries')->delete();
         DB::unprepared(DB::raw(file_get_contents('database/scripts/data/countries.sql')));
 
-        //Roles
+        // Roles
 
-        DB::table('user_has_roles')->delete();
-        DB::table('roles')->delete();
-        Role::create(['name' => 'admin']);
+        $admin = new Role();
+        $admin->name         = 'admin';
+        $admin->display_name = 'Admin'; // optional
+        $admin->description  = 'Admins have all permissions on the app.'; // optional
+        $admin->save();
+
+        // Permissions
+
+//        $editUser = new Permission();
+//        $editUser->name         = 'edit-user';
+//        $editUser->display_name = 'Edit Users'; // optional
+//        $editUser->description  = 'Edit existing users'; // optional
+//        $editUser->save();
+//
+//        $admin->attachPermission($editUser);
 
         // Users
 
-        DB::table('users')->delete();
         $adminUser = User::create(['username' => 'Admin', 'email' => 'admin@festigeek.ch', 'password' => '1234', 'activated' => 1, 'birthdate' => '1934-09-04']);
-        $adminUser->assignRole('admin');
+        $adminUser->attachRole($admin);
 
         User::create(['username' => 'User', 'email' => 'user@festigeek.ch', 'password' => '1234', 'activated' => 1, 'birthdate' => '1998-08-27']);
         User::create(['username' => 'Drupal', 'email' => 'drupal@festigeek.ch', 'drupal_password' => '$S$DBJ/pPIJxOOl6qX7Cd09KtwzeHo75xYw.n3nVPiz3g8wcjdNAUO1', 'activated' => 0, 'birthdate' => '2000-01-01']);
@@ -63,8 +73,9 @@ class DatabaseSeeder extends Seeder
 
         // Product_types
 
-        ProductType::create(['name' => 'Inscription']);
+        ProductType::create(['name' => 'Inscriptions']);
         ProductType::create(['name' => 'Repas']);
+        ProductType::create(['name' => 'Dons']);
 
         // Products
 
@@ -74,6 +85,7 @@ class DatabaseSeeder extends Seeder
         $p4 = Product::create(['name' => 'Petit-déjeuner', 'description' => "Bon d'achat pour un petit-déjeuner.", 'price' => '5.00', 'product_type_id' => '2']);
         Product::create(['name' => 'Counter-Strike: GO', 'description' => 'Inscription CS:GO 2017.', 'price' => '15.00', 'product_type_id' => '1']);
         Product::create(['name' => 'Animations', 'description' => 'Place joueur LAN 2017.', 'price' => '15.00', 'product_type_id' => '1']);
+        Product::create(['name' => 'Donation', 'description' => 'Donation pour l\'association.', 'price' => '0.00', 'product_type_id' => '3']);
 
         // Orders
 

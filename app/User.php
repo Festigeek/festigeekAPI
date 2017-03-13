@@ -7,15 +7,14 @@ use Crypt;
 
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Support\Facades\DB;
 
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
-use Spatie\Permission\Traits\HasRoles;
 use Tymon\JWTAuth\Contracts\JWTSubject as JWTSubject;
+use Zizaco\Entrust\Traits\EntrustUserTrait;
 
 class User extends Authenticatable implements JWTSubject
 {
-    use Notifiable, HasRoles;
+    use Notifiable, EntrustUserTrait;
 
     /**
      * The attributes that are mass assignable.

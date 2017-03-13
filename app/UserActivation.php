@@ -38,9 +38,6 @@ class UserActivation extends Model
         return hash_hmac('sha256', str_random(40), config('app.key'));
     }
 
-
-
-
     public function createActivation($user)
     {
 
@@ -50,14 +47,13 @@ class UserActivation extends Model
             return $this->createToken($user);
         }
         return $this->regenerateToken($user);
-
     }
 
     private function regenerateToken($user)
     {
-
         $token = $this->getToken();
-        $this->db->table($table)->where('user_id', $user->id)->update([
+        $this->db->table($this->table)->where(
+            'user_id', $user->id)->update([
             'token' => $token,
             'created_at' => new Carbon()
         ]);
@@ -79,7 +75,6 @@ class UserActivation extends Model
     {
         return $this->db->table($this->table)->where('user_id', $user->id)->first();
     }
-
 
     public function getActivationByToken($token)
     {
