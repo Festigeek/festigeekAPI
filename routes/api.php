@@ -49,6 +49,8 @@ Route::resource('productTypes', 'ProductTypesController', ['only' => [
 Route::resource('products', 'ProductController');
 Route::resource('productTypes/{id}/products', 'ProductController@index');
 
+Route::get('events/{id}/teams/{game?}', 'EventController@teams');
+
 
 /*
  * ===============================================================================================================
