@@ -171,7 +171,7 @@ return [
          */
         'Tymon\JWTAuth\Providers\LaravelServiceProvider',
         'Barryvdh\Cors\ServiceProvider',
-        Spatie\Permission\PermissionServiceProvider::class,
+        Zizaco\Entrust\EntrustServiceProvider::class,
         SimpleSoftwareIO\QrCode\QrCodeServiceProvider::class,
 
         /*
@@ -232,6 +232,7 @@ return [
         'JWTAuth' => Tymon\JWTAuth\Facades\JWTAuth::class,
         'JWTFactory' => Tymon\JWTAuth\Facades\JWTFactory::class,
         'QrCode' => SimpleSoftwareIO\QrCode\Facades\QrCode::class,
+        'Entrust'   => Zizaco\Entrust\EntrustFacade::class,
     ],
 
 ];

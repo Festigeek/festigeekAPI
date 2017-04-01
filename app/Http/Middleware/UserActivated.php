@@ -26,7 +26,8 @@
                 return response()->json(['error' => 'non_active_account'], 401, [
                     'Access-Control-Allow-Origin' => '*',
                     'Access-Control-Allow-Methods' => 'POST, GET, OPTIONS, PUT, DELETE',
-                    'Access-Control-Allow-Headers' => 'Content-Type, X-Auth-Token, Origin']);
+                    'Access-Control-Allow-Headers' => 'Content-Type, X-Auth-Token, Origin']
+                );
             }
 
             return $response;
