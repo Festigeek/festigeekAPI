@@ -30,7 +30,7 @@ class QrcodeController extends Controller
         $correct = $request->input('errorCorrection', 'L');
         $margin = $request->input('margin', 0);
         $bgColor = $request->input('backgroundColor', array(255,255,255));
-        $image = $request->input('image.src', '/storage/logo_carre.jpg');
+        $image = $request->input('image.src', '/public/images/logo_carre.jpg');
         $imageSize = $request->input('image.size', .2);
         $encoding = $request->input('encoding', 'UTF-8');
 
