@@ -7,7 +7,23 @@ use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
+use Mail;
+
 class Controller extends BaseController
 {
     use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
+    
+    public function __construct() {
+        // Send email notification
+        $transport = \Swift_SmtpTransport::newInstance(
+            \Config::get('mail.host'),
+            \Config::get('mail.port'),
+            \Config::get('mail.encryption'))
+                ->setUsername(\Config::get('mail.username'))
+                ->setPassword(\Config::get('mail.password'))
+                ->setStreamOptions(['ssl' => \Config::get('mail.ssloptions')]);
+
+        $mailer = \Swift_Mailer::newInstance($transport);
+        Mail::setSwiftMailer($mailer);
+    }
 }
