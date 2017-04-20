@@ -21,22 +21,22 @@
 // ];
 
 return [
-//   'defaults' => [
-//       'supportsCredentials' => false,
-//       'allowedOrigins' => [],
-//       'allowedHeaders' => [],
-//       'allowedMethods' => [],
-//       'exposedHeaders' => [],
-//       'maxAge' => 0,
-//       'hosts' => [],
-//   ],
-
-    'defaults' => [
-        'allowedOrigins' => ['*'],
-        'allowedHeaders' => ['*'],
-        'allowedMethods' => ['*'],
-        'maxAge' => 3600,
+   'defaults' => [
+       'supportsCredentials' => false,
+       'allowedOrigins' => [],
+       'allowedHeaders' => [],
+       'allowedMethods' => [],
+       'exposedHeaders' => [],
+       'maxAge' => 0,
+       'hosts' => [],
    ],
+
+//    'defaults' => [
+//        'allowedOrigins' => ['*'],
+//        'allowedHeaders' => ['*'],
+//        'allowedMethods' => ['*'],
+//        'maxAge' => 3600,
+//   ],
 
    'paths' => [
        'v1/*' => [

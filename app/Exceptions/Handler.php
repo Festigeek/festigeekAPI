@@ -53,7 +53,7 @@ class Handler extends ExceptionHandler
             $exception->getPrevious() instanceof \Tymon\JWTAuth\Exceptions\TokenExpiredException)
             return response(['Token has expired'], 401);
 
-        dd($exception);
+        //dd($exception);
 
         //return parent::render($request, $exception);
         return response()->json(['error' => $exception->getMessage(), "trace" => $exception->getTraceAsString()], 500);
