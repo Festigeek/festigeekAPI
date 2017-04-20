@@ -5,6 +5,7 @@ include("Auth/drupal_password.inc");
 
 use DB;
 use Crypt;
+use HttpResponse;
 use Response;
 use JWTAuth;
 
@@ -94,13 +95,13 @@ class UserController extends Controller
             $newuser = User::create($request->all());
         }
         catch (\Exception $e) {
-            return Response::json(['error' => 'User already exists.'], HttpResponse::HTTP_CONFLICT);
+            return response()->json(['error' => 'User already exists.'], HttpResponse::HTTP_CONFLICT);
         }
 
         Mail::to($newuser->email, $newuser->username)->send(new RegisterMail($newuser));
 
         $token = JWTAuth::fromUser($newuser);
-        return Response::json(compact('token'));
+        return response()->json(compact('token'));
     }
 
     //TODO: new end-point to re-generate a new couple of registration token / e-mail
