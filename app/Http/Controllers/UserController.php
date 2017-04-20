@@ -73,7 +73,7 @@ class UserController extends Controller
         try {
             $user = User::where('registration_token', $registration_token)->findOrFail();
         }
-        catch (Exception $e) {
+        catch (\Exception $e) {
             return response()->json(['error' => 'user_not_found'], 401);
         }
 
@@ -93,7 +93,7 @@ class UserController extends Controller
         try {
             $newuser = User::create($request->all());
         }
-        catch (Exception $e) {
+        catch (\Exception $e) {
             return Response::json(['error' => 'User already exists.'], HttpResponse::HTTP_CONFLICT);
         }
 
