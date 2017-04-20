@@ -18,6 +18,7 @@ class UserController extends Controller
 {
     public function __construct()
     {
+        parent::__construct();
         $this->middleware('jwt.auth', ['except' => ['authenticate', 'register', 'test']]);
         $this->middleware('auth.activated', ['except' => ['authenticate', 'register', 'activate', 'test']]);
         $this->middleware('role:admin', ['only' => ['index']]);
@@ -54,6 +55,10 @@ class UserController extends Controller
             else {
                 return response()->json(['error' => 'invalid_credentials'], 401);
             }
+        }
+
+        if(!JWTAuth::user()->activated) {
+            return response()->json(['error' => 'inactive_account'], 401);
         }
 
         $response = compact('token');
