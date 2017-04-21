@@ -72,19 +72,23 @@ class UserController extends Controller
      * @return Response
      */
     public function activate(Request $request) {
-        $registration_token = $request->only('token');
+        if($request->has('token')) {
+            $registration_token = $request->get('token');
 
-        try {
-            $user = User::where('registration_token', $registration_token)->findOrFail();
+            try {
+                $user = User::where('registration_token', $registration_token)->findOrFail();
+            } catch (\Exception $e) {
+                return response()->json(['error' => 'user_not_found'], 401);
+            }
+
+            $user->activated = true;
+            $user->save();
+
+            return response()->json(['success' => 'user_activated'], 200);
         }
-        catch (\Exception $e) {
-            return response()->json(['error' => 'user_not_found'], 401);
+        else {
+            return response()->json(['error' => 'no_token_provided'], 422);
         }
-
-        $user->activated = true;
-        $user->save();
-
-        return response()->json(['success' => 'user_activated'], 200);
     }
 
     /**
