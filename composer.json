@@ -13,7 +13,8 @@
         "paypal/rest-api-sdk-php": "*",
         "predis/predis": "^1.1",
         "laravel/tinker": "^1.0",
-        "zizaco/entrust": "^1.7"
+        "zizaco/entrust": "^1.7",
+        "netshell/paypal": "dev-master"
     },
     "require-dev": {
         "fzaninotto/faker": "~1.4",
