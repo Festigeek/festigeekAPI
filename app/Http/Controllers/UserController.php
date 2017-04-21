@@ -18,8 +18,8 @@ class UserController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('jwt.auth', ['except' => ['authenticate', 'register', 'test']]);
-        $this->middleware('auth.activated', ['except' => ['authenticate', 'register', 'activate', 'test']]);
+        parent::__construct();
+        $this->middleware('jwt.auth', ['except' => ['authenticate', 'register', 'activate', 'test']]);
         $this->middleware('role:admin', ['only' => ['index']]);
     }
 
@@ -56,6 +56,10 @@ class UserController extends Controller
             }
         }
 
+        if(!JWTAuth::user()->activated) {
+            return response()->json(['error' => 'inactive_account'], 401);
+        }
+
         $response = compact('token');
 
         return response()->json($response);
@@ -73,7 +77,7 @@ class UserController extends Controller
         try {
             $user = User::where('registration_token', $registration_token)->findOrFail();
         }
-        catch (Exception $e) {
+        catch (\Exception $e) {
             return response()->json(['error' => 'user_not_found'], 401);
         }
 
@@ -93,14 +97,15 @@ class UserController extends Controller
         try {
             $newuser = User::create($request->all());
         }
-        catch (Exception $e) {
-            return Response::json(['error' => 'User already exists.'], HttpResponse::HTTP_CONFLICT);
+        catch (\Exception $e) {
+            return response()->json(['error' => 'User already exists.'], 409);
         }
 
         Mail::to($newuser->email, $newuser->username)->send(new RegisterMail($newuser));
 
-        $token = JWTAuth::fromUser($newuser);
-        return Response::json(compact('token'));
+        //$token = JWTAuth::fromUser($newuser);
+        //return response()->json(compact('token'));
+        return Response::json(['account_created' => true]);
     }
 
     //TODO: new end-point to re-generate a new couple of registration token / e-mail

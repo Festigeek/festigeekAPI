@@ -153,7 +153,7 @@ class User extends Authenticatable implements JWTSubject
         //QrCode::errorCorrection('H');
         QrCode::margin(0);
         QrCode::backgroundColor(250,250,250);
-        return base64_encode(QrCode::encoding('UTF-8')->merge('/storage/app/logo_carre.jpg', .2)->generate($payload));
+        return base64_encode(QrCode::encoding('UTF-8')->merge('/public/images/logo_carre.jpg', .2)->generate($payload));
     }
 
     /**

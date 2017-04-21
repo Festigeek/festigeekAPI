@@ -13,13 +13,13 @@ class EventController extends Controller
      * @param $id event id
      * @param $game id product
      */
-    public function teams(Request $request, $id, $game = null){
-
+    public function teams(Request $request, $id){
         $participations = null;
-        if($game === null)
-            $participations = Event::find($id)->participations()->get();
+
+        if($request->has('game'))
+            $participations = Event::find($id)->participations()->where('product_id', $request->get('game'))->get();
         else
-            $participations = Event::find($id)->participations()->where('product_id', $game)->get();
+            $participations = Event::find($id)->participations()->get();
 
         $teams = collect();
         foreach ($participations as $participation){

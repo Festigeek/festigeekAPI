@@ -31,6 +31,13 @@ return [
        'hosts' => [],
    ],
 
+//    'defaults' => [
+//        'allowedOrigins' => ['*'],
+//        'allowedHeaders' => ['*'],
+//        'allowedMethods' => ['*'],
+//        'maxAge' => 3600,
+//   ],
+
    'paths' => [
        'v1/*' => [
            'allowedOrigins' => ['*'],

@@ -170,7 +170,7 @@ return [
          * Package Service Providers...
          */
         'Tymon\JWTAuth\Providers\LaravelServiceProvider',
-        'Barryvdh\Cors\ServiceProvider',
+        Barryvdh\Cors\ServiceProvider::class,
         Zizaco\Entrust\EntrustServiceProvider::class,
         SimpleSoftwareIO\QrCode\QrCodeServiceProvider::class,
         'Netshell\Paypal\PaypalServiceProvider',
