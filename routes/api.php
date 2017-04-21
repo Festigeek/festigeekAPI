@@ -25,7 +25,7 @@ Route::get('/', function() {
  */
 Route::resource('users', 'UserController');
 Route::get('users/test', 'UserController@test');
-Route::get('users/activate/{token}', 'UserController@activate');
+Route::get('users/activate', 'UserController@activate');
 Route::post('users', 'UserController@register');
 Route::post('users/login', 'UserController@authenticate');
 
