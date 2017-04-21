@@ -19,8 +19,7 @@ class UserController extends Controller
     public function __construct()
     {
         parent::__construct();
-        $this->middleware('jwt.auth', ['except' => ['authenticate', 'register', 'test']]);
-        $this->middleware('auth.activated', ['except' => ['authenticate', 'register', 'activate', 'test']]);
+        $this->middleware('jwt.auth', ['except' => ['authenticate', 'register', 'activate', 'test']]);
         $this->middleware('role:admin', ['only' => ['index']]);
     }
 
@@ -104,8 +103,9 @@ class UserController extends Controller
 
         Mail::to($newuser->email, $newuser->username)->send(new RegisterMail($newuser));
 
-        $token = JWTAuth::fromUser($newuser);
-        return response()->json(compact('token'));
+        //$token = JWTAuth::fromUser($newuser);
+        //return response()->json(compact('token'));
+        return Response::json(['account_created' => true]);
     }
 
     //TODO: new end-point to re-generate a new couple of registration token / e-mail
