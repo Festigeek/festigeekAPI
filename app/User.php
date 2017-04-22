@@ -22,7 +22,7 @@ class User extends Authenticatable implements JWTSubject
      * @var array
      */
     protected $fillable = [
-        'username', 'email', 'password', 'birthdate', 'firstname', 'lastname'
+        'username', 'email', 'password', 'birthdate', 'firstname', 'lastname', 'lol_account','steamID64', 'battleTag'
     ];
 
     /**

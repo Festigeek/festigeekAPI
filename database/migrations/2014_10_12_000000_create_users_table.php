@@ -21,6 +21,9 @@ class CreateUsersTable extends Migration
             $table->string('lastname', 255)->nullable();
             $table->string('firstname', 255)->nullable();
             $table->date('birthdate');
+            $table->string('lol_account', 20)->nullable();
+            $table->string('steamID64', 20)->nullable();
+            $table->string('battleTag', 20)->nullable();
             $table->integer('lang')->nullable();
             $table->boolean('activated')->default(false);
             $table->string('registration_token')->index()->nullable();
