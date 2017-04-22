@@ -97,19 +97,22 @@ class UserController extends Controller
             $registration_token = $request->get('activation_token');
 
             try {
-                $user = User::where('registration_token', $registration_token)->findOrFail();
-            } catch (\Exception $e) {
+                $user = User::where('registration_token', $registration_token)->firstOrFail();
+            }
+            catch (\Exception $e) {
                 return response()->json(['error' => 'user_not_found'], 401);
             }
 
-            $user->activated = true;
-            $user->save();
-
-            return response()->json(['success' => 'user_activated'], 200);
+            if($user->activated)
+                return response()->json(['success' => 'user_already_activated'], 200);
+            else {
+                $user->activated = true;
+                $user->save();
+                return response()->json(['success' => 'user_activated'], 200);
+            }
         }
-        else {
+        else
             return response()->json(['error' => 'no_registration_token_provided'], 422);
-        }
     }
 
     //TODO: new end-point to re-generate a new couple of registration token / e-mail

@@ -25,9 +25,9 @@ Route::get('/', function() {
  */
 Route::get('users/test', 'UserController@test');
 Route::get('users/activate', 'UserController@activation');
-Route::post('users', 'UserController@register');
 Route::post('users/login', 'UserController@authenticate');
 Route::resource('users', 'UserController');
+Route::post('users', 'UserController@register');
 
 /*
  * Resource: Qrcode

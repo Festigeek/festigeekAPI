@@ -58,12 +58,11 @@ class Handler extends ExceptionHandler
         if ($exception instanceof \Symfony\Component\HttpKernel\Exception\NotFoundHttpException)
             return response()->json(['error' => 'Page not found'], 404);
 
-//        dd($exception);
-
-        //return parent::render($request, $exception);
-
         if (\App::environment('production'))
             return response()->json(['error' => 'Internal error'], 500);
+
+//        dd($exception);
+        //return parent::render($request, $exception);
 
         return response()->json(['error' => $exception->getMessage(), "trace" => $exception->getTraceAsString()], 500);
     }
