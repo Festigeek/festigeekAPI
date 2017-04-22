@@ -23,11 +23,11 @@ Route::get('/', function() {
 /*
  * Resource: User
  */
-Route::resource('users', 'UserController');
 Route::get('users/test', 'UserController@test');
-Route::get('users/activate', 'UserController@activate');
+Route::get('users/activate', 'UserController@activation');
 Route::post('users', 'UserController@register');
 Route::post('users/login', 'UserController@authenticate');
+Route::resource('users', 'UserController');
 
 /*
  * Resource: Qrcode
