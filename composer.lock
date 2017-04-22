@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "9cf24692ce6bda545341bd3ff2a549f4",
-    "content-hash": "02e73300a95f0fc3f0b94e487424931f",
+    "hash": "68550110ab92280e15a8807815d0919d",
+    "content-hash": "8565d581ed48dbe15b175baa1909ff9c",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -840,6 +840,49 @@
             "time": "2017-01-16 07:55:07"
         },
         {
+            "name": "netshell/paypal",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/net-shell/laravel-paypal.git",
+                "reference": "daced0597091da6aafba3441faebd04f71dfb57a"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/net-shell/laravel-paypal/zipball/daced0597091da6aafba3441faebd04f71dfb57a",
+                "reference": "daced0597091da6aafba3441faebd04f71dfb57a",
+                "shasum": ""
+            },
+            "require": {
+                "ext-curl": "*",
+                "ext-json": "*",
+                "illuminate/support": "~5.0",
+                "paypal/rest-api-sdk-php": "1.6.4",
+                "php": ">=5.3.0"
+            },
+            "require-dev": {
+                "phpspec/phpspec": "~2.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-0": {
+                    "Netshell\\Paypal": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "BSD-2-Clause"
+            ],
+            "authors": [
+                {
+                    "name": "Boyan Balkanski",
+                    "email": "balkanski@outlook.com"
+                }
+            ],
+            "description": "Laravel-Paypal is simple package help you process direct credit card payments, stored credit card payments and PayPal account payments with your Laravel 5 projects using paypal REST API SDK.",
+            "time": "2017-02-16 19:13:59"
+        },
+        {
             "name": "nikic/php-parser",
             "version": "v3.0.5",
             "source": {
@@ -940,23 +983,22 @@
         },
         {
             "name": "paypal/rest-api-sdk-php",
-            "version": "1.11.0",
+            "version": "v1.6.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/paypal/PayPal-PHP-SDK.git",
-                "reference": "7e664f12be32b975575371e8ad3bc17b6b318851"
+                "reference": "06837d290c4906578cfd92786412dff330a1429c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/paypal/PayPal-PHP-SDK/zipball/7e664f12be32b975575371e8ad3bc17b6b318851",
-                "reference": "7e664f12be32b975575371e8ad3bc17b6b318851",
+                "url": "https://api.github.com/repos/paypal/PayPal-PHP-SDK/zipball/06837d290c4906578cfd92786412dff330a1429c",
+                "reference": "06837d290c4906578cfd92786412dff330a1429c",
                 "shasum": ""
             },
             "require": {
                 "ext-curl": "*",
                 "ext-json": "*",
-                "php": ">=5.3.0",
-                "psr/log": "^1.0.0"
+                "php": ">=5.3.0"
             },
             "require-dev": {
                 "phpunit/phpunit": "3.7.*"
@@ -969,7 +1011,7 @@
             },
             "notification-url": "https://packagist.org/downloads/",
             "license": [
-                "Apache-2.0"
+                "Apache2"
             ],
             "authors": [
                 {
@@ -985,7 +1027,7 @@
                 "rest",
                 "sdk"
             ],
-            "time": "2016-12-14 21:59:21"
+            "time": "2016-01-20 17:45:52"
         },
         {
             "name": "predis/predis",
@@ -3945,7 +3987,8 @@
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {
-        "tymon/jwt-auth": 20
+        "tymon/jwt-auth": 20,
+        "netshell/paypal": 20
     },
     "prefer-stable": false,
     "prefer-lowest": false,
