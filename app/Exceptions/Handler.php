@@ -45,6 +45,10 @@ class Handler extends ExceptionHandler
      */
     public function render($request, Exception $exception)
     {
+        // HTTP Exceptions
+        if ($exception instanceof \Symfony\Component\HttpKernel\Exception\NotFoundHttpException)
+            return response()->json(['error' => 'Page not found'], 404);
+
         // JWT Ecexptions
         if ($exception instanceof \Tymon\JWTAuth\Exceptions\TokenInvalidException ||
             $exception->getPrevious() instanceof \Tymon\JWTAuth\Exceptions\TokenInvalidException)
@@ -54,10 +58,15 @@ class Handler extends ExceptionHandler
             $exception->getPrevious() instanceof \Tymon\JWTAuth\Exceptions\TokenExpiredException)
             return response()->json(['error' => 'Token has expired'], 401);
 
-        // HTTP Exceptions
-        if ($exception instanceof \Symfony\Component\HttpKernel\Exception\NotFoundHttpException)
-            return response()->json(['error' => 'Page not found'], 404);
+        // Other Exceptions in production
+        if (\App::environment('production'))
+            return response()->json(['error' => 'Internal error'], 500);
 
+        /////////////////
+        // Developpement
+        /////////////////
+
+        // PayPalException
         if($exception instanceof \PayPal\Exception\PayPalConnectionException)
             return response()->json(['error' => 'PayPal Connection Exception'], 502);
 
@@ -69,10 +78,6 @@ class Handler extends ExceptionHandler
 
         if($exception instanceof \PayPal\Exception\PayPalMissingCredentialException)
             return response()->json(['error' => 'PayPal Missing Credential Exception'], 502);
-
-
-        if (\App::environment('production'))
-            return response()->json(['error' => 'Internal error'], 500);
 
 //        dd($exception);
         //return parent::render($request, $exception);
