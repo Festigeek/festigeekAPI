@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en-US">
+<html lang="fr">
     <head>
         <meta charset="utf-8">
     </head>
@@ -12,7 +12,7 @@
         	Cliquez sur le lien ci-dessous pour vérifier l'adresse e-mail de votre compte.
          <br />
          <br />
-            {{ URL::to('http://localhost:9000/#/activate/' . $registration_token) }}.<br/>
+            {{ URL::to('https://www.festigeek.ch/#!/activate/' . $registration_token) }}.<br/>
         </div>
 
     </body>
