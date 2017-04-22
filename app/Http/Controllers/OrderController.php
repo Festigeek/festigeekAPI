@@ -14,6 +14,9 @@ class OrderController extends Controller
 
     public function getCheckout(Request $request)
     {
+        //TODO secure the route for authenticate users only
+        //TODO add the possibility to pay by bank transfer
+
         $order = Order::create($request->all());
 
         $payer = PayPal::Payer();
@@ -23,6 +26,8 @@ class OrderController extends Controller
 
         $itemList = PayPal::ItemList();
         $total = 0;
+
+        //TODO watch if items are available
 
         foreach ($products as $product){
             $ProductDetails = Product::find($product['product_id']);
@@ -50,6 +55,7 @@ class OrderController extends Controller
 
 
         $redirectUrls = PayPal:: RedirectUrls();
+        //TODO secure order_id
         $redirectUrls->setReturnUrl(action('OrderController@paypalDone', ['order' => $order->id]));
 	    $redirectUrls->setCancelUrl(action('OrderController@paypalCancel', ['order' => $order->id]));
 
@@ -60,6 +66,7 @@ class OrderController extends Controller
         $payment->setRedirectUrls($redirectUrls);
         $payment->setTransactions(array($transaction));
 
+        //TODO add try catch
         $response = $payment->create($this->_apiContext);
         $redirectUrl = $response->links[1]->href;
 
