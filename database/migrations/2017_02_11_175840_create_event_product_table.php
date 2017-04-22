@@ -17,6 +17,8 @@ class CreateEventProductTable extends Migration
         Schema::create('event_product', function (Blueprint $table) {
             $table->increments('id');
             $table->float('price', 8, 2)->nullable();
+            $table->integer('quantity_max')->unsigned()->nullable();
+            $table->integer('sold')->unsigned();
             $table->integer('product_id')->unsigned();
             $table->integer('event_id')->unsigned();
             $table->timestamps();

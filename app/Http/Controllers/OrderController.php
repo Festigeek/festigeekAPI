@@ -18,6 +18,7 @@ class OrderController extends Controller
     {
         //TODO secure the route for authenticate users only
         //TODO add the possibility to pay by bank transfer
+        //TODO verify if the user's not already registered for a tournament in the same event
 
         $order = Order::create($request->all());
 

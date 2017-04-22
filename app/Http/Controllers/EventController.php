@@ -29,4 +29,14 @@ class EventController extends Controller
 
         return response()->json($teams->unique());
     }
+
+    /**
+     * @param Request $request
+     * @param $id event id
+     */
+    public function products(Request $request, $id){
+        $products = Event::find($id)->products()->get();
+
+        return response()->json($products);
+    }
 }

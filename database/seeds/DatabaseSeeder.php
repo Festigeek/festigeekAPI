@@ -80,24 +80,30 @@ class DatabaseSeeder extends Seeder
         // Products
 
         $p1 = Product::create(['name' => 'League Of Legend', 'description' => 'Inscription LoL 2017.', 'price' => '20.00', 'product_type_id' => '1']);
-        $p2 = Product::create(['name' => 'Hearthstone', 'description' => 'Inscription Hearthstone 2017.', 'price' => '20.00', 'product_type_id' => '1']);
-        $p3 = Product::create(['name' => 'Burger', 'description' => "Bon d'achat pour un Burger Festigeek !", 'price' => '12.00', 'product_type_id' => '2']);
-        $p4 = Product::create(['name' => 'Petit-déjeuner', 'description' => "Bon d'achat pour un petit-déjeuner.", 'price' => '6.00', 'product_type_id' => '2']);
-        Product::create(['name' => 'Counter-Strike: GO', 'description' => 'Inscription CS:GO 2017.', 'price' => '20.00', 'product_type_id' => '1']);
-        Product::create(['name' => 'Animations', 'description' => 'Place joueur LAN 2017.', 'price' => '20.00', 'product_type_id' => '1']);
+        $p2 = Product::create(['name' => 'Overwatch', 'description' => 'Inscription Overwatch 2017.', 'price' => '20.00', 'product_type_id' => '1']);
+        $p3 = Product::create(['name' => 'Counter-Strike: GO', 'description' => 'Inscription CS:GO 2017.', 'price' => '20.00', 'product_type_id' => '1']);
+        $p4 = Product::create(['name' => 'Animations', 'description' => 'Place joueur LAN 2017.', 'price' => '20.00', 'product_type_id' => '1']);
+        $p5 = Product::create(['name' => 'Burger', 'description' => "Bon d'achat pour un Burger Festigeek !", 'price' => '13.00', 'product_type_id' => '2']);
+        $p6 = Product::create(['name' => 'Petit-déjeuner', 'description' => "Bon d'achat pour un petit-déjeuner.", 'price' => '5.00', 'product_type_id' => '2']);
+
         Product::create(['name' => 'Donation', 'description' => 'Donation pour l\'association.', 'price' => '0.00', 'product_type_id' => '3']);
 
         // Orders
 
-        Order::create(['state' => '1', 'user_id' => '1'])->products()->sync([$p1->id, $p3->id => ['amount' => '2']]);
-        Order::create(['state' => '0', 'user_id' => '2'])->products()->sync([$p2->id, $p3->id, $p4->id]);
+        Order::create(['state' => '1', 'user_id' => '1'])->products()->sync([$p1->id, $p5->id => ['amount' => '2']]);
+        Order::create(['state' => '0', 'user_id' => '2'])->products()->sync([$p2->id, $p5->id, $p6->id]);
 
         // Events
 
         Event::create(['name' => 'LAN 2017',
             'begins_at' => Carbon::create(2017, 05, 26, 20)->toDateTimeString(),
             'ends_at' => Carbon::create(2017, 05, 28, 18)->toDateTimeString()])
-            ->products()->sync([$p1->id, $p2->id]);
+            ->products()->sync([$p1->id => ['price' => '20', 'quantity_max' => '80', 'sold' => '0'],
+                                $p2->id => ['price' => '20', 'quantity_max' => '48', 'sold' => '0'],
+                                $p3->id => ['price' => '20', 'quantity_max' => '40', 'sold' => '0'],
+                                $p4->id => ['price' => '20', 'quantity_max' => '10', 'sold' => '0'],
+                                $p5->id => ['price' => '13', 'sold' => '0'],
+                                $p6->id => ['price' => '5', 'sold' => '0']]);
 
         // Teams
 
