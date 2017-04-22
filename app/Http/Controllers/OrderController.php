@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 
 use Mockery\Exception;
 use PayPal;
+use Crypt;
 use App\Order;
 use App\Product;
 //use Redirect;
@@ -56,9 +57,10 @@ class OrderController extends Controller
 
 
         $redirectUrls = PayPal:: RedirectUrls();
-        //TODO secure order_id
-        $redirectUrls->setReturnUrl(action('OrderController@paypalDone', ['order' => $order->id]));
-	    $redirectUrls->setCancelUrl(action('OrderController@paypalCancel', ['order' => $order->id]));
+
+        $cryptOrderID = Crypt::encrypt($order->id);
+        $redirectUrls->setReturnUrl(action('OrderController@paypalDone', ['order' => $cryptOrderID]));
+	    $redirectUrls->setCancelUrl(action('OrderController@paypalCancel', ['order' => $cryptOrderID]));
 
 
         $payment = PayPal::Payment();
@@ -66,7 +68,7 @@ class OrderController extends Controller
         $payment->setPayer($payer);
         $payment->setRedirectUrls($redirectUrls);
         $payment->setTransactions(array($transaction));
-        
+
         try{
             $response = $payment->create($this->_apiContext);
             $redirectUrl = $response->links[1]->href;
@@ -85,7 +87,7 @@ class OrderController extends Controller
         $paymentExecution = PayPal::PaymentExecution();
         $paymentExecution->setPayerId($payer_id);
 
-        $order = Order::find($request->get('order'));
+        $order = Order::find(Crypt::decrypt($request->get('order')));
         try {
             $payment = PayPal::getById($id, $this->_apiContext);
             $executePayment = $payment->execute($paymentExecution, $this->_apiContext);
@@ -104,8 +106,7 @@ class OrderController extends Controller
 
     public function paypalCancel(Request $request)
     {
-//        Order::destroy($request->get('order'));
-        $order = Order::find($request->get('order'));
+        $order = Order::find(Crypt::decrypt($request->get('order')));
         $order->products()->detach();
         $order->delete();
 
