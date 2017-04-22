@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 
+use Mockery\Exception;
 use PayPal;
 use App\Order;
 use App\Product;
@@ -65,12 +66,15 @@ class OrderController extends Controller
         $payment->setPayer($payer);
         $payment->setRedirectUrls($redirectUrls);
         $payment->setTransactions(array($transaction));
-
-        //TODO add try catch
-        $response = $payment->create($this->_apiContext);
-        $redirectUrl = $response->links[1]->href;
-
-        return response()->json($redirectUrl);
+        
+        try{
+            $response = $payment->create($this->_apiContext);
+            $redirectUrl = $response->links[1]->href;
+            return response()->json($redirectUrl);
+        } catch (Exception $ex) {
+            $order->products()->detach();
+            $order->delete();
+        }
     }
 
     public function paypalDone(Request $request)
@@ -81,16 +85,21 @@ class OrderController extends Controller
         $paymentExecution = PayPal::PaymentExecution();
         $paymentExecution->setPayerId($payer_id);
 
-        $payment = PayPal::getById($id, $this->_apiContext);
-        $executePayment = $payment->execute($paymentExecution, $this->_apiContext);
-
         $order = Order::find($request->get('order'));
-        $order->state = 1;
-        $order->paypal_paymentId = $id;
+        try {
+            $payment = PayPal::getById($id, $this->_apiContext);
+            $executePayment = $payment->execute($paymentExecution, $this->_apiContext);
 
-        $order->save();
+            $order->state = 1;
+            $order->paypal_paymentId = $id;
 
-        return response()->json(['success' => 'payment success'], 200);
+            $order->save();
+
+            return response()->json(['success' => 'payment success'], 200);
+        } catch (Exception $ex){
+            $order->products()->detach();
+            $order->delete();
+        }
     }
 
     public function paypalCancel(Request $request)
