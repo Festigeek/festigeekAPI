@@ -169,7 +169,7 @@ return [
         /*
          * Package Service Providers...
          */
-        'Tymon\JWTAuth\Providers\LaravelServiceProvider',
+        Tymon\JWTAuth\Providers\LaravelServiceProvider::class,
         Barryvdh\Cors\ServiceProvider::class,
         Zizaco\Entrust\EntrustServiceProvider::class,
         SimpleSoftwareIO\QrCode\QrCodeServiceProvider::class,

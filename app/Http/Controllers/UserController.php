@@ -19,7 +19,7 @@ class UserController extends Controller
     public function __construct()
     {
         parent::__construct();
-        $this->middleware('jwt.auth', ['except' => ['authenticate', 'register', 'activate', 'test']]);
+        $this->middleware('jwt.auth', ['except' => ['authenticate', 'register', 'activation', 'test']]);
         $this->middleware('role:admin', ['only' => ['index']]);
     }
 
@@ -71,32 +71,6 @@ class UserController extends Controller
      * @param  Request  $request
      * @return Response
      */
-    public function activate(Request $request) {
-        if($request->has('token')) {
-            $registration_token = $request->get('token');
-
-            try {
-                $user = User::where('registration_token', $registration_token)->findOrFail();
-            } catch (\Exception $e) {
-                return response()->json(['error' => 'user_not_found'], 401);
-            }
-
-            $user->activated = true;
-            $user->save();
-
-            return response()->json(['success' => 'user_activated'], 200);
-        }
-        else {
-            return response()->json(['error' => 'no_token_provided'], 422);
-        }
-    }
-
-    /**
-     * create a new user and send a activation mail.
-     *
-     * @param  Request  $request
-     * @return Response
-     */
     public function register(Request $request) {
         try {
             $newuser = User::create($request->all());
@@ -110,6 +84,32 @@ class UserController extends Controller
         //$token = JWTAuth::fromUser($newuser);
         //return response()->json(compact('token'));
         return Response::json(['account_created' => true]);
+    }
+
+    /**
+     * Activate the user with a given activation token
+     *
+     * @param  Request  $request
+     * @return Response
+     */
+    public function activation(Request $request) {
+        if($request->has('activation_token')) {
+            $registration_token = $request->get('activation_token');
+
+            try {
+                $user = User::where('registration_token', $registration_token)->findOrFail();
+            } catch (\Exception $e) {
+                return response()->json(['error' => 'user_not_found'], 401);
+            }
+
+            $user->activated = true;
+            $user->save();
+
+            return response()->json(['success' => 'user_activated'], 200);
+        }
+        else {
+            return response()->json(['error' => 'no_registration_token_provided'], 422);
+        }
     }
 
     //TODO: new end-point to re-generate a new couple of registration token / e-mail

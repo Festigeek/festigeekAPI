@@ -45,17 +45,26 @@ class Handler extends ExceptionHandler
      */
     public function render($request, Exception $exception)
     {
+        // JWT Ecexptions
         if ($exception instanceof \Tymon\JWTAuth\Exceptions\TokenInvalidException ||
             $exception->getPrevious() instanceof \Tymon\JWTAuth\Exceptions\TokenInvalidException)
-          return response()->json(['error' => 'Token is invalid'], 401);
+            return response()->json(['error' => 'Token is invalid'], 401);
 
         if ($exception instanceof \Tymon\JWTAuth\Exceptions\TokenExpiredException ||
             $exception->getPrevious() instanceof \Tymon\JWTAuth\Exceptions\TokenExpiredException)
             return response()->json(['error' => 'Token has expired'], 401);
 
-        //dd($exception);
+        // HTTP Exceptions
+        if ($exception instanceof \Symfony\Component\HttpKernel\Exception\NotFoundHttpException)
+            return response()->json(['error' => 'Page not found'], 404);
+
+//        dd($exception);
 
         //return parent::render($request, $exception);
+
+        if (\App::environment('production'))
+            return response()->json(['error' => 'Internal error'], 500);
+
         return response()->json(['error' => $exception->getMessage(), "trace" => $exception->getTraceAsString()], 500);
     }
 
