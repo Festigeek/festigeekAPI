@@ -14,10 +14,6 @@ class OrderController extends Controller
 
     public function getCheckout(Request $request)
     {
-
-        //$order = new Order();
-        //$order->user_id = $request->get(user_id);
-
         $order = Order::create($request->all());
 
         $payer = PayPal::Payer();
@@ -32,8 +28,6 @@ class OrderController extends Controller
             $ProductDetails = Product::find($product['product_id']);
 
             $order->products()->save($ProductDetails, ['amount' => $product['amount']]);
-
-            //App\User::find(1)->roles()->save($role, ['expires' => $expires]);
 
             $item = PayPal::Item();
             $item->setName($ProductDetails->name)
@@ -56,8 +50,8 @@ class OrderController extends Controller
 
 
         $redirectUrls = PayPal:: RedirectUrls();
-        $redirectUrls->setReturnUrl(action('OrderController@getDone'));
-	    $redirectUrls->setCancelUrl(action('OrderController@getCancel'));
+        $redirectUrls->setReturnUrl(action('OrderController@paypalDone', ['order' => $order->id]));
+	    $redirectUrls->setCancelUrl(action('OrderController@paypalCancel', ['order' => $order->id]));
 
 
         $payment = PayPal::Payment();
@@ -72,30 +66,34 @@ class OrderController extends Controller
         return response()->json($redirectUrl);
     }
 
-    public function getDone(Request $request)
+    public function paypalDone(Request $request)
     {
         $id = $request->get('paymentId');
-        $token = $request->get('token');
         $payer_id = $request->get('PayerID');
 
-        $payment = PayPal::getById($id, $this->_apiContext);
-
         $paymentExecution = PayPal::PaymentExecution();
-
         $paymentExecution->setPayerId($payer_id);
+
+        $payment = PayPal::getById($id, $this->_apiContext);
         $executePayment = $payment->execute($paymentExecution, $this->_apiContext);
 
-        // Clear the shopping cart, write to database, send notifications, etc.
+        $order = Order::find($request->get('order'));
+        $order->state = 1;
+        $order->paypal_paymentId = $id;
 
-        // Thank the user for the purchase
-        return response()->json($id);
-//        return view('checkout.done');
+        $order->save();
+
+        return response()->json(['success' => 'payment success'], 200);
     }
 
-    public function getCancel(Request $request)
+    public function paypalCancel(Request $request)
     {
-        // Curse and humiliate the user for cancelling this most sacred payment (yours)
-        //return view('checkout.cancel');
+//        Order::destroy($request->get('order'));
+        $order = Order::find($request->get('order'));
+        $order->products()->detach();
+        $order->delete();
+
+        return response()->json(['error' => 'payment cancel'], 200);
     }
 
 }
