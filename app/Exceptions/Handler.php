@@ -59,16 +59,16 @@ class Handler extends ExceptionHandler
             return response()->json(['error' => 'Page not found'], 404);
 
         if($exception instanceof \PayPal\Exception\PayPalConnectionException)
-            return response()->json(['error' => 'PayPal Connection Exception'], 500);
+            return response()->json(['error' => 'PayPal Connection Exception'], 502);
 
         if($exception instanceof \PayPal\Exception\PayPalConfigurationException)
-            return response()->json(['error' => 'PayPal Configuration Exception'], 500);
+            return response()->json(['error' => 'PayPal Configuration Exception'], 502);
 
         if($exception instanceof \PayPal\Exception\PayPalInvalidCredentialException)
-            return response()->json(['error' => 'PayPal Invalid Credential Exception'], 500);
+            return response()->json(['error' => 'PayPal Invalid Credential Exception'], 502);
 
         if($exception instanceof \PayPal\Exception\PayPalMissingCredentialException)
-            return response()->json(['error' => 'PayPal Missing Credential Exception'], 500);
+            return response()->json(['error' => 'PayPal Missing Credential Exception'], 502);
 
 
         if (\App::environment('production'))
