@@ -51,6 +51,9 @@ Route::resource('productTypes/{id}/products', 'ProductController@index');
 
 Route::get('events/{id}/teams', 'EventController@teams');
 
+Route::post('orders', 'OrderController@getCheckout');
+Route::get('orders/done', 'OrderController@paypalDone');
+Route::get('orders/cancel', 'OrderController@paypalCancel');
 
 /*
  * ===============================================================================================================

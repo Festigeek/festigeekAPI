@@ -18,6 +18,7 @@ class CreateOrdersTable extends Migration
             $table->increments('id');
             $table->tinyInteger('state')->default(0);
             $table->integer('user_id')->unsigned();
+            $table->string('paypal_paymentID', 30)->nullable();
             $table->binary('data')->nullable();
             $table->timestamps();
 

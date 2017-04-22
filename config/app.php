@@ -173,6 +173,7 @@ return [
         Barryvdh\Cors\ServiceProvider::class,
         Zizaco\Entrust\EntrustServiceProvider::class,
         SimpleSoftwareIO\QrCode\QrCodeServiceProvider::class,
+        'Netshell\Paypal\PaypalServiceProvider',
 
         /*
          * Application Service Providers...
@@ -233,6 +234,7 @@ return [
         'JWTFactory' => Tymon\JWTAuth\Facades\JWTFactory::class,
         'QrCode' => SimpleSoftwareIO\QrCode\Facades\QrCode::class,
         'Entrust'   => Zizaco\Entrust\EntrustFacade::class,
+        'PayPal' => 'Netshell\Paypal\Facades\Paypal',
     ],
 
 ];

@@ -8,10 +8,13 @@ use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 use Mail;
+use PayPal;
 
 class Controller extends BaseController
 {
     use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
+
+    public $_apiContext;
     
     public function __construct() {
         // Send email notification
@@ -25,5 +28,18 @@ class Controller extends BaseController
 
         $mailer = \Swift_Mailer::newInstance($transport);
         Mail::setSwiftMailer($mailer);
+
+        $this->_apiContext = PayPal::ApiContext(
+            config('services.paypal.client_id'),
+            config('services.paypal.secret'));
+
+        $this->_apiContext->setConfig(array(
+            'mode' => 'sandbox',
+            'service.EndPoint' => 'https://api.sandbox.paypal.com',
+            'http.ConnectionTimeOut' => 30,
+            'log.LogEnabled' => true,
+            'log.FileName' => storage_path('logs/paypal.log'),
+            'log.LogLevel' => 'FINE'
+        ));
     }
 }
