@@ -46,10 +46,15 @@ class Handler extends ExceptionHandler
     public function render($request, Exception $exception)
     {
         // HTTP Exceptions
-        if ($exception instanceof \Symfony\Component\HttpKernel\Exception\NotFoundHttpException)
+        if ($exception instanceof \Symfony\Component\HttpKernel\Exception\NotFoundHttpException ||
+            $exception->getPrevious() instanceof \Symfony\Component\HttpKernel\Exception\NotFoundHttpException)
             return response()->json(['error' => 'Page not found'], 404);
 
         // JWT Ecexptions
+        if ($exception instanceof \Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException ||
+            $exception->getPrevious() instanceof \Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException)
+            return response()->json(['error' => 'Token not provided'], 401);
+
         if ($exception instanceof \Tymon\JWTAuth\Exceptions\TokenInvalidException ||
             $exception->getPrevious() instanceof \Tymon\JWTAuth\Exceptions\TokenInvalidException)
             return response()->json(['error' => 'Token is invalid'], 401);

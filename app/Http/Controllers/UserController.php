@@ -135,9 +135,23 @@ class UserController extends Controller
      * @return Response
      */
     public function show($id) {
-        //TODO: Check access permission
-        $user = User::findOrFail($id);
-        return response()->json(compact('user'));
+        $loggedUser = JWTAuth::user();
+
+        if($id === 'me' || $loggedUser->id == $id) {
+            $user = User::find($loggedUser->id);
+            return response()->json($user);
+        }
+        else if($loggedUser->hasRole('admin')) {
+            try {
+                $user = User::findOrFail($id);
+                return response()->json($user);
+            }
+            catch (\Exception $e) {
+                return response()->json(['error' => 'user_not_found'], 401);
+            }
+        }
+        else
+            return response()->json(['error' => 'forbidden_access'], 403);
     }
 
     public function test(Request $request) {
