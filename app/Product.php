@@ -36,6 +36,6 @@ class Product extends Model
      */
     public function events()
     {
-        return $this->belongsToMany('App\Event')->withPivot('price')->withTimestamps();
+        return $this->belongsToMany('App\Event')->withPivot('price', 'quantity_max', 'sold')->withTimestamps();
     }
 }
