@@ -39,4 +39,12 @@ class Order extends Model
     {
         return $this->belongsToMany('App\Product')->withPivot('amount', 'data');
     }
+
+    /**
+     * Get the payment type record associated with the order.
+     */
+    public function payment_type()
+    {
+        return $this->belongsTo('App\PaymentType');
+    }
 }

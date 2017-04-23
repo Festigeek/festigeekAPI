@@ -9,6 +9,7 @@ use App\Role;
 use App\Permission;
 use App\Team;
 use App\User;
+use App\PaymentType;
 
 use Carbon\Carbon;
 use Illuminate\Database\Seeder;
@@ -88,22 +89,31 @@ class DatabaseSeeder extends Seeder
 
         Product::create(['name' => 'Donation', 'description' => 'Donation pour l\'association.', 'price' => '0.00', 'product_type_id' => '3']);
 
-        // Orders
-
-        Order::create(['state' => '1', 'user_id' => '1'])->products()->sync([$p1->id, $p5->id => ['amount' => '2']]);
-        Order::create(['state' => '0', 'user_id' => '2'])->products()->sync([$p2->id, $p5->id, $p6->id]);
-
         // Events
 
         Event::create(['name' => 'LAN 2017',
             'begins_at' => Carbon::create(2017, 05, 26, 20)->toDateTimeString(),
             'ends_at' => Carbon::create(2017, 05, 28, 18)->toDateTimeString()])
-            ->products()->sync([$p1->id => ['price' => '20', 'quantity_max' => '80', 'sold' => '0'],
-                                $p2->id => ['price' => '20', 'quantity_max' => '48', 'sold' => '0'],
-                                $p3->id => ['price' => '20', 'quantity_max' => '40', 'sold' => '0'],
-                                $p4->id => ['price' => '20', 'quantity_max' => '10', 'sold' => '0'],
-                                $p5->id => ['price' => '13', 'sold' => '0'],
-                                $p6->id => ['price' => '5', 'sold' => '0']]);
+            ->products()->sync([$p1->id => ['quantity_max' => '80', 'sold' => '0'],
+                                $p2->id => ['quantity_max' => '48', 'sold' => '0'],
+                                $p3->id => ['quantity_max' => '40', 'sold' => '0'],
+                                $p4->id => ['quantity_max' => '6', 'sold' => '0']]);
+
+
+        //Payment types
+        PaymentType::create(['name' => 'PayPal']);
+        PaymentType::create(['name' =>'Bank Transfer']);
+
+
+        // Orders
+
+        Order::create(['state' => '1', 'user_id' => '1', 'event_id' => '1', 'payment_type_id' => '1'])->products()->sync([$p1->id, $p5->id => ['amount' => '2']]);
+        Order::create(['state' => '0', 'user_id' => '2', 'event_id' => '1', 'payment_type_id' => '2'])->products()->sync([$p2->id, $p5->id, $p6->id]);
+
+//        Order::create(['state' => '1', 'user_id' => '1'])->products()->sync([$p1->id, $p5->id => ['amount' => '2']]);
+//        Order::create(['state' => '0', 'user_id' => '2'])->products()->sync([$p2->id, $p5->id, $p6->id]);
+
+
 
         // Teams
 

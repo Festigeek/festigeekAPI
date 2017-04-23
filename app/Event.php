@@ -20,7 +20,7 @@ class Event extends Model
      */
     public function products()
     {
-        return $this->belongsToMany('App\Product')->withPivot('price')->withTimestamps();
+        return $this->belongsToMany('App\Product')->withPivot('quantity_max', 'sold')->withTimestamps();
     }
 
     /**
