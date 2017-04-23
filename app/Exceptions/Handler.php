@@ -46,6 +46,18 @@ class Handler extends ExceptionHandler
     public function render($request, Exception $exception)
     {
         // HTTP Exceptions
+        if ($exception instanceof \Symfony\Component\HttpKernel\Exception\HttpException ||
+             $exception instanceof \Symfony\Component\HttpKernel\Exception\HttpException){
+            switch($exception->getStatusCode()) {
+                case 403:
+                    return response()->json(['error' => 'Forbidden Access'], 403);
+                    break;
+                case 404:
+                    return response()->json(['error' => 'Page not found'], 404);
+                    break;
+            }
+        }
+
         if ($exception instanceof \Symfony\Component\HttpKernel\Exception\NotFoundHttpException ||
             $exception->getPrevious() instanceof \Symfony\Component\HttpKernel\Exception\NotFoundHttpException)
             return response()->json(['error' => 'Page not found'], 404);
@@ -87,7 +99,7 @@ class Handler extends ExceptionHandler
 //        dd($exception);
         //return parent::render($request, $exception);
 
-        return response()->json(['error' => $exception->getMessage(), "trace" => $exception->getTraceAsString()], 500);
+        return response()->json(['error' => $exception->getMessage(), 'status_code' => $exception->getStatusCode(), 'class' => get_class($exception), 'trace' => $exception->getTraceAsString()], 500);
     }
 
     /**

@@ -171,7 +171,7 @@ return [
          */
         Tymon\JWTAuth\Providers\LaravelServiceProvider::class,
         Barryvdh\Cors\ServiceProvider::class,
-        Zizaco\Entrust\EntrustServiceProvider::class,
+        Laratrust\LaratrustServiceProvider::class,
         SimpleSoftwareIO\QrCode\QrCodeServiceProvider::class,
         'Netshell\Paypal\PaypalServiceProvider',
 
@@ -233,7 +233,7 @@ return [
         'JWTAuth' => Tymon\JWTAuth\Facades\JWTAuth::class,
         'JWTFactory' => Tymon\JWTAuth\Facades\JWTFactory::class,
         'QrCode' => SimpleSoftwareIO\QrCode\Facades\QrCode::class,
-        'Entrust'   => Zizaco\Entrust\EntrustFacade::class,
+        'Laratrust'   => Laratrust\LaratrustFacade::class,
         'PayPal' => 'Netshell\Paypal\Facades\Paypal',
     ],
 

@@ -11,10 +11,11 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use Tymon\JWTAuth\Contracts\JWTSubject as JWTSubject;
 use Zizaco\Entrust\Traits\EntrustUserTrait;
+use Laratrust\Traits\LaratrustUserTrait;
 
 class User extends Authenticatable implements JWTSubject
 {
-    use Notifiable, EntrustUserTrait;
+    use Notifiable, LaratrustUserTrait;
 
     /**
      * The attributes that are mass assignable.

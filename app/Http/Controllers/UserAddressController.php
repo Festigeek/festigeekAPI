@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Address;
 use Illuminate\Http\Request;
 
 use App\Http\Requests;
@@ -19,9 +20,10 @@ class UserAddressController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index($user_id)
     {
-        //
+        $addresses = Address::where('user_id', $user_id)->get();
+        return response()->json($addresses);
     }
 
     /**
@@ -51,9 +53,15 @@ class UserAddressController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show($user_id, $id)
     {
-        //
+        try {
+            $address = Address::where([['id', $id], ['user_id', $user_id]])->firstOrFail();
+            return response()->json($address);
+        }
+        catch (\Exception $e) {
+            return response()->json(['error' => 'address_not_found'], 401);
+        }
     }
 
     /**

@@ -33,7 +33,7 @@ class UserController extends Controller
             $drupal_user = DB::table('users')->where('email', $credentials['email'])->where('activated', false)->first();
 
             if(is_null($drupal_user)) {
-                return response()->json(['error' => 'user_not_found'], 401);
+                return response()->json(['error' => 'User not found'], 401);
             }
 
             if(user_check_password($credentials['password'], $drupal_user)) {
@@ -52,12 +52,12 @@ class UserController extends Controller
                 }
             }
             else {
-                return response()->json(['error' => 'invalid_credentials'], 401);
+                return response()->json(['error' => 'Invalid Credentials'], 401);
             }
         }
 
         if(!JWTAuth::user()->activated) {
-            return response()->json(['error' => 'inactive_account'], 401);
+            return response()->json(['error' => 'Inactive Account'], 401);
         }
 
         $response = compact('token');
@@ -100,19 +100,19 @@ class UserController extends Controller
                 $user = User::where('registration_token', $registration_token)->firstOrFail();
             }
             catch (\Exception $e) {
-                return response()->json(['error' => 'user_not_found'], 401);
+                return response()->json(['error' => 'User not found'], 401);
             }
 
             if($user->activated)
-                return response()->json(['success' => 'user_already_activated'], 200);
+                return response()->json(['success' => 'User already activated'], 200);
             else {
                 $user->activated = true;
                 $user->save();
-                return response()->json(['success' => 'user_activated'], 200);
+                return response()->json(['success' => 'User activated'], 200);
             }
         }
         else
-            return response()->json(['error' => 'no_registration_token_provided'], 422);
+            return response()->json(['error' => 'No registration token provided'], 422);
     }
 
     //TODO: new end-point to re-generate a new couple of registration token / e-mail
@@ -147,11 +147,11 @@ class UserController extends Controller
                 return response()->json($user);
             }
             catch (\Exception $e) {
-                return response()->json(['error' => 'user_not_found'], 401);
+                return response()->json(['error' => 'User not found'], 401);
             }
         }
         else
-            return response()->json(['error' => 'forbidden_access'], 403);
+            abort(403);
     }
 
     public function test(Request $request) {
