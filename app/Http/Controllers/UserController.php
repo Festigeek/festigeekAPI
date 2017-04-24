@@ -154,6 +154,18 @@ class UserController extends Controller
             abort(403);
     }
 
+    /**
+     * Update the specified user in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function update(Request $request, $id)
+    {
+        //
+    }
+
     public function test(Request $request) {
         // Test function
     }

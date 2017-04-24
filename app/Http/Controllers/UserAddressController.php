@@ -6,6 +6,7 @@ use App\Address;
 use Illuminate\Http\Request;
 
 use App\Http\Requests;
+use Tymon\JWTAuth\JWTAuth;
 
 class UserAddressController extends Controller
 {
@@ -22,8 +23,12 @@ class UserAddressController extends Controller
      */
     public function index($user_id)
     {
-        $addresses = Address::where('user_id', $user_id)->get();
-        return response()->json($addresses);
+        if($this->isAdminOrOwner($user_id)) {
+            $addresses = Address::where('user_id', $user_id)->get();
+            return response()->json($addresses);
+        }
+        else
+            abort(403);
     }
 
     /**
@@ -55,6 +60,7 @@ class UserAddressController extends Controller
      */
     public function show($user_id, $id)
     {
+//        TODO: permissions
         try {
             $address = Address::where([['id', $id], ['user_id', $user_id]])->firstOrFail();
             return response()->json($address);

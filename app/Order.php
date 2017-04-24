@@ -47,4 +47,21 @@ class Order extends Model
     {
         return $this->belongsTo('App\PaymentType');
     }
+
+    /**
+     * Get the event_id of the first product of type 'Inscriptions'.
+     *
+     * @return int event_id
+     */
+    public function getEventIdAttribute()
+    {
+        try {
+            return $this->products()->whereHas('product_type', function ($query) {
+                $query->where('name', 'Inscriptions');
+            })->firstOrFail()->event_id;
+        }
+        catch(\Exception $e) {
+            return null;
+        }
+    }
 }

@@ -99,7 +99,12 @@ class Handler extends ExceptionHandler
 //        dd($exception);
         //return parent::render($request, $exception);
 
-        return response()->json(['error' => $exception->getMessage(), 'status_code' => $exception->getStatusCode(), 'class' => get_class($exception), 'trace' => $exception->getTraceAsString()], 500);
+        if (method_exists('getStatusCode', $exception))
+            $status = $exception->getStatusCode();
+        else
+            $status = 'unavailable';
+
+        return response()->json(['error' => $exception->getMessage(), 'status_code' => $status, 'class' => get_class($exception), 'trace' => $exception->getTraceAsString()], 500);
     }
 
     /**
