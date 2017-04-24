@@ -43,6 +43,14 @@ class Order extends Model
     /**
      * Get the payment type record associated with the order.
      */
+    public function team()
+    {
+        return $this->belongsToMany('App\Team', 'team_user')->withPivot('captain', 'user_id')->first();
+    }
+
+    /**
+     * Get the team associated with the order.
+     */
     public function payment_type()
     {
         return $this->belongsTo('App\PaymentType');

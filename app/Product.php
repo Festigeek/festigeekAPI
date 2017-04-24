@@ -24,18 +24,18 @@ class Product extends Model
     }
 
     /**
-     * Get the products of the order.
+     * Get the event of the product.
      */
-    public function orders()
+    public function event()
     {
-        return $this->belongsToMany('App\Order')->withPivot('amount', 'data');
+        return $this->belongsTo('App\Event');
     }
 
     /**
      * Get the products of the order.
      */
-    public function events()
+    public function orders()
     {
-        return $this->belongsToMany('App\Event')->withPivot('quantity_max', 'sold')->withTimestamps();
+        return $this->belongsToMany('App\Order')->withPivot('amount', 'data');
     }
 }

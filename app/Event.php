@@ -20,14 +20,14 @@ class Event extends Model
      */
     public function products()
     {
-        return $this->belongsToMany('App\Product')->withPivot('quantity_max', 'sold')->withTimestamps();
+        return $this->hasMany('App\Product');
     }
 
     /**
-     * Get all the participations for the event.
+     * Get all the orders for the event.
      */
-    public function participations()
+    public function orders()
     {
-        return $this->hasManyThrough('App\Participation', 'App\EventProduct');
+        return Order::where('event_id', $this->id);
     }
 }

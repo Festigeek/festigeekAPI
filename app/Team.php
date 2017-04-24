@@ -16,19 +16,13 @@ class Team extends Model
     ];
 
     /**
-     * Get the participations for the Team.
-     */
-    public function participations()
-    {
-        return $this->hasMany('App\Participation');
-    }
-
-    /**
      * Get the EventProduct for the Team.
      */
-    public function event_product()
+    public function orders()
     {
-        return $this->belongsToMany('App\EventProduct', 'user_team', 'team_id', 'event_product_id');
+        return $this->belongsToMany('App\Order', 'team_user')
+            ->withPivot('captain')
+            ->withTimestamps();
     }
 
     /**

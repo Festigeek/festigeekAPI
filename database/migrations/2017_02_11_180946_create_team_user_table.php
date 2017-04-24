@@ -18,7 +18,7 @@ class CreateTeamUserTable extends Migration
             $table->increments('id');
             $table->integer('user_id')->unsigned();
             $table->integer('team_id')->unsigned();
-            $table->integer('event_product_id')->unsigned()->nullable();
+            $table->integer('order_id')->unsigned()->nullable();
             $table->boolean('captain')->default(false);
             $table->timestamps();
 
@@ -30,8 +30,8 @@ class CreateTeamUserTable extends Migration
                 ->references('id')->on('teams')
                 ->onDelete('cascade');
 
-            $table->foreign('event_product_id')
-                ->references('id')->on('event_product')
+            $table->foreign('order_id')
+                ->references('id')->on('orders')
                 ->onDelete('cascade');
         });
     }
