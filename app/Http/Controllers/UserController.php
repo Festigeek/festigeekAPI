@@ -33,7 +33,7 @@ class UserController extends Controller
             $drupal_user = DB::table('users')->where('email', $credentials['email'])->where('activated', false)->first();
 
             if(is_null($drupal_user)) {
-                return response()->json(['error' => 'User not found'], 401);
+                return response()->json(['error' => 'User not found'], 404);
             }
 
             if(user_check_password($credentials['password'], $drupal_user)) {
@@ -100,7 +100,7 @@ class UserController extends Controller
                 $user = User::where('registration_token', $registration_token)->firstOrFail();
             }
             catch (\Exception $e) {
-                return response()->json(['error' => 'User not found'], 401);
+                return response()->json(['error' => 'User not found'], 404);
             }
 
             if($user->activated)
@@ -147,7 +147,7 @@ class UserController extends Controller
                 return response()->json($user);
             }
             catch (\Exception $e) {
-                return response()->json(['error' => 'User not found'], 401);
+                return response()->json(['error' => 'User not found'], 404);
             }
         }
         else

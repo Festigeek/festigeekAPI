@@ -41,7 +41,7 @@ class Order extends Model
     }
 
     /**
-     * Get the payment type record associated with the order.
+     * Get the team associated with the order.
      */
     public function team()
     {

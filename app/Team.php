@@ -16,6 +16,24 @@ class Team extends Model
     ];
 
     /**
+     * The attributes excluded from the model's JSON form.
+     *
+     * @var array
+     */
+    protected $hidden = [
+        'pivot'
+    ];
+
+    /**
+     * The attributes added to the model.
+     *
+     * @var array
+     */
+    protected $appends = [
+        'users'
+    ];
+
+    /**
      * Get the EventProduct for the Team.
      */
     public function orders()
@@ -26,10 +44,19 @@ class Team extends Model
     }
 
     /**
-     * Get the products of the order.
+     * Get the users of the team.
      */
     public function users()
     {
         return $this->belongsToMany('App\User')->withPivot('captain')->withTimestamps();
+    }
+
+    /**
+     * Return a base_64 generated qrcode based on user informations
+     *
+     * @return String
+     */
+    public function getUsersAttribute() {
+        return $this->users()->get(['user_id', 'username'])->makeHidden(['QRCode', 'address', 'pivot']);
     }
 }

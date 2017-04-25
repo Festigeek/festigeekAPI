@@ -66,7 +66,7 @@ class UserAddressController extends Controller
             return response()->json($address);
         }
         catch (\Exception $e) {
-            return response()->json(['error' => 'address_not_found'], 401);
+            return response()->json(['error' => 'Address not Found'], 404);
         }
     }
 
