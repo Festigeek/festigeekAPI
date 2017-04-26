@@ -62,6 +62,10 @@ class Handler extends ExceptionHandler
             $exception->getPrevious() instanceof \Symfony\Component\HttpKernel\Exception\NotFoundHttpException)
             return response()->json(['error' => 'Page not found'], 404);
 
+        if ($exception instanceof \Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException ||
+            $exception->getPrevious() instanceof \Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException)
+            return response()->json(['error' => 'Wrong HTTP Method'], 405);
+
         // JWT Ecexptions
         if ($exception instanceof \Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException ||
             $exception->getPrevious() instanceof \Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException)

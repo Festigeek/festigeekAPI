@@ -20,14 +20,14 @@ class EventController extends Controller
         $orders = Order::where('event_id', $id)->get();
 
         $teams = $orders->filter(function($value) use ($game) {
-            return (!is_null($game)) ? $value->products()->where('product_id', $game)->count() > 0 : null;
+            return (!is_null($game)) ? $value->products()->where('product_id', $game)->count() > 0 : true;
         })->map(function($order){
             return $order->team();
         })->filter(function($value) {
             return !is_null($value);
         })->unique()->values();
 
-        return ($teams->count()>0) ? response()->json($teams) : response()->json(['error' => 'No team found'], 404);;
+        return ($teams->count()>0) ? response()->json($teams) : response()->json(['error' => 'No team found'], 404);
 
 //        $participations = null;
 //

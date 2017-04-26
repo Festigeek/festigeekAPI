@@ -27,8 +27,7 @@ class UserAddressController extends Controller
             $addresses = Address::where('user_id', $user_id)->get();
             return response()->json($addresses);
         }
-        else
-            abort(403);
+        else abort(403);
     }
 
     /**
@@ -36,9 +35,16 @@ class UserAddressController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function create()
+    public function create(Request $request)
     {
-        //
+        try {
+            $newaddress = User::create($request->all());
+        }
+        catch (\Exception $e) {
+            return response()->json(['error' => 'Address already exists.'], 409);
+        }
+
+        return response()->json(['success' => 'Address created'], 200);
     }
 
     /**
@@ -60,14 +66,16 @@ class UserAddressController extends Controller
      */
     public function show($user_id, $id)
     {
-//        TODO: permissions
-        try {
-            $address = Address::where([['id', $id], ['user_id', $user_id]])->firstOrFail();
-            return response()->json($address);
+        if($this->isAdminOrOwner($user_id)) {
+            try {
+                $address = Address::where([['id', $id], ['user_id', $user_id]])->firstOrFail();
+                return response()->json($address);
+            }
+            catch (\Exception $e) {
+                return response()->json(['error' => 'Address not Found'], 404);
+            }
         }
-        catch (\Exception $e) {
-            return response()->json(['error' => 'Address not Found'], 404);
-        }
+        else abort(403);
     }
 
     /**

@@ -45,6 +45,6 @@ class Controller extends BaseController
     }
 
     protected function isAdminOrOwner($user_id) {
-        return JWTAuth::user()->id == $user_id || JWTAuth::user()->hasRole('admin');
+        return $user_id === 'me' || JWTAuth::user()->id == $user_id || JWTAuth::user()->hasRole('admin');
     }
 }

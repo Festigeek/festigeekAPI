@@ -48,21 +48,21 @@ class UserController extends Controller
                     $token = JWTAuth::attempt($credentials);
                 }
                 else {
-                    return Response::json(['drupal_account' => true]);
+                    return Response::json(['success' => 'drupal_account']);
                 }
             }
             else {
-                return response()->json(['error' => 'Invalid Credentials'], 401);
+                return response()->json(['error' => 'Invalid Credentials.'], 401);
             }
         }
 
         if(!JWTAuth::user()->activated) {
-            return response()->json(['error' => 'Inactive Account'], 401);
+            return response()->json(['error' => 'Inactive Account.'], 401);
         }
 
-        $response = compact('token');
+//        $response = compact('token');
 
-        return response()->json($response);
+        return response()->json(['success' => 'Authenticated.', 'token' => $token]);
     }
 
     /**
@@ -83,7 +83,7 @@ class UserController extends Controller
 
         //$token = JWTAuth::fromUser($newuser);
         //return response()->json(compact('token'));
-        return Response::json(['account_created' => true]);
+        return response()->json(['success' => 'Account created.'], 200);
     }
 
     /**
@@ -150,8 +150,7 @@ class UserController extends Controller
                 return response()->json(['error' => 'User not found'], 404);
             }
         }
-        else
-            abort(403);
+        else abort(403);
     }
 
     /**

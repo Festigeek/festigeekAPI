@@ -32,7 +32,7 @@ class User extends Authenticatable implements JWTSubject
      * @var array
      */
     protected $hidden = [
-        'password', 'drupal_password', 'registration_token', 'drupal_id'
+        'password', 'drupal_password', 'registration_token', 'drupal_id', 'activated'
     ];
 
     /**
