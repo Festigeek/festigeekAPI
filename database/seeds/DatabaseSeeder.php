@@ -31,7 +31,7 @@ class DatabaseSeeder extends Seeder
         Model::unguard();
 
         //////////////////
-        // AUTHENTICATION
+        //     USERS
         //////////////////
 
         // Countries
@@ -58,7 +58,7 @@ class DatabaseSeeder extends Seeder
 
         // Users
 
-        $adminUser = User::create(['username' => 'Admin', 'email' => 'admin@festigeek.ch', 'password' => '1234', 'activated' => 1, 'birthdate' => '1934-09-04']);
+        $adminUser = User::create(['username' => 'Admin', 'email' => 'admin@festigeek.ch', 'password' => '1234', 'activated' => 1, 'birthdate' => '1934-09-04', 'country_id' => '229',  'street' => 'Route de Cheseaux 1',  'npa' => '1400',  'city' => 'Yverdon-Les-Bains']);
         $adminUser->attachRole($admin);
 
         User::create(['username' => 'User', 'email' => 'user@festigeek.ch', 'password' => '1234', 'activated' => 1, 'birthdate' => '1998-08-27']);
@@ -66,7 +66,7 @@ class DatabaseSeeder extends Seeder
 
         // Adresses
 
-        Address::create(['user_id' => '1', 'country_id' => '229',  'street' => 'Route de Cheseaux 1',  'npa' => '1400',  'city' => 'Yverdon-Les-Bains']);
+//        Address::create(['user_id' => '1', 'country_id' => '229',  'street' => 'Route de Cheseaux 1',  'npa' => '1400',  'city' => 'Yverdon-Les-Bains']);
 
         //////////////////
         //   E-COMMERCE

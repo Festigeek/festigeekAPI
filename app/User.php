@@ -23,7 +23,23 @@ class User extends Authenticatable implements JWTSubject
      * @var array
      */
     protected $fillable = [
-        'username', 'email', 'password', 'birthdate', 'firstname', 'lastname', 'lol_account','steamID64', 'battleTag'
+        'username',
+        'email',
+        'password',
+        'birthdate',
+
+        'gender',
+        'firstname',
+        'lastname',
+        'country_id',
+        'street',
+        'street2',
+        'npa',
+        'city',
+
+        'lol_account',
+        'steamID64',
+        'battleTag'
     ];
 
     /**
@@ -32,7 +48,11 @@ class User extends Authenticatable implements JWTSubject
      * @var array
      */
     protected $hidden = [
-        'password', 'drupal_password', 'registration_token', 'drupal_id', 'activated'
+        'password',
+        'drupal_password',
+        'registration_token',
+        'drupal_id',
+        'activated'
     ];
 
     /**
@@ -41,7 +61,8 @@ class User extends Authenticatable implements JWTSubject
      * @var array
      */
     protected $appends = [
-        'address', 'QRCode'
+//        'address',
+        'QRCode'
     ];
 
     /**
@@ -53,13 +74,13 @@ class User extends Authenticatable implements JWTSubject
         'activated' => 'boolean',
     ];
 
-    /**
-     * Get the addresses for the user. (if many used)
-     */
-    protected function addresses()
-    {
-        return $this->hasMany('App\Address');
-    }
+//    /**
+//     * Get the addresses for the user. (if many used)
+//     */
+//    protected function addresses()
+//    {
+//        return $this->hasMany('App\Address');
+//    }
 
     /**
      * Get the teams of the user.
@@ -157,13 +178,13 @@ class User extends Authenticatable implements JWTSubject
         return base64_encode(QrCode::encoding('UTF-8')->merge('/public/images/logo_carre.jpg', .2)->generate($payload));
     }
 
-    /**
-     * Get the first address for the user or instantiate an empty one.
-     */
-    public function getAddressAttribute()
-    {
-        return $this->addresses()->first();
-    }
+//    /**
+//     * Get the first address for the user or instantiate an empty one.
+//     */
+//    public function getAddressAttribute()
+//    {
+//        return $this->addresses()->first();
+//    }
 
 
     /*

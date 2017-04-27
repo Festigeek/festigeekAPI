@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 include("Auth/drupal_password.inc");
 
+use App\Address;
 use DB;
 use Crypt;
 use Response;
@@ -135,13 +136,10 @@ class UserController extends Controller
      * @return Response
      */
     public function show($id) {
-        $loggedUser = JWTAuth::user();
+//        $loggedUser = JWTAuth::user();
 
-        if($id === 'me' || $loggedUser->id == $id) {
-            $user = User::find($loggedUser->id);
-            return response()->json($user);
-        }
-        else if($loggedUser->hasRole('admin')) {
+        if($this->isAdminOrOwner($id)) {
+            $id = ($id === 'me') ? JWTAuth::user()->id : $id;
             try {
                 $user = User::findOrFail($id);
                 return response()->json($user);
@@ -151,6 +149,21 @@ class UserController extends Controller
             }
         }
         else abort(403);
+//
+//        if($id === 'me' || $loggedUser->id == $id) {
+//            $user = User::find($loggedUser->id);
+//            return response()->json($user);
+//        }
+//        else if($loggedUser->hasRole('admin')) {
+//            try {
+//                $user = User::findOrFail($id);
+//                return response()->json($user);
+//            }
+//            catch (\Exception $e) {
+//                return response()->json(['error' => 'User not found'], 404);
+//            }
+//        }
+//        else abort(403);
     }
 
     /**
@@ -162,7 +175,41 @@ class UserController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        if($this->isAdminOrOwner($id)) {
+            try {
+                $id = ($id === 'me') ? JWTAuth::user()->id : $id;
+                $user = User::findOrFail($id);
+            }
+            catch (\Exception $e) {
+                return response()->json(['error' => 'User not Found'], 404);
+            }
+
+            $this->validate($request, [
+                'username' => 'required|string|unique:users',
+                'email' => 'required|email|unique:users',
+//                'password' => 'min:8',
+//                'birthdate' => 'required|date|date_format:YYYY-mm-dd',
+//
+//                'gender' => 'nullable|in:M,F',
+//                'firstname' => 'nullable|string',
+//                'lastname' => 'nullable|string',
+//                'country_id' => 'nullable|integer',
+//                'street' => 'nullable|string',
+//                'street2' => 'nullable|string',
+//                'npa' => 'nullable|integer',
+//                'city' => 'nullable|string',
+//
+//                'lol_account' => 'nullable|string',
+//                'steamID64' => 'nullable|integer',
+//                'battleTag' => 'nullable|string'
+            ]);
+
+            $input = $request->all();
+            $user->fill($input)->save();
+
+            return response()->json($user);
+        }
+        else abort(403);
     }
 
     public function test(Request $request) {

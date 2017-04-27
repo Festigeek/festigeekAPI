@@ -36,9 +36,14 @@ Route::post('qrcode', 'QrcodeController@create');
 Route::post('qrcode/decrypt', 'QrcodeController@decrypt');
 
 /*
+ * Resource: Country
+ */
+Route::resource('countries', 'CountryController');
+
+/*
  * Resource: Address
  */
-Route::resource('users.addresses', 'UserAddressController');
+//Route::resource('users.addresses', 'UserAddressController');
 
 /*
  * Resource: Products

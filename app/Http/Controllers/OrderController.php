@@ -9,7 +9,6 @@ use PayPal;
 use Crypt;
 use App\Order;
 use App\Product;
-//use Redirect;
 
 class OrderController extends Controller
 {
