@@ -184,28 +184,42 @@ class UserController extends Controller
                 return response()->json(['error' => 'User not Found'], 404);
             }
 
-            $this->validate($request, [
-                'username' => 'required|string|unique:users',
-                'email' => 'required|email|unique:users',
+            $inputs = $request->get(['gender',
+                'firstname',
+                'lastname',
+                'country_id',
+                'street',
+                'street2',
+                'npa',
+                'city',
+                'lol_account',
+                'steamID64',
+                'battleTag']);
+
+            $validator = Validator::make($inputs, [
+//                'username' => 'required|string|unique:users',
+//                'email' => 'required|email|unique:users',
 //                'password' => 'min:8',
 //                'birthdate' => 'required|date|date_format:YYYY-mm-dd',
-//
-//                'gender' => 'nullable|in:M,F',
-//                'firstname' => 'nullable|string',
-//                'lastname' => 'nullable|string',
+
+                'gender' => 'nullable|in:M,F',
+                'firstname' => 'nullable|string',
+                'lastname' => 'nullable|string',
 //                'country_id' => 'nullable|integer',
 //                'street' => 'nullable|string',
 //                'street2' => 'nullable|string',
 //                'npa' => 'nullable|integer',
 //                'city' => 'nullable|string',
-//
+
 //                'lol_account' => 'nullable|string',
 //                'steamID64' => 'nullable|integer',
 //                'battleTag' => 'nullable|string'
             ]);
 
-            $input = $request->all();
-            $user->fill($input)->save();
+            if ($validator->fails())
+                return response()->json(['error' => 'Validation error.', 'validation' => $validator], 400);
+
+            $user->fill($inputs)->save();
 
             return response()->json($user);
         }
