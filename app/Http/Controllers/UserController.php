@@ -3,14 +3,16 @@
 namespace App\Http\Controllers;
 include("Auth/drupal_password.inc");
 
-use App\Address;
 use DB;
 use Crypt;
 use Response;
 use JWTAuth;
+use Validator;
 
+use App\Address;
 use App\User;
 use App\Mail\RegisterMail;
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Hash;
@@ -184,7 +186,7 @@ class UserController extends Controller
                 return response()->json(['error' => 'User not Found'], 404);
             }
 
-            $inputs = $request->get(['gender',
+            $inputs = $request->only(['gender',
                 'firstname',
                 'lastname',
                 'country_id',
@@ -202,18 +204,18 @@ class UserController extends Controller
 //                'password' => 'min:8',
 //                'birthdate' => 'required|date|date_format:YYYY-mm-dd',
 
-                'gender' => 'nullable|in:M,F',
-                'firstname' => 'nullable|string',
-                'lastname' => 'nullable|string',
-//                'country_id' => 'nullable|integer',
-//                'street' => 'nullable|string',
-//                'street2' => 'nullable|string',
-//                'npa' => 'nullable|integer',
-//                'city' => 'nullable|string',
+                'gender' => 'in:M,F',
+                'firstname' => 'required|string',
+                'lastname' => 'required|string',
+                'country_id' => 'required|numeric',
+                'street' => 'required|string',
+                'street2' => 'nullable|string',
+                'npa' => 'required|string',
+                'city' => 'required|string',
 
-//                'lol_account' => 'nullable|string',
-//                'steamID64' => 'nullable|integer',
-//                'battleTag' => 'nullable|string'
+                'lol_account' => 'nullable|string',
+                'steamID64' => 'nullable|numeric',
+                'battleTag' => 'nullable|string'
             ]);
 
             if ($validator->fails())
