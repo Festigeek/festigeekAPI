@@ -57,7 +57,7 @@ Route::resource('productTypes/{id}/products', 'ProductController@index');
 Route::get('events/{id}/teams', 'EventController@teams');
 Route::get('events/{id}/products', 'EventController@products');
 
-Route::post('orders', 'OrderController@getCheckout');
+Route::post('orders', 'OrderController@create'); //creates a new order, based on type (paypal or banking)
 Route::get('orders/done', 'OrderController@paypalDone');
 Route::get('orders/cancel', 'OrderController@paypalCancel');
 
