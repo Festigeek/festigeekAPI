@@ -55,6 +55,7 @@ creates a new order based on type
           $this->createPaypalPayment($order, $products);
         } else if ($request->get('payment_type_id') == 2){
 
+              //TODO test when deploy
               Mail::to($newuser->email, $newuser->username)->send(new BankingWireTransfertMail($newuser));
         }
 
