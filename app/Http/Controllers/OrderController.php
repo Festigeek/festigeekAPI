@@ -35,20 +35,25 @@ creates a new order based on type
 
         //check if user already regestired a payment order with event_id to his name
         $existingPayment = $currentUser->orders()->where('event_id', $data['event_id'])->get();
-        //check dispos tournois
+
         if($existingPayment){
           return response()->json(['error'=>'You have already created an order for this event']);
+        }
+        $checkedLegal = $data['checkedLegal'];
+        if(!$checkedLegal){
+            return response()->json(['error'=>'Please check the general sales conditions']);
         }
 
         $order = Order::create($data);
 
-        //test if paypal Here
+        //test if paypal or bank transfert Here
         if($request->get('payment_type_id') == 1){
           $products = $request->get('items');
 
           $this->createPaypalPayment($order, $products);
-        } else if ($request->get('payment_type_id') == 0){
+        } else if ($request->get('payment_type_id') == 2){
 //TODO mail with banking info
+
         }
 
 
