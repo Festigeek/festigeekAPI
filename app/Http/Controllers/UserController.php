@@ -199,12 +199,13 @@ class UserController extends Controller
                 'battleTag']);
 
             $validator = Validator::make($inputs, [
+//                TODO: manage credentials update
 //                'username' => 'required|string|unique:users',
 //                'email' => 'required|email|unique:users',
 //                'password' => 'min:8',
 //                'birthdate' => 'required|date|date_format:YYYY-mm-dd',
 
-                'gender' => 'in:M,F',
+                'gender' => 'required|in:M,F',
                 'firstname' => 'required|string',
                 'lastname' => 'required|string',
                 'country_id' => 'required|numeric',
@@ -213,16 +214,15 @@ class UserController extends Controller
                 'npa' => 'required|string',
                 'city' => 'required|string',
 
-                'lol_account' => 'nullable|string',
-                'steamID64' => 'nullable|numeric',
-                'battleTag' => 'nullable|string'
+                'lol_account' => 'nullable|string|max:20',
+                'steamID64' => 'nullable|numeric|digits_between:0,20',
+                'battleTag' => 'nullable|string|max:20'
             ]);
 
             if ($validator->fails())
                 return response()->json(['error' => 'Validation error.', 'validation' => $validator], 400);
 
             $user->fill($inputs)->save();
-
             return response()->json($user);
         }
         else abort(403);

@@ -12,10 +12,10 @@ class ProductController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index($typeId = null)
+    public function index($type = null)
     {
-        if($typeId !== null) {
-            $products = Product::where('product_type_id', $typeId)->get();
+        if($type !== null) {
+            $products = Product::where('product_type_id', $type)->get();
         }
         else {
             $products = Product::all();

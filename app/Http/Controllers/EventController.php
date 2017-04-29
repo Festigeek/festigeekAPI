@@ -27,7 +27,7 @@ class EventController extends Controller
             return !is_null($value);
         })->unique()->values();
 
-        return ($teams->count()>0) ? response()->json($teams) : response()->json(['error' => 'No team found'], 404);
+        return response()->json($teams);
 
 //        $participations = null;
 //
