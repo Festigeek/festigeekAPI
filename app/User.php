@@ -178,6 +178,14 @@ class User extends Authenticatable implements JWTSubject
         return base64_encode(QrCode::encoding('UTF-8')->merge('/public/images/logo_carre.jpg', .2)->generate($payload));
     }
 
+    /**
+     * Get the orders for the user.
+     */
+    public function orders()
+    {
+        return $this->hasMany('App\Order');
+    }
+
 //    /**
 //     * Get the first address for the user or instantiate an empty one.
 //     */
@@ -195,13 +203,7 @@ class User extends Authenticatable implements JWTSubject
      * ===============================================================================================================
      */
     //
-    // /**
-    //  * Get the orders for the user.
-    //  */
-    // public function orders()
-    // {
-    //     return $this->hasMany('App\Order');
-    // }
+
     //
     // /**
     //  * Get the inscriptions for the user

@@ -26,9 +26,7 @@ creates a new order based on type
     public function create(Request $request)
     {
 
-        //TODO add security
-        //TODO add the possibility to pay by bank transfer
-        //TODO verify if the user's not already registered for a tournament in the same event
+
         $currentUser = JWTAuth::user();
 
 
@@ -36,8 +34,12 @@ creates a new order based on type
         $data['user_id'] = $currentUser->id;
 
         //check if user already regestired a payment order with event_id to his name
+        $existingPayment = $currentUser->orders()->where('event_id', $data['event_id'])->get();
         //check dispos tournois
-        
+        if($existingPayment){
+          return response()->json(['error'=>'You have already created an order for this event']);
+        }
+
         $order = Order::create($data);
 
         //test if paypal Here
@@ -45,7 +47,7 @@ creates a new order based on type
           $products = $request->get('items');
 
           $this->createPaypalPayment($order, $products);
-        } else if (false){
+        } else if ($request->get('payment_type_id') == 0){
 //TODO mail with banking info
         }
 
@@ -60,10 +62,16 @@ creates a new order based on type
               $payer = PayPal::Payer();
               $payer->setPaymentMethod('paypal');
 
-      //TODO watch if items are available
+
 
       foreach ($products as $product){
           $ProductDetails = Product::find($product['product_id']);
+
+          //can't test this
+          //here test if the items are available
+          if(!$ProductDetails->quantity_max<$ProductDetails->sold){
+                  return Response::json(['error'=>'No tickets available for ' + $product->name]);
+          }
 
           $order->products()->save($ProductDetails, ['amount' => $product['amount']]);
 
@@ -124,6 +132,8 @@ creates a new order based on type
             $executePayment = $payment->execute($paymentExecution, $this->_apiContext);
 
             $order->state = 1;
+            //TODO change the number sold, increment
+
             $order->paypal_paymentId = $id;
 
             $order->save();
