@@ -7,7 +7,7 @@ use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
-class BankingMail extends Mailable
+class BankingWireTransfertMail extends Mailable
 {
     use Queueable, SerializesModels;
 
@@ -34,7 +34,7 @@ class BankingMail extends Mailable
      */
     public function build()
     {
-      return $this->view('email.banking')
+      return $this->view('email.bankingWireTransfert')
         ->subject(Lang::get('festigeek.notify_registration'))
         ->with([
           'registration_token' => $this->user->registration_token,

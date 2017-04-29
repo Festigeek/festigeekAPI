@@ -10,6 +10,8 @@ use Crypt;
 use App\Order;
 use App\Product;
 
+use App\Mail\BankingWireTransfertMail;
+
 use JWTAuth;
 
 class OrderController extends Controller
@@ -41,7 +43,7 @@ creates a new order based on type
         }
         $checkedLegal = $data['checkedLegal'];
         if(!$checkedLegal){
-            return response()->json(['error'=>'Please check the general sales conditions']);
+            return response()->json(['error'=>'Please accept the general sales conditions']);
         }
 
         $order = Order::create($data);
@@ -52,8 +54,8 @@ creates a new order based on type
 
           $this->createPaypalPayment($order, $products);
         } else if ($request->get('payment_type_id') == 2){
-//TODO mail with banking info
 
+              Mail::to($newuser->email, $newuser->username)->send(new BankingWireTransfertMail($newuser));
         }
 
 
