@@ -10,12 +10,19 @@ class ProductController extends Controller
     /**
      * Display a listing of the resource.
      *
+     * @param Request $request
      * @return \Illuminate\Http\Response
      */
-    public function index($type = null)
+    public function index(Request $request)
     {
-        if($type !== null) {
-            $products = Product::where('product_type_id', $type)->get();
+        if($request->has('type_id')) {
+            $products = Product::where('product_type_id', $request->get('type_id'))->get();
+        }
+        else if ($request->has('type')) {
+            $type = $request->get('type');
+            $products = Product::whereHas('product_type', function($query) use ($type) {
+                $query->whereRaw('LOWER(name) LIKE ?' , $type);
+            })->get();
         }
         else {
             $products = Product::all();

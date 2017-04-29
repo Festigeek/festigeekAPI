@@ -52,8 +52,8 @@ Route::resource('productTypes', 'ProductTypesController', ['only' => [
     'index'
 ]]);
 Route::resource('products', 'ProductController');
-Route::resource('productTypes.products', 'ProductType\ProductController');
 
+Route::get('events/current', 'EventController@current');
 Route::get('events/{id}/teams', 'EventController@teams');
 Route::get('events/{id}/products', 'EventController@products');
 
