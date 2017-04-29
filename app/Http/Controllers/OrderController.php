@@ -55,8 +55,23 @@ creates a new order based on type
           $this->createPaypalPayment($order, $products);
         } else if ($request->get('payment_type_id') == 2){
 
+          //TODO find better way than a foreach
+          foreach ($products as $product){
+              $ProductDetails = Product::find($product['product_id']);
+
+              //can't test this
+              //here test if the items are available
+              if((!$ProductDetails->quantity_max<$ProductDetails->sold) || $ProductDetails->quantity_max == null ){
+                      return Response::json(['error'=>'No more tickets available']);
+              }
+
+              $order->products()->save($ProductDetails, ['amount' => $product['amount']]);
+
+
+              $total += $ProductDetails->price * $product['amount'];
+            }
               //TODO test when deploy
-              Mail::to($newuser->email, $newuser->username)->send(new BankingWireTransfertMail($newuser));
+              Mail::to($newuser->email, $newuser->username)->send(new BankingWireTransfertMail($newuser, $total)); //TODO send amount
         }
 
 
@@ -77,8 +92,8 @@ creates a new order based on type
 
           //can't test this
           //here test if the items are available
-          if(!$ProductDetails->quantity_max<$ProductDetails->sold){
-                  return Response::json(['error'=>'No tickets available for ' + $product->name]);
+          if((!$ProductDetails->quantity_max<$ProductDetails->sold) || $ProductDetails->quantity_max == null ){
+                  return Response::json(['error'=>'No more tickets available ']);
           }
 
           $order->products()->save($ProductDetails, ['amount' => $product['amount']]);
