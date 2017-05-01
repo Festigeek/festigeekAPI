@@ -86,21 +86,12 @@ class DatabaseSeeder extends Seeder
 
         // Products
 
-<<<<<<< HEAD
         $p1 = Product::create(['name' => 'League Of Legend', 'description' => 'Inscription LoL 2017.', 'price' => '20.00','quantity_max' => '80', 'sold' => '0', 'event_id' => 1, 'product_type_id' => 1, 'need_team'=>1]);
         $p2 = Product::create(['name' => 'Overwatch', 'description' => 'Inscription Overwatch 2017.', 'price' => '20.00', 'quantity_max' => '48', 'sold' => '0', 'event_id' => 1, 'product_type_id' => 1, 'need_team'=>1]);
         $p3 = Product::create(['name' => 'Counter-Strike: GO', 'description' => 'Inscription CS:GO 2017.', 'price' => '20.00', 'quantity_max' => '40', 'sold' => '0', 'event_id' => 1, 'product_type_id' => 1, 'need_team'=>1]);
         $p4 = Product::create(['name' => 'Animations', 'description' => 'Place joueur LAN 2017.', 'price' => '20.00', 'quantity_max' => '6', 'sold' => '0', 'event_id' => 1, 'product_type_id' => 1, 'need_team'=>0]);
         $p5 = Product::create(['name' => 'Burger', 'description' => "Bon d'achat pour un Burger Festigeek !", 'price' => '13.00', 'product_type_id' => 2, 'need_team'=>0]);
         $p6 = Product::create(['name' => 'Petit-déjeuner', 'description' => "Bon d'achat pour un petit-déjeuner.", 'price' => '5.00', 'product_type_id' => 2, 'need_team'=>0]);
-=======
-        $p1 = Product::create(['name' => 'League Of Legend', 'description' => 'Inscription LoL 2017.', 'price' => '20.00','quantity_max' => '80', 'sold' => '0', 'event_id' => 1, 'product_type_id' => '1']);
-        $p2 = Product::create(['name' => 'Overwatch', 'description' => 'Inscription Overwatch 2017.', 'price' => '20.00', 'quantity_max' => '48', 'sold' => '0', 'event_id' => 1, 'product_type_id' => '1']);
-        $p3 = Product::create(['name' => 'Counter-Strike: GO', 'description' => 'Inscription CS:GO 2017.', 'price' => '20.00', 'quantity_max' => '40', 'sold' => '0', 'event_id' => 1, 'product_type_id' => '1']);
-        $p4 = Product::create(['name' => 'Animations', 'description' => 'Place joueur LAN 2017.', 'price' => '20.00', 'quantity_max' => '6', 'sold' => '0', 'event_id' => 1, 'product_type_id' => '1']);
-        $p5 = Product::create(['name' => 'Burger', 'description' => "Bon d'achat pour un Burger Festigeek !", 'price' => '13.00', 'product_type_id' => '2', 'sold' => '0', 'event_id' => 1]);
-        $p6 = Product::create(['name' => 'Petit-déjeuner', 'description' => "Bon d'achat pour un petit-déjeuner.", 'price' => '5.00', 'product_type_id' => '2', 'sold' => '0', 'event_id' => 1]);
->>>>>>> 231ae9d45b24e040e097cd275d5ac6fc9b4ad7e0
 
         Product::create(['name' => 'Donation', 'description' => 'Donation pour l\'association.', 'price' => '0.00', 'product_type_id' => '3']);
 
