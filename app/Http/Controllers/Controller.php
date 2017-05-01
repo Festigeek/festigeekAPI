@@ -37,7 +37,7 @@ class Controller extends BaseController
         $this->_apiContext->setConfig(array(
             'mode' => 'sandbox',
             'service.EndPoint' => 'https://api.sandbox.paypal.com',
-            'http.ConnectionTimeOut' => 30,
+            'http.ConnectionTimeOut' => 60,
             'log.LogEnabled' => true,
             'log.FileName' => storage_path('logs/paypal.log'),
             'log.LogLevel' => 'FINE'
