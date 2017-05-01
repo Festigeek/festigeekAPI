@@ -45,7 +45,7 @@ class Order extends Model
      */
     public function team()
     {
-        return $this->belongsToMany('App\Team', 'team_user')->withPivot('captain', 'user_id')->first();
+        return $this->belongsToMany('App\Team', 'team_user')->withPivot('captain', 'user_id')->withTimestamps();
     }
 
     /**
