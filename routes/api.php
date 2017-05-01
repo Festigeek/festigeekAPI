@@ -1,7 +1,5 @@
 <?php
 
-use Illuminate\Http\Request;
-
 /* List of patterns */
 Route::pattern('id', '\d+');
 
@@ -17,7 +15,7 @@ Route::pattern('id', '\d+');
 */
 
 Route::get('/', function() {
-  return ;
+  return response()->json(['success' => 'Festigeek API v1']);
 });
 
 /*
