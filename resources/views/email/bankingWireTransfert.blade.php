@@ -11,7 +11,7 @@
         	Merci pour ton insription à notre LAN!
                <br />
                 Afin de valider ton inscription, nous te demandons d'effectuer un paiement de {{ $total }} CHF dans les 7 jours à<br />
-        	BANING INFO HERE
+        	<!-- BANKING INFO HERE TODO infos bancaires et instructions -->
          <br />
          <br />
 
