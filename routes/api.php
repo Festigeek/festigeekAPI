@@ -1,7 +1,5 @@
 <?php
 
-use Illuminate\Http\Request;
-
 /* List of patterns */
 Route::pattern('id', '\d+');
 
@@ -17,7 +15,7 @@ Route::pattern('id', '\d+');
 */
 
 Route::get('/', function() {
-  return ;
+  return response()->json(['success' => 'Festigeek API v1']);
 });
 
 /*
@@ -52,8 +50,8 @@ Route::resource('productTypes', 'ProductTypesController', ['only' => [
     'index'
 ]]);
 Route::resource('products', 'ProductController');
-Route::resource('productTypes.products', 'ProductType\ProductController');
 
+Route::get('events/current', 'EventController@current');
 Route::get('events/{id}/teams', 'EventController@teams');
 Route::get('events/{id}/products', 'EventController@products');
 

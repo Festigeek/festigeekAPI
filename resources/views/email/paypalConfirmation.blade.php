@@ -4,15 +4,15 @@
         <meta charset="utf-8">
     </head>
     <body>
-        <h2>Informations pour le virement bancaire</h2>
+        <h2>Confirmation de paiement</h2>
 
         <div>
         	Bonjour {{ $username }} !<br />
         	Merci pour ton insription à notre LAN!
                <br />
-                Afin de valider ton inscription, nous te demandons d'effectuer un paiement de {{ $total }} CHF dans les 7 jours à<br />
-        	<!-- BANKING INFO HERE TODO infos bancaires et instructions -->
+                Ton inscription est validée
          <br />
+         L'équipe FestiGeek
          <br />
 
         </div>

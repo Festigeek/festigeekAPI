@@ -54,4 +54,15 @@ class EventController extends Controller
 
         return response()->json($products);
     }
+
+    /**
+     * @param Request $request
+     * @param $id event id
+     */
+    public function current(){
+
+        $currentEvent = Event::whereDate('ends_at', '>=', date('Y-m-d'))->orderBy('begins_at', 'asc')->first();
+
+        return response()->json($currentEvent);
+    }
 }

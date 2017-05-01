@@ -13,6 +13,7 @@ use App\Product;
 use App\Team;
 
 use App\Mail\BankingWireTransfertMail;
+use App\Mail\PaypalConfirmation;
 
 use JWTAuth;
 
@@ -125,7 +126,7 @@ class OrderController extends Controller
               $total += $ProductDetails->price * $product['amount'];
             }
               //TODO test when deploy
-              Mail::to($newuser->email, $newuser->username)->send(new BankingWireTransfertMail($newuser, $total)); //TODO send amount
+              Mail::to($newuser->email, $newuser->username)->send(new PaypalConfirmation($newuser)); //TODO test
         }
 
 
@@ -228,6 +229,8 @@ class OrderController extends Controller
             $order->paypal_paymentId = $id;
 
             $order->save();
+            Mail::to($newuser->email, $newuser->username)->send(new BankingWireTransfertMail($newuser, $total)); //TODO send amount
+
 
             return response()->json(['success' => 'payment success'], 200);
         } catch (Exception $ex){
