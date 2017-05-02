@@ -16,20 +16,22 @@ class Controller extends BaseController
     use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
 
     public $_apiContext;
-    
+
     public function __construct() {
-        // Send email notification
-        $transport = \Swift_SmtpTransport::newInstance(
-            \Config::get('mail.host'),
-            \Config::get('mail.port'),
-            \Config::get('mail.encryption'))
-                ->setUsername(\Config::get('mail.username'))
-                ->setPassword(\Config::get('mail.password'))
-                ->setStreamOptions(['ssl' => \Config::get('mail.ssloptions')]);
+        if(\Config::get('mail.driver') === 'smtp') {
+            // Send email notification
+            $transport = \Swift_SmtpTransport::newInstance(
+                \Config::get('mail.host'),
+                \Config::get('mail.port'),
+                \Config::get('mail.encryption'))
+                    ->setUsername(\Config::get('mail.username'))
+                    ->setPassword(\Config::get('mail.password'))
+                    ->setStreamOptions(['ssl' => \Config::get('mail.ssloptions')]);
 
-        $mailer = \Swift_Mailer::newInstance($transport);
-        Mail::setSwiftMailer($mailer);
-
+            $mailer = \Swift_Mailer::newInstance($transport);
+            Mail::setSwiftMailer($mailer);
+        }
+        
         $this->_apiContext = PayPal::ApiContext(
             config('services.paypal.client_id'),
             config('services.paypal.secret'));
