@@ -11,6 +11,7 @@ use Crypt;
 use App\Order;
 use App\Product;
 use App\Team;
+use Illuminate\Support\Facades\DB;
 
 use App\Mail\BankingWireTransfertMail;
 use App\Mail\PaypalConfirmation;
@@ -22,7 +23,7 @@ class OrderController extends Controller
   public function __construct()
   {
     parent::__construct();
-    $this->middleware('jwt.auth');
+    $this->middleware('jwt.auth', ['except' => ['paypalDone', 'paypalCancel']]);
     $this->middleware('role:admin', ['only' => ['index']]);
   }
 	/*
@@ -51,9 +52,9 @@ class OrderController extends Controller
     if(!$request->has('products'))
 	    return response()->json(['error'=>'Please select products']);
 
-
+//    DB::beginTransaction();
     try{
-//	    DB::beginTransaction();
+	    DB::beginTransaction();
 
 	    $order = Order::create($data);
 	    $products = $request->get('products');
@@ -67,26 +68,26 @@ class OrderController extends Controller
 			  //test if products are all from the same event
 			  if ($ProductDetails->event_id !== $request->get('event_id')) {
 				  DB::rollback();
-				  return response()->json(['error' => 'Product not from the same event']);
+				  return response()->json(['error' => 'Product not from the same event'], 422);
 			  }
 
 			  //we find an subscription
-			  if($ProductDetails->product_types_id === 1)
-			    ++$nbSubscription;
-
-			  //test if there is not more then 1 subscription
-			  if($nbSubscription > 1) {
-				  DB::rollback();
-				  return response()->json(['error' => 'No more than one inscription']);
-			  }
+			  if($ProductDetails->product_types_id === 1) {
+          ++$nbSubscription;
+          //test if there is not more then 1 subscription
+          if($nbSubscription > 1 || $product['amount'] > 1) {
+            DB::rollback();
+            return response()->json(['error' => 'More than one inscription'], 422);
+          }
+        }
 
 			  //here test if the items are available
 			  if ($ProductDetails->quantity_max != null && $ProductDetails->sold >= $ProductDetails->quantity_max) {
 				  DB::rollback();
-			  	return response()->json(['error' => 'No more tickets available']);
+			  	return response()->json(['error' => 'No more tickets available'], 422);
 			  }
 
-			  ++$ProductDetails->sold;
+			  $ProductDetails->sold += $product['amount'];
 			  $ProductDetails->save();
 			  $order->products()->save($ProductDetails, ['amount' => $product['amount']]);
 			  $total += $ProductDetails->price * $product['amount'];
@@ -98,154 +99,124 @@ class OrderController extends Controller
         $order->team()->attach($team->id, ['captain' => false, 'user_id' => $currentUser->id]);
       }
 
+      //test if paypal or bank transfert Here
+      if($request->get('payment_type_id') === 2){
+        $payer = PayPal::Payer();
+        $payer->setPaymentMethod('paypal');
 
-//	    DB::commit();
-	  }catch (Exception $e){
-	    DB::rollback();
-			return response()->json(['error'=>'json not valid']);
-		}
-
-    //test if paypal or bank transfert Here
-    if($request->get('payment_type_id') === 2){
-      $this->createPaypalPayment($order);
-    } else if ($request->get('payment_type_id') === 1){
-
-          //TODO find better way than a foreach
-          foreach ($products as $product){
-              $ProductDetails = Product::find($product['product_id']);
-
-              //can't test this
-              //here test if the items are available
-              if((!$ProductDetails->quantity_max<$ProductDetails->sold) || $ProductDetails->quantity_max == null ){
-                      return Response::json(['error'=>'No more tickets available']);
-              }
-
-              $order->products()->save($ProductDetails, ['amount' => $product['amount']]);
-
-
-              $total += $ProductDetails->price * $product['amount'];
-            }
-              //TODO test when deploy
-              Mail::to($newuser->email, $newuser->username)->send(new PaypalConfirmation($newuser)); //TODO test
+        $itemList = PayPal::ItemList();
+        foreach($order->products()->get() as $product){
+          $item = PayPal::Item();
+          $item->setName($product->name)
+            ->setCurrency('CHF')
+            ->setQuantity($product->pivot->amount)
+            ->setPrice($product->price);
+          $itemList->addItem($item);
         }
 
+        $amount = PayPal::Amount();
+        $amount->setCurrency('CHF');
+        $amount->setTotal($total);
 
-    }
-
-    private function createPaypalPayment($order){
-//	    $order = Order::findOrFail($orderId);
-
-      $payer = PayPal::Payer();
-      $payer->setPaymentMethod('paypal');
-
-	    $itemList = PayPal::ItemList();
-	    $total = 0;
-
-	    foreach($order->products()->get() as $product){
-		    $item = PayPal::Item();
-		    $item->setName($product->name)
-			    ->setCurrency('CHF')
-			    ->setQuantity($product->pivot->amount)
-			    ->setPrice($product->price);
-		    $itemList->addItem($item);
-		    $total += $product->price * $product->pivot->amount;
-	    }
-
-	    //dd($total);
-
-//      foreach ($products as $product){
-//          $ProductDetails = Product::find($product['product_id']);
-//
-//          //can't test this
-//          //here test if the items are available
-//          if((!$ProductDetails->quantity_max<$ProductDetails->sold) || $ProductDetails->quantity_max == null ){
-//                  return Response::json(['error'=>'No more tickets available ']);
-//          }
-//
-//          $order->products()->save($ProductDetails, ['amount' => $product['amount']]);
-//
-//          $item = PayPal::Item();
-//          $item->setName($ProductDetails->name)
-//              ->setCurrency('CHF')
-//              ->setQuantity($product['amount'])
-//              ->setPrice($ProductDetails->price);
-//          $itemList->addItem($item);
-//          $total += $ProductDetails->price * $product['amount'];
-//      }
-
-      $amount = PayPal::Amount();
-      $amount->setCurrency('CHF');
-      $amount->setTotal($total);
-
-      $transaction = PayPal::Transaction();
-      $transaction->setAmount($amount);
-      $transaction->setItemList($itemList);
-      $transaction->setDescription('Payment description');
-      $transaction->setInvoiceNumber(uniqid());
+        $transaction = PayPal::Transaction();
+        $transaction->setAmount($amount);
+        $transaction->setItemList($itemList);
+        $transaction->setDescription('Payment description');
+        $transaction->setInvoiceNumber(uniqid());
 
 
-      $redirectUrls = PayPal:: RedirectUrls();
+        $redirectUrls = PayPal:: RedirectUrls();
 
-      $cryptOrderID = Crypt::encrypt($order->id);
-      $redirectUrls->setReturnUrl(action('OrderController@paypalDone', ['order' => $cryptOrderID]));
-      $redirectUrls->setCancelUrl(action('OrderController@paypalCancel', ['order' => $cryptOrderID]));
+        $cryptOrderID = Crypt::encrypt($order->id);
+        $redirectUrls->setReturnUrl(action('OrderController@paypalDone', ['order' => $cryptOrderID]));
+        $redirectUrls->setCancelUrl(action('OrderController@paypalCancel', ['order' => $cryptOrderID]));
 
 
-      $payment = PayPal::Payment();
-      $payment->setIntent('sale');
-      $payment->setPayer($payer);
-      $payment->setRedirectUrls($redirectUrls);
-      $payment->setTransactions(array($transaction));
+        $payment = PayPal::Payment();
+        $payment->setIntent('sale');
+        $payment->setPayer($payer);
+        $payment->setRedirectUrls($redirectUrls);
+        $payment->setTransactions(array($transaction));
 
-      try{
+        try{
           $response = $payment->create($this->_apiContext);
           $redirectUrl = $response->links[1]->href;
+          DB::commit();
 
-          //dd($redirectUrl);
           return response()->json(['link' =>$redirectUrl], 200);
-      } catch (Exception $ex) {
+        } catch (Exception $ex) {
           return response()->json(['error' => 'paypal error'], 200);
-          //$order->products()->detach();
-          //$order->delete();
+        }
+      } else if ($request->get('payment_type_id') === 1){
+        DB::commit();
+        //TODO send email
+//        Mail::to($newuser->email, $newuser->username)->send(new PaypalConfirmation($newuser)); //TODO test
       }
+    }catch (\Throwable $e) {
+      DB::rollback();
+      return response()->json(['error'=>'request was well-formed but was unable to be followed due to semantic errors'], 422);
     }
+  }
 
     public function paypalDone(Request $request)
     {
-        $id = $request->get('paymentId');
-        $payer_id = $request->get('PayerID');
+      $id = $request->get('paymentId');
+      $payer_id = $request->get('PayerID');
 
-        $paymentExecution = PayPal::PaymentExecution();
-        $paymentExecution->setPayerId($payer_id);
+      $paymentExecution = PayPal::PaymentExecution();
+      $paymentExecution->setPayerId($payer_id);
 
-        $order = Order::find(Crypt::decrypt($request->get('order')));
-        try {
-            $payment = PayPal::getById($id, $this->_apiContext);
-            $executePayment = $payment->execute($paymentExecution, $this->_apiContext);
+      $order = Order::find(Crypt::decrypt($request->get('order')));
+      try {
+        $payment = PayPal::getById($id, $this->_apiContext);
+        $executePayment = $payment->execute($paymentExecution, $this->_apiContext);
 
-            $order->state = 1;
-            //TODO change the number sold, increment
+        $order->state = 1;
+        $order->paypal_paymentId = $id;
+        $order->save();
 
-            $order->paypal_paymentId = $id;
+//        Mail::to($newuser->email, $newuser->username)->send(new BankingWireTransfertMail($newuser, $total)); //TODO send amount
+        return response()->json(['success' => 'payment success'], 200);
+      } catch (Exception $ex){
+        DB::beginTransaction();
+        try{
+          $order = Order::find(Crypt::decrypt($request->get('order')));
+          foreach($order->products()->get() as $product){
+            $product->sold -= $product->pivot->amount;
+            $product->save();
+          }
 
-            $order->save();
-            Mail::to($newuser->email, $newuser->username)->send(new BankingWireTransfertMail($newuser, $total)); //TODO send amount
+          $order->products()->detach();
+          $order->delete();
 
-
-            return response()->json(['success' => 'payment success'], 200);
-        } catch (Exception $ex){
-            $order->products()->detach();
-            $order->delete();
+          DB::commit();
+          return response()->json(['error' => 'payment cancel'], 200);
+        }catch (\Throwable $e) {
+          DB::rollback();
+          return response()->json(['error'=>'transaction error'], 422);
         }
+      }
     }
 
     public function paypalCancel(Request $request)
     {
+      DB::beginTransaction();
+      try{
         $order = Order::find(Crypt::decrypt($request->get('order')));
+        foreach($order->products()->get() as $product){
+          $product->sold -= $product->pivot->amount;
+          $product->save();
+        }
+
         $order->products()->detach();
         $order->delete();
 
+        DB::commit();
         return response()->json(['error' => 'payment cancel'], 200);
+      }catch (\Throwable $e) {
+       DB::rollback();
+       return response()->json(['error'=>'transaction error'], 422);
+      }
     }
 
 }
