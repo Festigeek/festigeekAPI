@@ -145,7 +145,7 @@ class OrderController extends Controller
           $redirectUrl = $response->links[1]->href;
           DB::commit();
 
-          return response()->json(['link' =>$redirectUrl], 200);
+          return response()->json(['success' => 'Ready for PayPal transaction', 'link' =>$redirectUrl], 200);
         } catch (Exception $ex) {
           return response()->json(['error' => 'paypal error'], 200);
         }
@@ -186,7 +186,8 @@ class OrderController extends Controller
 
         $user = $order->user()->get()[0];
         Mail::to($user->email, $user->username)->send(new PaypalConfirmation($user, $order, $total));
-        return response()->json(['success' => 'payment success'], 200);
+//        return response()->json(['success' => 'payment success'], 200);
+        return redirect('https://www.festigeek.ch/#!/checkout?state=success');
       } catch (Exception $ex){
         DB::beginTransaction();
         try{
@@ -200,10 +201,10 @@ class OrderController extends Controller
           $order->delete();
 
           DB::commit();
-          return response()->json(['error' => 'payment cancel'], 200);
+          return redirect('https://www.festigeek.ch/#!/checkout?state=error');
         }catch (\Throwable $e) {
           DB::rollback();
-          return response()->json(['error'=>'transaction error'], 422);
+          return redirect('https://www.festigeek.ch/#!/checkout?state=error');
         }
       }
     }
@@ -222,10 +223,10 @@ class OrderController extends Controller
         $order->delete();
 
         DB::commit();
-        return response()->json(['error' => 'payment cancel'], 200);
+        return redirect('https://www.festigeek.ch/#!/checkout?state=cancelled');
       }catch (\Throwable $e) {
        DB::rollback();
-       return response()->json(['error'=>'transaction error'], 422);
+        return redirect('https://www.festigeek.ch/#!/checkout?state=error');
       }
     }
 
