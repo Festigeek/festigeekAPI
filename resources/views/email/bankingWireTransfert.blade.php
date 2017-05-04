@@ -4,8 +4,9 @@
     <meta charset="utf-8">
     <style>
       table {
-        width:50%;
+        width:100%;
       }
+
       table, th, td {
         border: 1px solid black;
         border-collapse: collapse;
@@ -32,7 +33,7 @@
     <div>
       <p>
         Salut {{ $username }}, <br/><br/>
-        Félécitation tu es inscrit à la LAN FestiGeek 2017 !<br/>
+        Félécitation! Tu es inscrit à la LAN FestiGeek 2017 !<br/>
         Ou enfin presque (reste encore à régler la facture ;) )
       </p>
 
@@ -44,7 +45,7 @@
         <tr>
           <th>Nom</th>
           <th>Quantité</th>
-          <th>Prix unitaire</th>
+          <th>Prix</th>
           <th>Total</th>
         </tr>
 
@@ -52,22 +53,22 @@
           <tr>
             <td>{{$product->name}}</td>
             <td>{{$product->pivot->amount}}x</td>
-            <td>{{$product->price}}.-</td>
-            <td>{{$product->pivot->amount * $product->price}}.-</td>
+            <td style="text-align:right;">{{$product->price}}.-</td>
+            <td style="text-align:right;">{{$product->pivot->amount * $product->price}}.-</td>
           </tr>
         @endforeach
         <tr>
           <td>Total</td>
           <td></td>
           <td></td>
-          <td><strong>{{$total}} CHF</strong></td>
+          <td style="text-align:right;"><strong>{{$total}} CHF</strong></td>
         </tr>
       </table>
 
       <p>
         Afin de valider ton inscription, nous te demandons d'effectuer un transfert de <strong>{{ $total }} CHF</strong> avant le 22 mai à<br/>
 
-        <div style="width:25%; border:2px solid black;padding:5px;">
+        <div style="width:100%; border:2px solid black;padding:5px;">
           PostFinance SA<br />
           Migerstrasse 20, 3030 Berne<br />
           FestiGeek<br />
@@ -76,7 +77,7 @@
       </p>
 
       <p>
-        Si tu as des qusetions, n'hésites pas à nous contacter sur <a href="https://www.facebook.com/festigeek.yverdon/">Facebook</a> ou <a href="https://discord.gg/QQ2KEUY">Discord</a>.<br>
+        Si tu as des questions, n'hésites-pas à nous contacter sur <a href="https://www.facebook.com/festigeek.yverdon/">Facebook</a> ou <a href="https://discord.gg/QQ2KEUY">Discord</a>.<br>
         On se réjouit de te voir à la LAN.
       </p>
 
