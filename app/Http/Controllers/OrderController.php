@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\DB;
 
 use App\Mail\BankingWireTransfertMail;
 use App\Mail\PaypalConfirmation;
+use Illuminate\Support\Facades\Mail;
 
 use JWTAuth;
 
@@ -128,7 +129,8 @@ class OrderController extends Controller
         $redirectUrls = PayPal:: RedirectUrls();
 
         $cryptOrderID = Crypt::encrypt($order->id);
-        $redirectUrls->setReturnUrl(action('OrderController@paypalDone', ['order' => $cryptOrderID]));
+        $cryptTotal = Crypt::encrypt($total);
+        $redirectUrls->setReturnUrl(action('OrderController@paypalDone', ['order' => $cryptOrderID, 'total' => $cryptTotal]));
         $redirectUrls->setCancelUrl(action('OrderController@paypalCancel', ['order' => $cryptOrderID]));
 
 
@@ -148,14 +150,20 @@ class OrderController extends Controller
           return response()->json(['error' => 'paypal error'], 200);
         }
       } else if ($request->get('payment_type_id') === 1){
+
+        $user = $order->user()->get()[0];
+        Mail::to($user->email, $user->username)->send(new BankingWireTransfertMail($user, $order, $total));
         DB::commit();
-        //TODO send email
-//        Mail::to($newuser->email, $newuser->username)->send(new PaypalConfirmation($newuser)); //TODO test
+        return response()->json(['success' => 'Subscription valid'], 200);
       }
-    }catch (\Throwable $e) {
+    }catch (Exception $e) {
       DB::rollback();
       return response()->json(['error'=>'request was well-formed but was unable to be followed due to semantic errors'], 422);
     }
+//    }catch (\Throwable $e) {
+//      DB::rollback();
+//      return response()->json(['error'=>'request was well-formed but was unable to be followed due to semantic errors'], 422);
+//    }
   }
 
     public function paypalDone(Request $request)
@@ -167,6 +175,7 @@ class OrderController extends Controller
       $paymentExecution->setPayerId($payer_id);
 
       $order = Order::find(Crypt::decrypt($request->get('order')));
+      $total = Crypt::decrypt($request->get('total'));
       try {
         $payment = PayPal::getById($id, $this->_apiContext);
         $executePayment = $payment->execute($paymentExecution, $this->_apiContext);
@@ -175,7 +184,8 @@ class OrderController extends Controller
         $order->paypal_paymentId = $id;
         $order->save();
 
-//        Mail::to($newuser->email, $newuser->username)->send(new BankingWireTransfertMail($newuser, $total)); //TODO send amount
+        $user = $order->user()->get()[0];
+        Mail::to($user->email, $user->username)->send(new PaypalConfirmation($user, $order, $total));
         return response()->json(['success' => 'payment success'], 200);
       } catch (Exception $ex){
         DB::beginTransaction();

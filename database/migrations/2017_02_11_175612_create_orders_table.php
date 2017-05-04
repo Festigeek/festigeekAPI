@@ -21,6 +21,7 @@ class CreateOrdersTable extends Migration
             $table->integer('event_id')->unsigned();
             $table->integer('payment_type_id')->unsigned();
             $table->string('paypal_paymentID', 30)->nullable();
+            $table->string('code_lan', 20)->nullable();
             $table->binary('data')->nullable();
             $table->timestamps();
 

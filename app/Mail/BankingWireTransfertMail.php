@@ -2,6 +2,8 @@
 
 namespace App\Mail;
 
+use App\User;
+use App\Order;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
@@ -17,15 +19,19 @@ class BankingWireTransfertMail extends Mailable
        * @var User
        */
     protected $user;
+    protected $order;
+    protected $total;
 
     /**
      * Create a new message instance.
      *
      * @return void
      */
-    public function __construct(User $user)
+    public function __construct(User $user, Order $order, $total)
     {
         $this->user = $user;
+        $this->order = $order;
+        $this->total = $total;
     }
     /**
      * Build the message.
@@ -35,9 +41,10 @@ class BankingWireTransfertMail extends Mailable
     public function build()
     {
       return $this->view('email.bankingWireTransfert')
-        ->subject(Lang::get('festigeek.notify_registration'))
+        ->subject('Confirmation de ton inscription')
         ->with([
-          'registration_token' => $this->user->registration_token,
+          'total' => $this->total,
+          'order' => $this->order,
           'username' => $this->user->username
         ]);
     }
