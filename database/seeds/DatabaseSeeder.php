@@ -64,6 +64,7 @@ class DatabaseSeeder extends Seeder
         User::create(['username' => 'User', 'email' => 'user@festigeek.ch', 'password' => '1234', 'activated' => 1, 'birthdate' => '1998-08-27']);
         User::create(['username' => 'Drupal', 'email' => 'drupal@festigeek.ch', 'drupal_password' => '$S$DBJ/pPIJxOOl6qX7Cd09KtwzeHo75xYw.n3nVPiz3g8wcjdNAUO1', 'activated' => 0, 'birthdate' => '2000-01-01']);
 
+//      User::create(['username' => 'Bradock', 'email' => 'nbutticazleal@gmail.com', 'password' => '1234', 'activated' => 1, 'birthdate' => '1998-08-27']);
         // Adresses
 
 //        Address::create(['user_id' => '1', 'country_id' => '229',  'street' => 'Route de Cheseaux 1',  'npa' => '1400',  'city' => 'Yverdon-Les-Bains']);
@@ -92,6 +93,7 @@ class DatabaseSeeder extends Seeder
         $p4 = Product::create(['name' => 'Animations', 'description' => 'Place joueur LAN 2017.', 'price' => '20.00', 'quantity_max' => '6', 'sold' => '0', 'event_id' => 1, 'product_type_id' => 1, 'need_team'=>0]);
         $p5 = Product::create(['name' => 'Burger', 'description' => "Bon d'achat pour un Burger Festigeek !", 'price' => '13.00', 'product_type_id' => 2, 'sold' => '0', 'event_id' => 1, 'need_team'=>0]);
         $p6 = Product::create(['name' => 'Petit-déjeuner', 'description' => "Bon d'achat pour un petit-déjeuner.", 'price' => '5.00', 'product_type_id' => 2, 'sold' => '0', 'event_id' => 1, 'need_team'=>0]);
+        Product::create(['name' => 'Burger Gratuit', 'description' => "Bon pour un Burger Festigeek gratuit.", 'price' => '0.00', 'product_type_id' => 2, 'sold' => '0', 'event_id' => 1, 'need_team'=>0]);
 
         Product::create(['name' => 'Donation', 'description' => 'Donation pour l\'association.', 'price' => '0.00', 'product_type_id' => '3']);
 

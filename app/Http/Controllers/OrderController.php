@@ -62,6 +62,23 @@ class OrderController extends Controller
 		  $total = 0;
 		  $nbSubscription = 0;
 
+		  //TODO add product_type => bon
+		  if(array_search(7, array_column($products, 'product_id')))
+        return response()->json(['error' => 'Go fuck yourself'], 422);
+
+		  //if we got a winner
+		  if(false){
+		    //check if the user has order a burger (in that case we subtract a burger)
+        $key = array_search(5, array_column($products, 'product_id'));
+        if($key) {
+          --$products[$key]['amount'];
+          if ($products[$key]['amount'] == 0)
+            unset($products[$key]);
+        }
+
+        array_push($products, ['product_id' => 7, 'amount' => 1]);
+      }
+
 		  //TODO find better way than a foreach
 		  foreach ($products as $product){
 			  $ProductDetails = Product::findOrFail($product['product_id']);
