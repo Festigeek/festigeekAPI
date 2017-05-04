@@ -27,55 +27,54 @@
   </style>
 </head>
 <body>
-<h2>Confirmation de ton inscription</h2>
+  <h2>Confirmation de ton inscription</h2>
 
-<div>
-  <p>
-    Salut {{ $username }}, <br/><br/>
-    Félécitation tu es inscrit à la LAN FestiGeek 2017 !<br/>
-    On a bien reçu ton payment PayPal MERCI !
-  </p>
+  <div>
+    <p>
+      Salut {{ $username }}, <br/><br/>
+      Félicitation tu es inscrits à la LAN FestiGeek 2017 !<br/>
+      On a bien reçu ton paiement PayPal, MERCI !
+    </p>
 
-  <p>
-    Voici le récapitulatif de ta commande<br/>
-  </p>
+    <p>
+      Voici le récapitulatif de ta commande:<br/>
+    </p>
 
-  <table id="t01">
-    <tr>
-      <th>Nom</th>
-      <th>Quantité</th>
-      <th>Prix unitaire</th>
-      <th>Total</th>
-    </tr>
+    <table id="t01">
+      <tr>
+        <th>Nom</th>
+        <th>Quantité</th>
+        <th>Prix unitaire</th>
+        <th>Total</th>
+      </tr>
 
-    @foreach ($order->products()->get() as $product)
-    <tr>
-      <td>{{$product->name}}</td>
-      <td>{{$product->pivot->amount}}x</td>
-      <td>{{$product->price}}.-</td>
-      <td>{{$product->pivot->amount * $product->price}}.-</td>
-    </tr>
-    @endforeach
-    <tr>
-      <td>Total</td>
-      <td></td>
-      <td></td>
-      <td><strong>{{$total}} CHF</strong></td>
-    </tr>
-  </table>
+      @foreach ($order->products()->get() as $product)
+      <tr>
+        <td>{{ $product->name }}</td>
+        <td style="text-align: center;">{{ $product->pivot->amount }}</td>
+        <td style="text-align: right;">{{ number_format($product->price, 2) }} CHF</td>
+        <td style="text-align: right;">{{ number_format($product->pivot->amount * $product->price, 2) }} CHF</td>
+      </tr>
+      @endforeach
+      <tr>
+        <td>Total</td>
+        <td></td>
+        <td></td>
+        <td><strong>{{ number_format($total, 2) }} CHF</strong></td>
+      </tr>
+    </table>
 
-  <p>
-    Si tu as des qusetions, n'hésites pas à nous contacter sur <a href="https://www.facebook.com/festigeek.yverdon/">Facebook</a> ou <a href="https://discord.gg/QQ2KEUY">Discord</a>.<br>
-    On se réjouit de te voir à la LAN.
-  </p>
+    <p>
+      Si tu as des qusetions, n'hésites pas à nous contacter sur <a href="https://www.facebook.com/festigeek.yverdon/">Facebook</a> ou <a href="https://discord.gg/QQ2KEUY">Discord</a>.<br>
+      On se réjouit de te voir à la LAN.
+    </p>
 
-  <p>
-    A+<br/>
-    L'équipe FestiGeek
-  </p>
+    <p>
+      A+<br/>
+      L'équipe FestiGeek
+    </p>
 
-</div>
-
+  </div>
 </body>
 </html>
 

@@ -33,12 +33,12 @@
     <div>
       <p>
         Salut {{ $username }}, <br/><br/>
-        Félécitation! Tu es inscrit à la LAN FestiGeek 2017 !<br/>
-        Ou enfin presque (reste encore à régler la facture ;) )
+        Félicitation! Tu es inscrits à la LAN FestiGeek 2017 !<br/>
+        Où enfin presque, reste encore à régler la facture. ;)
       </p>
 
       <p>
-        Pour commencer voici le récapitulatif de ta commande<br/>
+        Pour commencer voiçi le récapitulatif de ta commande:<br/>
       </p>
 
       <table id="t01">
@@ -51,17 +51,17 @@
 
         @foreach ($order->products()->get() as $product)
           <tr>
-            <td>{{$product->name}}</td>
-            <td>{{$product->pivot->amount}}x</td>
-            <td style="text-align:right;">{{$product->price}}.-</td>
-            <td style="text-align:right;">{{$product->pivot->amount * $product->price}}.-</td>
+            <td>{{ $product->name}}</td>
+            <td style="text-align: center;">{{ $product->pivot->amount }}</td>
+            <td style="text-align:right;">{{ number_format($product->price, 2) }}.-</td>
+            <td style="text-align:right;">{{ number_format($product->pivot->amount * $product->price, 2) }}.-</td>
           </tr>
         @endforeach
         <tr>
           <td>Total</td>
           <td></td>
           <td></td>
-          <td style="text-align:right;"><strong>{{$total}} CHF</strong></td>
+          <td style="text-align:right;"><strong>{{ number_format($total, 2) }} CHF</strong></td>
         </tr>
       </table>
 
