@@ -52,11 +52,11 @@ class Team extends Model
     }
 
     /**
-     * Return a base_64 generated qrcode based on user informations
+     * Return a simplified users array for each teams
      *
      * @return String
      */
     public function getUsersAttribute() {
-        return $this->users()->get(['user_id', 'username'])->makeHidden(['QRCode', 'address', 'pivot']);
+        return $this->users()->get(['user_id', 'username'])->makeHidden(['QRCode', 'pivot']);
     }
 }
