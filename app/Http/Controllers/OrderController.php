@@ -61,13 +61,15 @@ class OrderController extends Controller
 	    $products = $request->get('products');
 		  $total = 0;
 		  $nbSubscription = 0;
+		  $winner = false;
 
 		  //TODO add product_type => bon
 		  if(array_search(7, array_column($products, 'product_id')))
         return response()->json(['error' => 'Go fuck yourself'], 422);
 
 		  //if we got a winner
-		  if(false){
+		  if(true){
+		    $winner = true;
 		    //check if the user has order a burger (in that case we subtract a burger)
         $key = array_search(5, array_column($products, 'product_id'));
         if($key) {
@@ -171,7 +173,10 @@ class OrderController extends Controller
         $user = $order->user()->get()[0];
         Mail::to($user->email, $user->username)->send(new BankingWireTransfertMail($user, $order, $total));
         DB::commit();
-        return response()->json(['success' => 'Subscription valid'], 200);
+        if($winner)
+          return response()->json(['success' => 'Bank transfer subscription valid', 'state' => 'win'], 200);
+        else
+          return response()->json(['success' => 'Bank transfer subscription valid', 'state' => 'success'], 200);
       }
     }catch (Exception $e) {
       DB::rollback();
@@ -201,10 +206,13 @@ class OrderController extends Controller
         $order->paypal_paymentId = $id;
         $order->save();
 
+        $win = $order->products()->where('product_id', 7)->count();
         $user = $order->user()->get()[0];
         Mail::to($user->email, $user->username)->send(new PaypalConfirmation($user, $order, $total));
-//        return response()->json(['success' => 'payment success'], 200);
-        return redirect('https://www.festigeek.ch/#!/checkout?state=success');
+        if($win)
+          return redirect('https://www.festigeek.ch/#!/checkout?state=win');
+        else
+          return redirect('https://www.festigeek.ch/#!/checkout?state=success');
       } catch (Exception $ex){
         DB::beginTransaction();
         try{
