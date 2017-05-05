@@ -33,12 +33,12 @@
     <div>
       <p>
         Salut {{ $username }}, <br/><br/>
-        Félicitation! Tu es inscrits à la LAN FestiGeek 2017 !<br/>
+        Félicitation! Tu es inscrit à la LAN FestiGeek 2017 !<br/>
         Où enfin presque, reste encore à régler la facture. ;)
       </p>
 
       <p>
-        Pour commencer voiçi le récapitulatif de ta commande:<br/>
+        Pour commencer voici le récapitulatif de ta commande:<br/>
       </p>
 
       <table id="t01">
@@ -66,7 +66,7 @@
       </table>
 
       <p>
-        Afin de valider ton inscription, nous te demandons d'effectuer un transfert de <strong>{{ $total }} CHF</strong> avant le 22 mai à<br/>
+        Afin de valider ton inscription, nous te demandons d'effectuer un transfert de <strong>{{ $total }} CHF</strong> avant le <strong>22 mai</strong> à<br/>
 
         <div style="width:100%; border:2px solid black;padding:5px;">
           PostFinance SA<br />
@@ -74,6 +74,7 @@
           FestiGeek<br />
           CH83 09000 0001 4484 0507
         </div>
+        <p><strong>Note importante:</strong> indique la référence numéro <strong>20{{ $order_id }}13</strong> lors de ton virement pour qu'on puisse identifier ton paiement!</p>
       </p>
 
       <p>
@@ -85,9 +86,7 @@
         A+<br/>
         L'équipe FestiGeek
       </p>
-<div>
-  <a href="https://discord.gg/QQ2KEUY"><img src="images/fg_discord.png" width="200px"></a>
-</div>
+
     </div>
 
   </body>
