@@ -57,6 +57,7 @@ class OrderController extends Controller
             DB::beginTransaction();
 
             $order = Order::create($data);
+            $order->data = json_encode($request->all());
             $products = $request->get('products');
             $total = 0;
             $nbSubscription = 0;
@@ -123,6 +124,7 @@ class OrderController extends Controller
                 $team->save();
                 $order->team()->attach($team->id, ['captain' => false, 'user_id' => $currentUser->id]);
             }
+            $order->save();
 
             //test if paypal or bank transfert Here
             if($request->get('payment_type_id') === 2){
