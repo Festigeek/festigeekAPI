@@ -85,7 +85,9 @@
         A+<br/>
         L'équipe FestiGeek
       </p>
-
+<div>
+  <a href="https://discord.gg/QQ2KEUY"><img src="images/fg_discord.png" width="200px"></a>
+</div>
     </div>
 
   </body>
