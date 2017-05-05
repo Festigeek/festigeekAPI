@@ -6,7 +6,7 @@ use App\Order;
 use App\Product;
 use App\ProductType;
 use App\Role;
-use App\Permission;
+use App\Configuration;
 use App\Team;
 use App\User;
 use App\PaymentType;
@@ -55,6 +55,10 @@ class DatabaseSeeder extends Seeder
 //        $editUser->save();
 //
 //        $admin->attachPermission($editUser);
+
+        // Configurations
+
+        Configuration::create(['name' => 'winner-timestamp', 'value' => time()]);
 
         // Users
 
