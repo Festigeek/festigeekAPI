@@ -27,6 +27,8 @@ Route::post('users/login', 'UserController@authenticate');
 Route::resource('users', 'UserController');
 Route::post('users', 'UserController@register');
 
+Route::get('users/{id}/orders', 'UserOrderController@getOrders');
+
 /*
  * Resource: Qrcode
  */
