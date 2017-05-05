@@ -137,11 +137,9 @@ class UserController extends Controller
      * @param  id id of the user to show
      * @return Response
      */
-    public function show($id) {
-//        $loggedUser = JWTAuth::user();
-
-        if($this->isAdminOrOwner($id)) {
-            $id = ($id === 'me') ? JWTAuth::user()->id : $id;
+    public function show($user_id) {
+        if($this->isAdminOrOwner($user_id)) {
+            $id = ($user_id === 'me') ? JWTAuth::user()->id : $user_id;
             try {
                 $user = User::findOrFail($id);
                 return response()->json($user);
@@ -151,21 +149,6 @@ class UserController extends Controller
             }
         }
         else abort(403);
-//
-//        if($id === 'me' || $loggedUser->id == $id) {
-//            $user = User::find($loggedUser->id);
-//            return response()->json($user);
-//        }
-//        else if($loggedUser->hasRole('admin')) {
-//            try {
-//                $user = User::findOrFail($id);
-//                return response()->json($user);
-//            }
-//            catch (\Exception $e) {
-//                return response()->json(['error' => 'User not found'], 404);
-//            }
-//        }
-//        else abort(403);
     }
 
     /**
@@ -175,11 +158,11 @@ class UserController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, $user_id)
     {
-        if($this->isAdminOrOwner($id)) {
+        if($this->isAdminOrOwner($user_id)) {
             try {
-                $id = ($id === 'me') ? JWTAuth::user()->id : $id;
+                $id = ($user_id === 'me') ? JWTAuth::user()->id : $user_id;
                 $user = User::findOrFail($id);
             }
             catch (\Exception $e) {
@@ -224,6 +207,20 @@ class UserController extends Controller
 
             $user->fill($inputs)->save();
             return response()->json($user);
+        }
+        else abort(403);
+    }
+
+    /**
+     * @param Request $request
+     * @param String $id
+     */
+    public function getOrders(Request $request, $user_id) {
+        // TODO: filtrer par state
+        if($this->isAdminOrOwner($user_id)) {
+            $id = ($user_id === 'me') ? JWTAuth::user()->id : $user_id;
+            $order = User::find($id)->orders()->get();
+            return response()->json($order);
         }
         else abort(403);
     }

@@ -2,6 +2,7 @@
 
 /* List of patterns */
 Route::pattern('id', '\d+');
+Route::pattern('user_id', '\d+|me');
 
 /*
 |--------------------------------------------------------------------------
@@ -24,10 +25,10 @@ Route::get('/', function() {
 Route::get('users/test', 'UserController@test');
 Route::get('users/activate', 'UserController@activation');
 Route::post('users/login', 'UserController@authenticate');
+Route::get('users/{user_id}/orders', 'UserController@getOrders');
+
 Route::resource('users', 'UserController');
 Route::post('users', 'UserController@register');
-
-Route::get('users/{id}/orders', 'UserOrderController@getOrders');
 
 /*
  * Resource: Qrcode

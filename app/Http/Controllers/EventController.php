@@ -28,21 +28,6 @@ class EventController extends Controller
         })->unique()->values();
 
         return response()->json($teams);
-
-//        $participations = null;
-//
-//        if($request->has('game'))
-//            $participations = Event::find($id)->participations()->where('product_id', $request->get('game'))->get();
-//        else
-//            $participations = Event::find($id)->participations()->get();
-//
-//        $teams = collect();
-//        foreach ($participations as $participation){
-//            $teams->push($participation->team->get()[0]);
-//
-//        }
-//
-//        return response()->json($teams->unique());
     }
 
     /**

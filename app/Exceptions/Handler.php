@@ -67,17 +67,17 @@ class Handler extends ExceptionHandler
             return response()->json(['error' => 'Wrong HTTP Method'], 405);
 
         // JWT Ecexptions
-        if ($exception instanceof \Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException ||
-            $exception->getPrevious() instanceof \Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException)
-            return response()->json(['error' => 'Token not provided'], 401);
+        if ($exception instanceof \Tymon\JWTAuth\Exceptions\TokenExpiredException ||
+            $exception->getPrevious() instanceof \Tymon\JWTAuth\Exceptions\TokenExpiredException)
+            return response()->json(['error' => 'Token has expired'], 401);
 
         if ($exception instanceof \Tymon\JWTAuth\Exceptions\TokenInvalidException ||
             $exception->getPrevious() instanceof \Tymon\JWTAuth\Exceptions\TokenInvalidException)
             return response()->json(['error' => 'Token is invalid'], 401);
 
-        if ($exception instanceof \Tymon\JWTAuth\Exceptions\TokenExpiredException ||
-            $exception->getPrevious() instanceof \Tymon\JWTAuth\Exceptions\TokenExpiredException)
-            return response()->json(['error' => 'Token has expired'], 401);
+        if ($exception instanceof \Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException ||
+            $exception->getPrevious() instanceof \Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException)
+            return response()->json(['error' => 'Token not provided'], 401);
 
         // Other Exceptions in production
         if (\App::environment('production'))
