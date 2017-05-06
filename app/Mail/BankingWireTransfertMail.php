@@ -42,7 +42,8 @@ class BankingWireTransfertMail extends Mailable
     {
       return $this->view('email.bankingWireTransfert')
         ->subject('Confirmation de ton inscription')
-        ->with([
+        ->with([  
+          'order_id'=>$this->order->id,
           'total' => $this->total,
           'order' => $this->order,
           'username' => $this->user->username
