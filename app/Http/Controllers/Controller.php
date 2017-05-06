@@ -37,8 +37,8 @@ class Controller extends BaseController
             config('services.paypal.secret'));
 
         $this->_apiContext->setConfig(array(
-            'mode' => 'sandbox',
-            'service.EndPoint' => 'https://api.sandbox.paypal.com',
+            'mode' => config('services.paypal.mode'),
+            'service.EndPoint' => config('services.paypal.end_point'),
             'http.ConnectionTimeOut' => 60,
             'log.LogEnabled' => true,
             'log.FileName' => storage_path('logs/paypal.log'),
