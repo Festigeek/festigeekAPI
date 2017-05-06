@@ -36,12 +36,6 @@
       On a bien reçu ton paiement PayPal, MERCI !
     </p>
 
-<!--    <p>-->
-<!--      On à un gagnant !<br/>-->
-<!--      Bravo à toi tu viens de gagner un burger gratos-->
-<!--      <img src="{{ $message->embed(asset('assets/images/burger.png')) }}" />-->
-<!--    </p>-->
-
     <p>
       Voici le récapitulatif de ta commande:<br/>
     </p>
