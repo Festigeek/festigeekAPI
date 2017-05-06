@@ -52,7 +52,6 @@ class OrderController extends Controller
         if(!$request->has('products'))
             return response()->json(['error'=>'Please select products']);
 
-//    DB::beginTransaction();
         try{
             DB::beginTransaction();
 
@@ -70,7 +69,7 @@ class OrderController extends Controller
 
             $winnerTimestamp = Configuration::where('name', 'winner-timestamp')->first();
 
-            if(time() > $winnerTimestamp->value && $winnerTimestamp->value !== 0) {
+            if(time() > $winnerTimestamp->value && $winnerTimestamp->value != 0) {
                 $winner = true;
                 //check if the user has order a burger (in that case we subtract a burger)
                 $key = array_search(5, array_column($products, 'product_id'));
@@ -185,14 +184,10 @@ class OrderController extends Controller
                 else
                     return response()->json(['success' => 'Bank transfer subscription valid', 'state' => 'success'], 200);
             }
-        }catch (Exception $e) {
-            DB::rollback();
-            return response()->json(['error'=>'request was well-formed but was unable to be followed due to semantic errors'], 422);
+        }catch (\Throwable $e) {
+          DB::rollback();
+          return response()->json(['error'=>'request was well-formed but was unable to be followed due to semantic errors'], 422);
         }
-//    }catch (\Throwable $e) {
-//      DB::rollback();
-//      return response()->json(['error'=>'request was well-formed but was unable to be followed due to semantic errors'], 422);
-//    }
     }
 
     public function paypalDone(Request $request)
