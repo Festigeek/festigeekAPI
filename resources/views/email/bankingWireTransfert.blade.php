@@ -34,7 +34,7 @@
       <p>
         Salut {{ $username }}, <br/><br/>
         Félicitation! Tu es inscrit à la LAN FestiGeek 2017 !<br/>
-        Où enfin presque, reste encore à régler la facture. ;)
+        Ou enfin presque, reste encore à régler la facture. ;)
       </p>
 
       <p>
