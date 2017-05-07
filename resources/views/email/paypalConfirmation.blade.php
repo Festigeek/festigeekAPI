@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <style>
     table {
-      width:50%;
+      width: 650px;
     }
     table, th, td {
       border: 1px solid black;
@@ -42,25 +42,23 @@
 
     <table id="t01">
       <tr>
-        <th>Nom</th>
-        <th>Quantité</th>
-        <th>Prix unitaire</th>
-        <th>Total</th>
+        <th style="text-align: center;">Nom</th>
+        <th style="text-align: center;">Quantité</th>
+        <th style="text-align: center;">Prix</th>
+        <th style="text-align: center;">Total</th>
       </tr>
 
       @foreach ($order->products()->get() as $product)
       <tr>
         <td>{{ $product->name }}</td>
         <td style="text-align: center;">{{ $product->pivot->amount }}</td>
-        <td style="text-align: right;">{{ number_format($product->price, 2) }} CHF</td>
-        <td style="text-align: right;">{{ number_format($product->pivot->amount * $product->price, 2) }} CHF</td>
+        <td style="text-align: right;">{{ number_format($product->price, 2) }}</td>
+        <td style="text-align: right;">{{ number_format($product->pivot->amount * $product->price, 2) }}</td>
       </tr>
       @endforeach
       <tr>
-        <td>Total</td>
-        <td></td>
-        <td></td>
-        <td><strong>{{ number_format($total, 2) }} CHF</strong></td>
+        <td colspan="3">Total</td>
+        <td style="text-align: right;"><strong>{{ number_format($total, 2) }} CHF</strong></td>
       </tr>
     </table>
 

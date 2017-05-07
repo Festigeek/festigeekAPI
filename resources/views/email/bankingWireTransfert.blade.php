@@ -4,9 +4,8 @@
     <meta charset="utf-8">
     <style>
       table {
-        width:100%;
+        width: 650px;
       }
-
       table, th, td {
         border: 1px solid black;
         border-collapse: collapse;
@@ -43,37 +42,35 @@
 
       <table id="t01">
         <tr>
-          <th>Nom</th>
-          <th>Quantité</th>
-          <th>Prix</th>
-          <th>Total</th>
+          <th style="text-align: center;">Nom</th>
+          <th style="text-align: center;">Quantité</th>
+          <th style="text-align: center;">Prix</th>
+          <th style="text-align: center;">Total</th>
         </tr>
 
         @foreach ($order->products()->get() as $product)
-          <tr>
-            <td>{{ $product->name}}</td>
-            <td style="text-align: center;">{{ $product->pivot->amount }}</td>
-            <td style="text-align:right;">{{ number_format($product->price, 2) }}.-</td>
-            <td style="text-align:right;">{{ number_format($product->pivot->amount * $product->price, 2) }}.-</td>
-          </tr>
+        <tr>
+          <td>{{ $product->name }}</td>
+          <td style="text-align: center;">{{ $product->pivot->amount }}</td>
+          <td style="text-align: right;">{{ number_format($product->price, 2) }}</td>
+          <td style="text-align: right;">{{ number_format($product->pivot->amount * $product->price, 2) }}</td>
+        </tr>
         @endforeach
         <tr>
-          <td>Total</td>
-          <td></td>
-          <td></td>
-          <td style="text-align:right;"><strong>{{ number_format($total, 2) }} CHF</strong></td>
+          <td colspan="3">Total</td>
+          <td style="text-align: right;"><strong>{{ number_format($total, 2) }} CHF</strong></td>
         </tr>
       </table>
 
       <p>
         Afin de valider ton inscription, nous te demandons d'effectuer un transfert de <strong>{{ $total }} CHF</strong> avant le <strong>22 mai</strong> à<br/>
 
-        <div style="width:100%; border:2px solid black;padding:5px;">
+        <span style="display: inline-block; border: 2px solid black; padding: 8px; margin-top: 8px;">
           PostFinance SA<br />
           Migerstrasse 20, 3030 Berne<br />
           FestiGeek<br />
           CH83 09000 0001 4484 0507
-        </div>
+        </span>
         <p><strong>Note importante:</strong> indique la référence numéro <strong>20{{ $order_id }}13</strong> lors de ton virement pour qu'on puisse identifier ton paiement!</p>
       </p>
 
