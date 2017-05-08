@@ -100,7 +100,7 @@ class Handler extends ExceptionHandler
         if($exception instanceof \PayPal\Exception\PayPalMissingCredentialException)
             return response()->json(['error' => 'PayPal Missing Credential Exception'], 502);
 
-//        dd($exception);
+        dd($exception);
         //return parent::render($request, $exception);
 
         if (method_exists('getStatusCode', $exception))
