@@ -25,7 +25,7 @@ class EventController extends Controller
           return $order->team()->get();
         })->flatten()->filter(function($value) {
             return !is_null($value);
-        })->unique()->values();
+        })->unique('id')->values();
 
         return response()->json($teams);
     }
