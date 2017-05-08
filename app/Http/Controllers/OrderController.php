@@ -24,7 +24,7 @@ class OrderController extends Controller
   {
     parent::__construct();
     $this->middleware('jwt.auth', ['except' => ['paypalDone', 'paypalCancel']]);
-    $this->middleware('role:admin', ['only' => ['index']]);
+    $this->middleware('role:admin', ['only' => ['index', 'delete']]);
   }
 
   /*
