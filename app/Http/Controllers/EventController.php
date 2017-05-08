@@ -22,7 +22,7 @@ class EventController extends Controller
         $teams = $orders->filter(function($value) use ($game) {
             return (!is_null($game)) ? $value->products()->where('product_id', $game)->count() > 0 : true;
         })->map(function($order){
-            return $order->team();
+          return $order->team()->get();
         })->filter(function($value) {
             return !is_null($value);
         })->unique()->values();
