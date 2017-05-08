@@ -67,19 +67,8 @@ class DatabaseSeeder extends Seeder
         User::create(['username' => 'User', 'email' => 'user@festigeek.ch', 'password' => '1234', 'activated' => 1, 'birthdate' => '1998-08-27']);
         User::create(['username' => 'Drupal', 'email' => 'drupal@festigeek.ch', 'drupal_password' => '$S$DBJ/pPIJxOOl6qX7Cd09KtwzeHo75xYw.n3nVPiz3g8wcjdNAUO1', 'activated' => 0, 'birthdate' => '2000-01-01']);
 
-        User::create(['username' => 'Bradock', 'email' => 'nbutticazleal@gmail.com', 'password' => '1234', 'activated' => 1, 'birthdate' => '1998-08-27']);
-      User::create(['username' => 'User1', 'email' => 'user1@festigeek.ch', 'password' => '1234', 'activated' => 1, 'birthdate' => '1998-08-27']);
-      User::create(['username' => 'User2', 'email' => 'user2@festigeek.ch', 'password' => '1234', 'activated' => 1, 'birthdate' => '1998-08-27']);
-      User::create(['username' => 'User3', 'email' => 'user3@festigeek.ch', 'password' => '1234', 'activated' => 1, 'birthdate' => '1998-08-27']);
-      User::create(['username' => 'User4', 'email' => 'user4@festigeek.ch', 'password' => '1234', 'activated' => 1, 'birthdate' => '1998-08-27']);
-      User::create(['username' => 'User5', 'email' => 'user5@festigeek.ch', 'password' => '1234', 'activated' => 1, 'birthdate' => '1998-08-27']);
-      User::create(['username' => 'User6', 'email' => 'user6@festigeek.ch', 'password' => '1234', 'activated' => 1, 'birthdate' => '1998-08-27']);
-      User::create(['username' => 'User7', 'email' => 'user7@festigeek.ch', 'password' => '1234', 'activated' => 1, 'birthdate' => '1998-08-27']);
-      User::create(['username' => 'User8', 'email' => 'user8@festigeek.ch', 'password' => '1234', 'activated' => 1, 'birthdate' => '1998-08-27']);
-      User::create(['username' => 'User9', 'email' => 'user9@festigeek.ch', 'password' => '1234', 'activated' => 1, 'birthdate' => '1998-08-27']);
-      User::create(['username' => 'User10', 'email' => 'user10@festigeek.ch', 'password' => '1234', 'activated' => 1, 'birthdate' => '1998-08-27']);
-
-      // Adresses
+//      User::create(['username' => 'Bradock', 'email' => 'nbutticazleal@gmail.com', 'password' => '1234', 'activated' => 1, 'birthdate' => '1998-08-27']);
+        // Adresses
 
 //        Address::create(['user_id' => '1', 'country_id' => '229',  'street' => 'Route de Cheseaux 1',  'npa' => '1400',  'city' => 'Yverdon-Les-Bains']);
 
@@ -101,7 +90,7 @@ class DatabaseSeeder extends Seeder
 
         // Products
 
-        $p1 = Product::create(['name' => 'League Of Legend', 'description' => 'Inscription LoL 2017.', 'price' => '20.00','quantity_max' => '9', 'sold' => '0', 'event_id' => 1, 'product_type_id' => 1, 'need_team'=>1]);
+        $p1 = Product::create(['name' => 'League Of Legend', 'description' => 'Inscription LoL 2017.', 'price' => '20.00','quantity_max' => '80', 'sold' => '0', 'event_id' => 1, 'product_type_id' => 1, 'need_team'=>1]);
         $p2 = Product::create(['name' => 'Overwatch', 'description' => 'Inscription Overwatch 2017.', 'price' => '20.00', 'quantity_max' => '48', 'sold' => '0', 'event_id' => 1, 'product_type_id' => 1, 'need_team'=>1]);
         $p3 = Product::create(['name' => 'Counter-Strike: GO', 'description' => 'Inscription CS:GO 2017.', 'price' => '20.00', 'quantity_max' => '40', 'sold' => '0', 'event_id' => 1, 'product_type_id' => 1, 'need_team'=>1]);
         $p4 = Product::create(['name' => 'Animations', 'description' => 'Place joueur LAN 2017.', 'price' => '20.00', 'quantity_max' => '6', 'sold' => '0', 'event_id' => 1, 'product_type_id' => 1, 'need_team'=>0]);
