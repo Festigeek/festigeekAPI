@@ -336,4 +336,49 @@ class OrderController extends Controller
     return redirect('https://www.festigeek.ch/#!/checkout?state=cancelled');
   }
 
+  public function delete($id){
+    //get order
+
+    DB::beginTransaction();
+        try{
+             $order = Order::find($id);
+             foreach($order->products()->get() as $product){
+                 $product->sold -= $product->pivot->amount;
+
+
+                 $product->save();
+             }
+
+             $order->products()->detach();
+             $order->delete();
+
+             DB::commit();
+             return response()->json(['success']);
+
+
+         }catch (\Throwable $e) {
+             DB::rollback();
+
+            return response()->json(['error'=>$e]);
+          }
+    // if(!$order){
+    //   return response()->json(['error'=>"order not found"]);
+    // }
+    // $products = $order->products;
+    //
+    // foreach ($products as $product) {
+    //   $order->products()->detach($product);
+    //   $amount = $product->amount;
+    //
+    //   $productObject = Product::find($product['id']);
+    //
+    //   $soldBeforeDelete = $productObject['sold'];
+    //   $soldAfterDelete = $soldBeforeDelete - $amount;
+    //
+    //   $productObject->update(['sold', $soldAfterDelete]);
+    // }
+        //$order->delete();
+    //return response()->json(['success']);
+  }
+
 }
