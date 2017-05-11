@@ -174,6 +174,7 @@ return [
         Laratrust\LaratrustServiceProvider::class,
         SimpleSoftwareIO\QrCode\QrCodeServiceProvider::class,
         'Netshell\Paypal\PaypalServiceProvider',
+        'Maatwebsite\Excel\ExcelServiceProvider',
 
         /*
          * Application Service Providers...
@@ -235,6 +236,7 @@ return [
         'QrCode' => SimpleSoftwareIO\QrCode\Facades\QrCode::class,
         'Laratrust'   => Laratrust\LaratrustFacade::class,
         'PayPal' => 'Netshell\Paypal\Facades\Paypal',
+        'Excel' => 'Maatwebsite\Excel\Facades\Excel',
     ],
 
 ];

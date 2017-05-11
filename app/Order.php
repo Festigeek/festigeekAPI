@@ -21,7 +21,16 @@ class Order extends Model
      * @var array
      */
     protected $hidden = [
-        'user_id'
+        'data'
+    ];
+
+    /**
+     * The attributes added to the model.
+     *
+     * @var array
+     */
+    protected $appends = [
+        'user', 'team', 'products', 'payment_type'
     ];
 
     /**
@@ -71,5 +80,41 @@ class Order extends Model
         catch(\Exception $e) {
             return null;
         }
+    }
+
+    /**
+     * Return the user entry
+     *
+     * @return String
+     */
+    public function getUserAttribute() {
+        return $this->user()->first()->makeHidden(['QRCode', 'lang', 'street2', 'updated_at', 'created_at']);
+    }
+
+    /**
+     * Return the team entry
+     *
+     * @return String
+     */
+    public function getTeamAttribute() {
+        return $this->team()->first();
+    }
+
+    /**
+     * Return the team entry
+     *
+     * @return String
+     */
+    public function getPaymentTypeAttribute() {
+        return $this->payment_type()->first()->makeHidden(['id', 'updated_at', 'created_at']);
+    }
+
+    /**
+     * Return a simplified products array for each order
+     *
+     * @return String
+     */
+    public function getProductsAttribute() {
+        return $this->products()->get(['products.id', 'name', 'price', 'product_type_id'])->makeHidden(['updated_at', 'created_at']);
     }
 }
