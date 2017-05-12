@@ -39,6 +39,7 @@ class OrderController extends Controller
             'Numéro de commande',
             'Nom',
             'Prénom',
+            'E-mail',
             'Nom d\'utilisateur',
             'Pseudo Steam',
             'Pseudo Riot',
@@ -62,29 +63,32 @@ class OrderController extends Controller
 
                 $sheet->appendRow($headers);
                 $orders->each(function ($item) use ($sheet) {
+
                     $age = ((new DateTime($item->user->birthdate))->diff(new DateTime()))->y;
-                    $total = floatval($item->products->sum('price'));
+                    $total = $item->products->filter(function($value) { return !is_null($value); })
+                        ->sum(function($value) { return $value->pivot->amount * $value->price; });
                     $tournoi = $item->products->first(function($val){ return $val->product_type_id == 1; });
                     $burgers = $item->products->first(function($val){ return $val->id == 5; });
                     $dejs = $item->products->first(function($val){ return $val->id == 6; });
                     $bGratuits = $item->products->first(function($val){ return $val->id == 7; });
 
                     $sheet->appendRow([
-                        '20' . $item->id . "13 (ID# $item->id)", // Numéro de commande
+                        "20" . $item->id . "13 (ID# $item->id)", // Numéro de commande
 
-                        $item->user->firstname, // Nom
-                        $item->user->lastname, // Prénom
+                        $item->user->lastname, // Nom
+                        $item->user->firstname, // Prénom
                         $item->user->username, // Nom d'utilisateur
-                        $item->user->lol_account, // Pseudo Steam
-                        $item->user->steamID64, // Pseudo Riot
+                        $item->user->email, // E-mail
+                        $item->user->steamID64.'', // Pseudo Steam
+                        $item->user->lol_account, // Pseudo Riot
                         $item->user->battleTag, // Battle TAG
 
                         !is_null($item->team) ? $item->team->name : '', // Nom de Team
-                        $tournoi->name . " (" . number_format($tournoi->price, 2, '.', '') . " chf)", // Participation tournoi principal
+                        $tournoi->name, // Participation tournoi principal
                         ($age<18)?'oui':'non',// Mineur
-                        !is_null($burgers) ? $burgers->pivot->amount . " (" . number_format($burgers->price, 2, '.', '') . " chf)" : '', // Burger
-                        !is_null($bGratuits) ? $bGratuits->pivot->amount  . " (" . number_format($bGratuits->price, 2, '.', '') . " chf)" : '', // Burger gratuit
-                        !is_null($dejs) ? $dejs->pivot->amount . " (" . number_format($dejs->price, 2, '.', '') . " chf)" : '', // Petit déj
+                        !is_null($burgers) ? $burgers->pivot->amount : '', // Burger
+                        !is_null($bGratuits) ? $bGratuits->pivot->amount : '', // Burger gratuit
+                        !is_null($dejs) ? $dejs->pivot->amount : '', // Petit déj
                         number_format($total, 2, '.', ''), // Montant total
                         $item->payment_type->name, // Moyen de paiement
                         $item->paypal_paymentID, // Paypal ID
