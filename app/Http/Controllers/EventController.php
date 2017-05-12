@@ -23,9 +23,9 @@ class EventController extends Controller
             return (!is_null($game)) ? $value->products()->where('product_id', $game)->count() > 0 : true;
         })->map(function($order){
           return $order->team()->get();
-        })->filter(function($value) {
+        })->flatten()->filter(function($value) {
             return !is_null($value);
-        })->unique()->values();
+        })->unique('id')->values();
 
         return response()->json($teams);
     }

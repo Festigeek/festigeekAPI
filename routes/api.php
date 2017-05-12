@@ -63,6 +63,7 @@ Route::post('orders', 'OrderController@create'); //creates a new order, based on
 
 Route::get('orders/done', 'OrderController@paypalDone');
 Route::get('orders/cancel', 'OrderController@paypalCancel');
+Route::resource('orders', 'OrderController');
 
 /*
  * ===============================================================================================================

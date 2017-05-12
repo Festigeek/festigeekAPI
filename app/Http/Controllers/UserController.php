@@ -69,7 +69,7 @@ class UserController extends Controller
     }
 
     /**
-     * create a new user and send a activation mail.
+     * Create a new user and send a activation mail.
      *
      * @param  Request  $request
      * @return Response
@@ -121,7 +121,7 @@ class UserController extends Controller
     //TODO: new end-point to re-generate a new couple of registration token / e-mail
 
     /**
-     * show all users.
+     * Show all users.
      *
      * @param  Request  $request
      * @return Response
