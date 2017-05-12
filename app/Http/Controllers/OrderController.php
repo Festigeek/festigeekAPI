@@ -39,8 +39,8 @@ class OrderController extends Controller
             'Numéro de commande',
             'Nom',
             'Prénom',
-            'E-mail',
             'Nom d\'utilisateur',
+            'E-mail',
             'Pseudo Steam',
             'Pseudo Riot',
             'Battle TAG',
@@ -54,6 +54,7 @@ class OrderController extends Controller
             'Moyen de paiement',
             'Paypal ID',
             'Statut paiement',
+            'Date de la commande',
             'Etudiants',
             'Présent'
         ];
@@ -93,6 +94,7 @@ class OrderController extends Controller
                         $item->payment_type->name, // Moyen de paiement
                         $item->paypal_paymentID, // Paypal ID
                         $item->state, // Statut paiement
+                        $item->created_at
                     ]);
                 });
 
