@@ -361,7 +361,24 @@ class OrderController extends Controller
 
             return response()->json(['error'=>$e]);
           }
-  
+    // if(!$order){
+    //   return response()->json(['error'=>"order not found"]);
+    // }
+    // $products = $order->products;
+    //
+    // foreach ($products as $product) {
+    //   $order->products()->detach($product);
+    //   $amount = $product->amount;
+    //
+    //   $productObject = Product::find($product['id']);
+    //
+    //   $soldBeforeDelete = $productObject['sold'];
+    //   $soldAfterDelete = $soldBeforeDelete - $amount;
+    //
+    //   $productObject->update(['sold', $soldAfterDelete]);
+    // }
+        //$order->delete();
+    //return response()->json(['success']);
   }
 
 }
