@@ -60,10 +60,11 @@ Route::get('events/{id}/products', 'EventController@products');
 
 Route::delete('orders/{id}', 'OrderController@delete');
 Route::post('orders', 'OrderController@create'); //creates a new order, based on type (paypal or banking)
-
+Route::get('orders', 'OrderController@index');
 Route::get('orders/done', 'OrderController@paypalDone');
 Route::get('orders/cancel', 'OrderController@paypalCancel');
-Route::resource('orders', 'OrderController');
+//Route::resource('orders', 'OrderController'); TODO later, for now, manually created routes
+Route::delete('orders/{id}', 'OrderController@destroy');
 
 /*
  * ===============================================================================================================

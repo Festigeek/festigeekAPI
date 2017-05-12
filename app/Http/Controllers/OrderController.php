@@ -430,7 +430,7 @@ class OrderController extends Controller
         return redirect('https://www.festigeek.ch/#!/checkout?state=cancelled');
     }
 
-    public function delete($id){
+    public function destroy($id){
         //get order
 
         DB::beginTransaction();
