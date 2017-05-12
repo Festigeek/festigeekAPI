@@ -79,7 +79,7 @@ class OrderController extends Controller
                         $item->user->steamID64, // Pseudo Riot
                         $item->user->battleTag, // Battle TAG
 
-                        $item->team->name, // Nom de Team
+                        !is_null($item->team) ? $item->team->name : '', // Nom de Team
                         $tournoi->name . " (" . number_format($tournoi->price, 2, '.', '') . " chf)", // Participation tournoi principal
                         ($age<18)?'oui':'non',// Mineur
                         !is_null($burgers) ? $burgers->pivot->amount . " (" . number_format($burgers->price, 2, '.', '') . " chf)" : '', // Burger
