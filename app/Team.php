@@ -57,6 +57,6 @@ class Team extends Model
      * @return String
      */
     public function getUsersAttribute() {
-        return $this->users()->get(['username'])->makeHidden(['QRCode', 'pivot']);
+        return $this->users()->get(['username', 'gender'])->makeHidden(['QRCode', 'pivot']);
     }
 }
