@@ -401,7 +401,7 @@ class OrderController extends Controller
                 $ProductDetails->sold += $product['amount'];
                 $ProductDetails->save();
                 $order->products()->save($ProductDetails, ['amount' => $product['amount']]);
-                $total += $ProductDetails->price * $product['amount'];
+                // $total += $ProductDetails->price * $product['amount'];
             }
 
             if (array_key_exists('team', $data)){
