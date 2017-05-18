@@ -26,7 +26,6 @@ class EventController extends Controller
         })->flatten()->filter(function($value) {
             return !is_null($value);
         })->unique('id')->sortBy('name')->values();
-        // ->sortBy('name'); // Marche pas... :(
 
         return response()->json($teams);
     }
