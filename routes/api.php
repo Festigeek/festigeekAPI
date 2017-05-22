@@ -63,6 +63,8 @@ Route::post('orders', 'OrderController@create'); //creates a new order, based on
 Route::get('orders', 'OrderController@index');
 Route::get('orders/done', 'OrderController@paypalDone');
 Route::get('orders/cancel', 'OrderController@paypalCancel');
+Route::patch('orders/{id}', 'OrderController@patch');
+Route::patch('orders/{order_id}/products/{product_id}', 'OrderController@consumeProduct');
 //Route::resource('orders', 'OrderController'); TODO later, for now, manually created routes
 Route::delete('orders/{id}', 'OrderController@destroy');
 

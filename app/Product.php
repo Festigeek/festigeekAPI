@@ -36,6 +36,6 @@ class Product extends Model
      */
     public function orders()
     {
-        return $this->belongsToMany('App\Order')->withPivot('amount', 'data');
+        return $this->belongsToMany('App\Order')->withPivot('amount', 'data', 'consume');
     }
 }
