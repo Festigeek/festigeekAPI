@@ -10,6 +10,13 @@ use Crypt;
 
 class QrcodeController extends Controller
 {
+    public function __construct()
+    {
+        parent::__construct();
+        $this->middleware('jwt.auth');
+        $this->middleware('role:admin|comite', ['only' => ['decrypt']]);
+    }
+
     /**
      * Return a newly created QRCode from payload sended.
      *
