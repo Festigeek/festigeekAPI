@@ -17,12 +17,14 @@ class EventController extends Controller
     public function teams(Request $request, $id){
 
         $game = ($request->has('game')) ? $request->get('game') : null;
+        $strict = ($request->has('strict')) ? $request->get('strict') : null;
         $orders = Order::where('event_id', $id)->get();
 
         $teams = $orders->filter(function($value) use ($game) {
             return (!is_null($game)) ? $value->products()->where('product_id', $game)->count() > 0 : true;
-        })->map(function($order){
-          return $order->team()->get();
+        })->map(function($order) use ($game, $strict) {
+            $teams = $order->team()->get();
+            return $teams;
         })->flatten()->filter(function($value) {
             return !is_null($value);
         })->unique('id')->sortBy('name')->values();

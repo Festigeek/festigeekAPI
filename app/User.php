@@ -5,17 +5,17 @@ namespace App;
 use Hash;
 use Crypt;
 
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use Tymon\JWTAuth\Contracts\JWTSubject as JWTSubject;
-use Zizaco\Entrust\Traits\EntrustUserTrait;
 use Laratrust\Traits\LaratrustUserTrait;
 
 class User extends Authenticatable implements JWTSubject
 {
-    use Notifiable, LaratrustUserTrait;
+    use Notifiable, LaratrustUserTrait, SoftDeletes;
 
     /**
      * The attributes that are mass assignable.
@@ -72,6 +72,17 @@ class User extends Authenticatable implements JWTSubject
      */
     protected $casts = [
         'activated' => 'boolean',
+    ];
+
+    /**
+     * The attributes that should be mutated to dates.
+     *
+     * @var array
+     */
+    protected $dates = [
+        'created_at',
+        'updated_at',
+        'deleted_at'
     ];
 
 //    /**
@@ -185,6 +196,7 @@ class User extends Authenticatable implements JWTSubject
     {
         return $this->hasMany('App\Order');
     }
+
 
 //    /**
 //     * Get the first address for the user or instantiate an empty one.

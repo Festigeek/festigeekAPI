@@ -52,11 +52,27 @@ class Team extends Model
     }
 
     /**
+     * Get the default product of the team (first product of type "tournament", in the first order).
+     */
+    public function defaultProduct()
+    {
+        return $this->orders()->first()->products->where('product_type_id', 1)->first();
+    }
+
+    /**
      * Return a simplified users array for each teams
      *
      * @return String
      */
     public function getUsersAttribute() {
-        return $this->users()->get(['username', 'gender'])->makeHidden(['QRCode', 'pivot']);
+//        $users = $this->users()->get(['username', 'gender'])->makeHidden(['QRCode', 'pivot']);
+
+        $orders = $this->orders()->get();
+        $users = $orders->map(function($order) {
+            $roaster = $order->products()->where('product_type_id', 1)->first()->id == $this->defaultProduct()->id;
+            return ['username' => $order->user->username, 'gender' => $order->user->gender, 'roaster' => $roaster];
+        });
+
+        return $users;
     }
 }

@@ -69,7 +69,7 @@
           PostFinance SA<br />
           Migerstrasse 20, 3030 Berne<br />
           FestiGeek<br />
-          CH83 09000 0001 4484 0507
+          CH83 0900 0000 1448 4050 7
         </span>
         <p><strong>Note importante:</strong> indique la référence numéro <strong>20{{ $order_id }}13</strong> lors de ton virement pour qu'on puisse identifier ton paiement!</p>
       </p>
