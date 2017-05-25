@@ -44,7 +44,7 @@ class generateLanPassword extends Command
         'a','b','c','d','e','f','g','h','j','k','m','n','p','q','r','s','t','u','v','w','x','y','z',
         '2','3','4','5','6','7','8','9');
 
-      $confirmed = $this->option('force') || $this->confirm('This will invalidate all existing app key. Are you sure you want to override it ?');
+      $confirmed = $this->option('force') || $this->confirm('This will generate a lan password for all orders');
       if ($confirmed) {
         $orders = Order::all();
 
@@ -64,7 +64,7 @@ class generateLanPassword extends Command
           }while($alreadyUsed);
         }
       } else {
-        return $this->comment('Phew... No changes were made to your app key.');
+        return $this->comment('Phew... No password were generate');
       }
     }
 }
