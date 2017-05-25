@@ -43,10 +43,9 @@ class ConfirmationTicket extends Mailable
     {
       return $this->view('email.bankingWireTransfert')
         ->subject('Confirmation de ton inscription')
-        ->with([  
-          'order_id'=>$this->order->id,
+        ->with([
           'order' => $this->order,
-          'username' => $this->user->username
+          'username' => $this->user,
         ])->attachData($this->pdf, 'ticket.pdf', [
           'mime' => 'application/pdf',
         ]);
