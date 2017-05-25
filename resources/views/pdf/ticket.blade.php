@@ -54,18 +54,18 @@
       .logo {
         width: 150px;
         height: 150px;
-        background: white url("../../../public/images/logo_carre.png") no-repeat center;
-         background-size: 140px;
+        background: white url({{ base_path('public/images/logo_carre.png') }}) no-repeat center;
+        background-size: 140px;
       }
 
       .logo-text {
-        background: white url("../../../public/images/logo_fg_text.png") no-repeat center;
+        background: white url({{ base_path('public/images/logo_fg_text.png') }}) no-repeat center;
       }
 
       .deco-1 {
         width: 75px;
         height: 75px;
-        background: lightGray url("../../../public/images/deco1.png") no-repeat center;
+        background: lightGray url({{ base_path('public/images/deco1.png') }}) no-repeat center;
       }
 
       .reglage {
@@ -118,14 +118,16 @@
           <td>&nbsp;</td>
         </tr>
         <tr class="header">
-          <td rowspan="2" class="logo">&nbsp;</td>
+          <td rowspan="2" class="logo">
+              <img src="../../public/images/logo_carre.png" />
+          </td>
           <td colspan="4" class="logo-text">&nbsp;</td>
         </tr>
         <tr>
           <td class="deco-1">&nbsp;</td>
           <td class="reglage">Du 26 au 28 Mai 2017<br/><span class="mini">(Ouverture des portes à 16h00)</span></td>
           <td rowspan="4" colspan="2" class="qrcode">
-            <img src="data:image/png;base64,{{$user.QRCode}}" alt="QR Code FestiGeek" height="200" />
+            <img src="data:image/png;base64,{{ $user->QRCode }}" alt="QR Code FestiGeek" height="200" />
           </td>
         </tr>
         <tr>
@@ -135,19 +137,19 @@
         </tr>
         <tr>
           <td colspan="3" class="data">
-            {{$user.username}} <span class="mini">({{$user.mail}})</span>
+            {{ $user->username }} <span class="mini">({{ $user->email }})</span>
           </td>
         </tr>
         <tr>
           <td colspan="3" class="data infos mini">
-            Commande No. 20{{$order.id}}13
+            Commande No. 20{{ $order->id }}13
           </td>
         </tr>
       </table>
     </div>
 
     <div id="infos" class="contenu">
-      Code d'acces au reseau de la LAN : {{$user.code_lan}}
+      Code d'acces au reseau de la LAN : {{ $order->code_lan }}
     </div>
   </body>
 </html>

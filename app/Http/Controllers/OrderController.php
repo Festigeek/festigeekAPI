@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Blade;
 use App\Mail\BankingWireTransfertMail;
 use App\Mail\PaypalConfirmation;
 use Illuminate\Support\Facades\Mail;
@@ -158,6 +159,9 @@ class OrderController extends Controller
                 default:
                     return response()->json($order);
             }
+        }
+        else {
+
         }
     }
 
