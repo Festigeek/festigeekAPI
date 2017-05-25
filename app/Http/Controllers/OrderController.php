@@ -143,7 +143,7 @@ class OrderController extends Controller
 
         }
         catch(Exception $e) {
-            return response()->json(['error' => 'Order not found.'], 404);
+            return response()->json(['error' => 'Order and/or User not found.'], 404);
         }
 
         if($this->isAdminOrOwner($order->user_id)) {
