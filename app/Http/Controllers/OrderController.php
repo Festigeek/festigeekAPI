@@ -2,9 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use DateTime;
-use Validator;
-use function foo\func;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use App\Mail\BankingWireTransfertMail;
@@ -17,6 +14,8 @@ use Mockery\Exception;
 use JWTAuth;
 use PayPal;
 use Crypt;
+use DateTime;
+use Validator;
 
 use App\Order;
 use App\Product;
@@ -110,8 +109,6 @@ class OrderController extends Controller
      */
     public function index(Request $request)
     {
-
-
         $orders = Order::all();
         $format = ($request->has('format')) ? $request->get('format') : 'json';
 
