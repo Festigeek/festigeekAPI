@@ -139,7 +139,7 @@ class OrderController extends Controller
     {
         try {
             $order = Order::findOrFail($order_id);
-            $user = $order->user()->get()->makeVisible(['QRCode']);
+            $user = $order->user()->first()->makeVisible(['QRCode']);
 
         }
         catch(Exception $e) {
@@ -152,7 +152,7 @@ class OrderController extends Controller
                 case 'pdf':
                 $html =  view('pdf.ticket', ['order' => $order, 'user' => $user]);
               //  $snappy->generateFromHtml($html, '/tmp/bill-123.pdf');
-                    return \PDF:loadHTML($html)->setPaper('a4')->setOption('margin-bottom', 0)->inline('ticket_lan.pdf');
+                    return \PDF::loadHTML($html)->setPaper('a4')->setOption('margin-bottom', 0)->inline('ticket_lan.pdf');
                     break;
                 case 'json':
                 default:
