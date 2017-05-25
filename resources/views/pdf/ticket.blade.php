@@ -132,7 +132,7 @@
         </tr>
         <tr>
           <td colspan="3" class="data titre">
-            <span class="purple">E</span>ntree <span class="purple">U</span>nique <span class="purple">L</span>AN <span class="purple">2</span>017
+            <span class="purple">E</span>ntrée <span class="purple">P</span>ersonnelle <span class="purple">L</span>AN <span class="purple">2</span>017
           </td>
         </tr>
         <tr>
