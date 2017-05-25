@@ -33,8 +33,16 @@
 <p>
   Salut {{ $user->username }}, <br/><br/>
   Nous espérons que tu es prêt pour notre LAN ! Tu trouveras dans ce mail les informations importantes ainsi que ton billet electronique.<br  />
-  N'oublie pas de <strong>l'imprimer ou le mettre sur ton smartphone</strong>, le code sera scanné à l'entrée.<br/>
+  N'oublie pas de <strong>l'imprimer ou le mettre sur ton smartphone</strong>, le code sera scanné à l'entrée.
 </p>
+
+<p><strong>Nouveau !</strong> Cette année, des douches seront mises à ta disposition. Si tu es intéressé, prends un linge !</p>
+
+@if ($order->state == 0)
+  <div style="background-color:#ffaaaa;width:550px;margin:20px auto;border-radius:5px;text-align:center;">
+      Nous n'avons <strong>toujours pas reçu ton paiement</strong>. Dans le cas où le paiement serait parti trop tard, nous te remercions d'avance de nous faire part d'une preuve de paiement. Sinon, il est encore possible de payer sur place, à titre exceptionel.
+  </div>
+@endif
 
 @if (\Carbon\Carbon::createFromFormat('Y-m-d', $user->birthdate)->diffInYears(\Carbon\Carbon::now()) < 18)
   <div style="background-color:#ffaaaa;width:550px;margin:20px auto;border-radius:5px;text-align:center;">
@@ -44,13 +52,13 @@
   </div>
 @endif
 
+<h3>Voici le récapitulatif de ta commande:</h3>
 <p>
-  Voici le récapitulatif de ta commande:<br/>
-<ul>
-  @foreach ($order->products()->get() as $product)
-    <li>{{ $product->pivot->amount }}x {{ $product->name }}</li>
-  @endforeach
-</ul>
+  <ul>
+    @foreach ($order->products()->get() as $product)
+      <li>{{ $product->pivot->amount }}x {{ $product->name }}</li>
+    @endforeach
+  </ul>
 </p>
 
 <p>

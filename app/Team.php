@@ -67,9 +67,11 @@ class Team extends Model
     public function getUsersAttribute() {
 //        $users = $this->users()->get(['username', 'gender'])->makeHidden(['QRCode', 'pivot']);
 
-        $orders = $this->orders()->get()->filter(function($order){
-            return $order->state !== 3;
-        });
+//        $orders = $this->orders()->get()->filter(function($order){
+//            return $order->state !== 3;
+//        });
+
+        $orders = $this->orders()->where('state', '<>', 3)->get();
 
         $users = $orders->map(function($order) {
             $roaster = $order->products()->where('product_type_id', 1)->first()->id == $this->defaultProduct()->id;

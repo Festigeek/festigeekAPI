@@ -58,14 +58,12 @@ class sendTickets extends Command
         }
 
         if ($order instanceof Model) {
-
             // check if state != (not cancelled)
-
-              if($order->state != 3){
-                Mail::to($order->user->email, $order->user->username)->send(new ConfirmationTicketMail($order->user, $order));
-                $this->comment('mail sent, '. $order->id . ' user: ' . $order->user->username);
+              if($order->state != 3) {
+                  Mail::to($order->user->email, $order->user->username)
+                      ->send(new ConfirmationTicketMail($order->user, $order));
+                  $this->comment('Mail sent => order: ' . $order->id . ', user: ' . $order->user->username);
               }
-
             return;
         }
     }

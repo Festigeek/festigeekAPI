@@ -14,7 +14,8 @@ class generateLanPassword extends Command
      * @var string
      */
     protected $signature = 'fg:generateLanPassword
-    {--f|force : Skip confirmation when overwriting an existing key.}';
+    {--renew: Re-generate all LAN keys.}
+    {--f|force : Skip confirmation when overwriting all existing keys.}';
 
     /**
      * The console command description.
@@ -44,27 +45,30 @@ class generateLanPassword extends Command
         'a','b','c','d','e','f','g','h','j','k','m','n','p','q','r','s','t','u','v','w','x','y','z',
         '2','3','4','5','6','7','8','9');
 
-      $confirmed = $this->option('force') || $this->confirm('This will invalidate all existing app key. Are you sure you want to override it ?');
-      if ($confirmed) {
-        $orders = Order::all();
+      if($this->option('renew')) {
+          $confirmed = $this->option('force') || $this->confirm('This will invalidate all existing app key. Are you sure you want to override it ?');
+          if ($confirmed) {
+              $orders = Order::all();
 
-        $passwords = array();
+              $passwords = array();
 
-        foreach($orders as $order) {
-          $alreadyUsed= false;
-          do{
-            $password = "";
-            for ($i = 0; $i < 8; $i++) {
-              $password .= $chars[rand(0, sizeof($chars) - 1)];
-            }
-            $alreadyUsed = array_key_exists($password, $passwords);
-            array_push($passwords, $password);
-            $order->code_lan = $password;
-            $order->save();
-          }while($alreadyUsed);
-        }
-      } else {
-        return $this->comment('Phew... No changes were made to your app key.');
+              foreach($orders as $order) {
+                  $alreadyUsed= false;
+                  do{
+                      $password = "";
+                      for ($i = 0; $i < 8; $i++) {
+                          $password .= $chars[rand(0, sizeof($chars) - 1)];
+                      }
+                      $alreadyUsed = array_key_exists($password, $passwords);
+                      array_push($passwords, $password);
+                      $order->code_lan = $password;
+                      $order->save();
+                  }while($alreadyUsed);
+              }
+          }
+          else {
+              return $this->comment('Phew... No changes were made to your app key.');
+          }
       }
     }
 }
