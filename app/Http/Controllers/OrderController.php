@@ -139,6 +139,8 @@ class OrderController extends Controller
     {
         try {
             $order = Order::findOrFail($order_id);
+            $user = $order->user()->get()->makeVisible(['QRCode']);
+
         }
         catch(Exception $e) {
             return response()->json(['error' => 'Order not found.'], 404);
@@ -148,7 +150,9 @@ class OrderController extends Controller
             $format = $request->has('format') ? $request->get('format') : 'json';
             switch ($format) {
                 case 'pdf':
-                    return \PDF::loadFile('http://www.github.com')->inline('github.pdf');
+                $html =  view('pdf.ticket', ['order' => $order, 'user' => $user]);
+              //  $snappy->generateFromHtml($html, '/tmp/bill-123.pdf');
+                    return \PDF:loadHTML($html)->setPaper('a4')->setOption('margin-bottom', 0)->inline('ticket_lan.pdf');
                     break;
                 case 'json':
                 default:

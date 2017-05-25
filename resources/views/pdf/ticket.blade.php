@@ -125,7 +125,7 @@
           <td class="deco-1">&nbsp;</td>
           <td class="reglage">Du 26 au 28 Mai 2017<br/><span class="mini">(Ouverture des portes à 16h00)</span></td>
           <td rowspan="4" colspan="2" class="qrcode">
-            <img src="data:image/png;base64,{$qr_code}" alt="QR Code FestiGeek" height="200" />
+            <img src="data:image/png;base64,{{$user.QRCode}}" alt="QR Code FestiGeek" height="200" />
           </td>
         </tr>
         <tr>
@@ -135,19 +135,19 @@
         </tr>
         <tr>
           <td colspan="3" class="data">
-            {$pseudo} <span class="mini">({$mail})</span>
+            {{$user.username}} <span class="mini">({{$user.mail}})</span>
           </td>
         </tr>
         <tr>
           <td colspan="3" class="data infos mini">
-            Commande No. 20{$no_commande}13
+            Commande No. 20{{$order.id}}13
           </td>
         </tr>
       </table>
     </div>
 
     <div id="infos" class="contenu">
-      Code d'acces au reseau de la LAN : {$ad_password}
+      Code d'acces au reseau de la LAN : {{$user.code_lan}}
     </div>
   </body>
 </html>
