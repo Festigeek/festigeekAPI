@@ -171,6 +171,7 @@ return [
          */
         Tymon\JWTAuth\Providers\LaravelServiceProvider::class,
         Barryvdh\Cors\ServiceProvider::class,
+        Barryvdh\Snappy\ServiceProvider::class,
         Laratrust\LaratrustServiceProvider::class,
         SimpleSoftwareIO\QrCode\QrCodeServiceProvider::class,
         'Netshell\Paypal\PaypalServiceProvider',
@@ -237,6 +238,8 @@ return [
         'Laratrust'   => Laratrust\LaratrustFacade::class,
         'PayPal' => 'Netshell\Paypal\Facades\Paypal',
         'Excel' => 'Maatwebsite\Excel\Facades\Excel',
+        'PDF' => Barryvdh\Snappy\Facades\SnappyPdf::class,
+        'SnappyImage' => Barryvdh\Snappy\Facades\SnappyImage::class,
     ],
 
 ];
