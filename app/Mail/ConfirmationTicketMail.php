@@ -9,7 +9,7 @@ use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
-class ConfirmationTicket extends Mailable
+class ConfirmationTicketMail extends Mailable
 {
     use Queueable, SerializesModels;
 
@@ -41,11 +41,11 @@ class ConfirmationTicket extends Mailable
      */
     public function build()
     {
-      return $this->view('email.bankingWireTransfert')
-        ->subject('Confirmation de ton inscription')
+      return $this->view('email.confirmationTicket')
+        ->subject('Ton ticket d\'entrée FestiGeek 2017')
         ->with([
           'order' => $this->order,
-          'username' => $this->user,
+          'user' => $this->user,
         ])->attachData($this->pdf, 'ticket.pdf', [
           'mime' => 'application/pdf',
         ]);
