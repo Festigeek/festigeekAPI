@@ -1,83 +1,85 @@
 <!DOCTYPE html>
 <html lang="fr">
-  <head>
-    <meta charset="utf-8">
-    <style>
-      table {
-        width: 650px;
-      }
-      table, th, td {
-        border: 1px solid black;
-        border-collapse: collapse;
-      }
-      th, td {
-        padding: 5px;
-        text-align: left;
-      }
-      table#t01 tr:nth-child(even) {
-        background-color: #eee;
-      }
-      table#t01 tr:nth-child(odd) {
-        background-color:#fff;
-      }
-      table#t01 th {
-        background-color: black;
-        color: white;
-      }
-    </style>
-  </head>
-  <body>
-    <h2>Télécharge ton billet pour la LAN</h2>
+<head>
+  <meta charset="utf-8">
+  <style>
+    table {
+      width: 650px;
+    }
+    table, th, td {
+      border: 1px solid black;
+      border-collapse: collapse;
+    }
+    th, td {
+      padding: 5px;
+      text-align: left;
+    }
+    table#t01 tr:nth-child(even) {
+      background-color: #eee;
+    }
+    table#t01 tr:nth-child(odd) {
+      background-color:#fff;
+    }
+    table#t01 th {
+      background-color: black;
+      color: white;
+    }
+  </style>
+  <title>Ton billet pour la LAN<</title>
+</head>
+<body>
+<h2>Ton billet pour la LAN</h2>
 
-    <div>
-      <p>
-        Salut {{ $username }}, <br/><br/>
-      Nous espérons que tu es prêt pour notre LAN! Tu trouveras dans ce mail les informations
-      importantes ainsi que ton billet electronique à télécharger. N'oublie pas de <strong>l'imprimer ou le mettre sur ton smartphone</strong>, le code sera scanné à l'entrée.<br/>
+<p>
+  Salut {{ $user->username }}, <br/><br/>
+  Nous espérons que tu es prêt pour notre LAN ! Tu trouveras dans ce mail les informations importantes ainsi que ton billet electronique.<br  />
+  N'oublie pas de <strong>l'imprimer ou le mettre sur ton smartphone</strong>, le code sera scanné à l'entrée.<br/>
+</p>
 
-      </p>
-      <button type="button" class="btn btn-primary"><a href="https://festigeek.ch/#!/profile">Télécharge ton billet ici</a></button>
-      <p>
-      Voici le récapitulatif de ta commande:<br/>
-      </p>
+@if (\Carbon\Carbon::createFromFormat('Y-m-d', $user->birthdate)->diffInYears(\Carbon\Carbon::now()) < 18)
+  <div style="background-color:#ffaaaa;width:550px;margin:20px auto;border-radius:5px;text-align:center;">
+    Minute ! On dirait bien que tu es <strong>mineur</strong> !<br />
+    N'oublies pas de venir avec le formulaire d'autorisation pour mineurs !<br />
+    {{ URL::to('https://www.festigeek.ch/assets/FG2017_consentement_parental.pdf') }}
+  </div>
+@endif
 
-      <table id="t01">
-        <tr>
-          <th style="text-align: center;">Nom</th>
-          <th style="text-align: center;">Quantité</th>
-          <th style="text-align: center;">Prix</th>
-          <th style="text-align: center;">Total</th>
-        </tr>
+<p>
+  Voici le récapitulatif de ta commande:<br/>
+<ul>
+  @foreach ($order->products()->get() as $product)
+    <li>{{ $product->pivot->amount }}x {{ $product->name }}</li>
+  @endforeach
+</ul>
+</p>
 
-        @foreach ($order->products()->get() as $product)
-        <tr>
-          <td>{{ $product->name }}</td>
-          <td style="text-align: center;">{{ $product->pivot->amount }}</td>
-          <td style="text-align: right;">{{ number_format($product->price, 2) }}</td>
-          <td style="text-align: right;">{{ number_format($product->pivot->amount * $product->price, 2) }}</td>
-        </tr>
-        @endforeach
-        <tr>
-          <td colspan="3">Total</td>
-          <td style="text-align: right;"><strong>{{ number_format($total, 2) }} CHF</strong></td>
-        </tr>
-      </table>
+<p>
+  Vous pouvez également le récupérer sur votre page de profil, sur le site:
+</p>
 
-      <p>
-        Les portes ouvrent le <strong>vendredi 26 mai, à 16h00</strong>. Tu trouveras toutes les informations importantes <a href="https://festigeek.ch/#!/infolan">ici</a>.
-      </p>
+<div style="text-align:center;">
+  <!--[if mso]>
+  <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="https://www.festigeek.ch/#!/profile" style="height:40px;v-text-anchor:middle;width:200px;" arcsize="25%" strokecolor="#1e3650" fillcolor="#3f2e79">
+    <w:anchorlock/>
+    <center style="color:#ffffff;font-family:sans-serif;font-size:13px;font-weight:bold;">Mon compte Festigeek</center>
+  </v:roundrect>
+  <![endif]-->
+  <a href="https://www.festigeek.ch/#!/profile" style="background-color:#3f2e79;border:1px solid #1e3650;border-radius:10px;color:#ffffff;display:inline-block;font-family:sans-serif;font-size:13px;font-weight:bold;line-height:40px;text-align:center;text-decoration:none;width:200px;-webkit-text-size-adjust:none;mso-hide:all;">Mon compte Festigeek</a>
+</div>
 
-      <p>
-        Si tu as des questions, n'hésites-pas à nous contacter sur <a href="https://www.facebook.com/festigeek.yverdon/">Facebook</a> ou <a href="https://discord.gg/QQ2KEUY">Discord</a>.<br>
-        On se réjouit de te voir à la LAN.
-      </p>
+<p>
+  Les portes ouvrent le <strong>vendredi 26 mai, à 16h00</strong>. Tu trouveras toutes les informations importantes <a href="https://festigeek.ch/#!/infolan">ici</a>.
+</p>
 
-      <p>
-        A bientôt!<br/>
-        L'équipe FestiGeek
-      </p>
+<p>
+  Si tu as des questions, n'hésites-pas à nous contacter sur <a href="https://www.facebook.com/festigeek.yverdon/">Facebook</a> ou <a href="https://discord.gg/QQ2KEUY">Discord</a>.<br>
+  On se réjouit de te voir à la LAN.
+</p>
 
-    </div>
+<p>
+  A bientôt!<br/>
+  L'équipe FestiGeek
+</p>
 
-  </body>
+</body>
 </html>

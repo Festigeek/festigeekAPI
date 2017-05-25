@@ -57,9 +57,9 @@ class sendTickets extends Command
 
         if ($order instanceof Model) {
 
-            // check if state = 1 (is paid)
+            // check if state != (not cancelled)
 
-              if($order->state == 1){
+              if($order->state != 3){
                 //TODO send mail here
                 $this->comment('mail sent, '. $order->id . ' user: ' . $order->user->username);
               }
