@@ -58,13 +58,15 @@ Route::get('events/current', 'EventController@current');
 Route::get('events/{id}/teams', 'EventController@teams');
 Route::get('events/{id}/products', 'EventController@products');
 
-Route::delete('orders/{id}', 'OrderController@delete');
-Route::post('orders', 'OrderController@create'); //creates a new order, based on type (paypal or banking)
 Route::get('orders', 'OrderController@index');
+Route::post('orders', 'OrderController@create'); //creates a new order, based on type (paypal or banking)
 Route::get('orders/done', 'OrderController@paypalDone');
 Route::get('orders/cancel', 'OrderController@paypalCancel');
+Route::get('orders/{id}', 'OrderController@show');
 Route::patch('orders/{id}', 'OrderController@patch');
 Route::patch('orders/{order_id}/products/{product_id}', 'OrderController@consumeProduct'); //TODO Create nested routes / controller
+Route::delete('orders/{id}', 'OrderController@delete');
+
 //Route::resource('orders', 'OrderController'); TODO later, for now, manually created routes
 Route::delete('orders/{id}', 'OrderController@destroy');
 

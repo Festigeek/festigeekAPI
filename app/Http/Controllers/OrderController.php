@@ -101,6 +101,7 @@ class OrderController extends Controller
             });
         });
     }
+
     /**
      * Show all orders.
      *
@@ -126,10 +127,41 @@ class OrderController extends Controller
         }
     }
 
-    /*
-    creates a new order based on type
+    /**
+     * Show a specific order.
+     *
+     * @param Request $request
+     * @param $order_id
+     *
+     * @return Response
+     */
+    public function show(Request $request, $order_id)
+    {
+        try {
+            $order = Order::findOrFail($order_id);
+        }
+        catch(Exception $e) {
+            return response()->json(['error' => 'Order not found.'], 404);
+        }
 
-    */
+        if($this->isAdminOrOwner($order->user_id)) {
+            $format = $request->has('format') ? $request->get('format') : 'json';
+            switch ($format) {
+                case 'pdf':
+                    return \PDF::loadFile('http://www.github.com')->inline('github.pdf');
+                    break;
+                case 'json':
+                default:
+                    return response()->json($order);
+            }
+        }
+    }
+
+    /**
+     * Creates a new order based on type
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function create(Request $request)
     {
         if ($request->get('payment_type_id') === 1)
