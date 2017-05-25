@@ -486,12 +486,11 @@ class OrderController extends Controller
     $consume = $request->get("consume");
     $product = $order->products()->where('product_id', $product_id)->first();
 
-    if($product->pivot->consume + intval($consume) <= $product->pivot->amount)
-      $product->pivot->consume += intval($consume);
-    else
+    if(intval($consume) <= $product->pivot->amount) {
+      $order->products()->updateExistingPivot((int)$product_id, ['consume' => intval($consume)]);
+    }else
       return response()->json(['error' => 'Try to consume more then ordered.', 'validation' => $validator], 400);
 
-    $product->save();
     return response()->json($order);
   }
 
@@ -539,6 +538,8 @@ class OrderController extends Controller
         //$order->delete();
         //return response()->json(['success']);
     }
+
+
 
 
 
