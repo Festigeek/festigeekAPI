@@ -15,7 +15,8 @@ class Kernel extends ConsoleKernel
     protected $commands = [
         Commands\generateAppKey::class,
         Commands\resetDB::class,
-        Commands\generateLanPassword::class
+        Commands\generateLanPassword::class,
+        Commands\sendTickets::class
     ];
 
     /**

@@ -33,13 +33,13 @@ class sendTickets extends Command
      *
      * @return void
      */
-    private function sendTicketMails($orders)
+    private function sendTicketMails($order)
     {
-        if(is_null($orders)) {
+        if(is_null($order)) {
             $orderList = Order::where('event_id', $this->event->id)->get();
 
             // let's be sure you want to do this
-            $confirmed = $this->confirm('Are you sure you want to send ' . $orderList->count() . ' e-mail ?');
+            $confirmed = $this->confirm('Are you sure you want to send ' . $orderList->count() . ' e-mail(s) ?');
             if ($confirmed) {
                 $orderList->each(function($order){
                     try {
@@ -55,8 +55,15 @@ class sendTickets extends Command
 
         }
 
-        if ($orders instanceof Model) {
-            // TODO Send mail
+        if ($order instanceof Model) {
+
+            // check if state = 1 (is paid)
+
+              if($order->state == 1){
+                //TODO send mail here
+                $this->comment('mail sent, '. $order->id . ' user: ' . $order->user->username);
+              }
+
             return;
         }
     }
@@ -79,14 +86,17 @@ class sendTickets extends Command
     public function handle()
     {
         try {
-            $this->event = Event::firstOrFail($this->argument('event'));
+            $this->event = Event::where('id', (int)$this->argument('event'))->firstOrFail();
+
         }
         catch(Exception $e) {
             return $this->error('Event not found.');
         }
 
         try {
-            $order = (is_null($this->argument('order')) && $this->option('all')) ? null : Order::firstOrFail($this->argument('order'));
+
+            $order = (($this->argument('order')==='null') && $this->option('all')) ? null : Order::findOrFail($this->argument('order'));
+            //return $this->comment($order);
         }
         catch(Exception $e) {
             return $this->error('All flag or Order not found.');
