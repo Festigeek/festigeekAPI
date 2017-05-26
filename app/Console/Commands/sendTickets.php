@@ -3,11 +3,13 @@
 namespace App\Console\Commands;
 
 use App\Event;
+use App\Mail\ConfirmationTicketMail;
 use App\Order;
 
 use Exception;
 use Illuminate\Console\Command;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Mail;
 
 class sendTickets extends Command
 {
@@ -56,14 +58,12 @@ class sendTickets extends Command
         }
 
         if ($order instanceof Model) {
-
-            // check if state = 1 (is paid)
-
-              if($order->state == 1){
-                //TODO send mail here
-                $this->comment('mail sent, '. $order->id . ' user: ' . $order->user->username);
+            // check if state != (not cancelled)
+              if($order->state != 3) {
+                  Mail::to($order->user->email, $order->user->username)
+                      ->send(new ConfirmationTicketMail($order->user, $order));
+                  $this->comment('Mail sent => order: ' . $order->id . ', user: ' . $order->user->username);
               }
-
             return;
         }
     }
@@ -76,6 +76,20 @@ class sendTickets extends Command
     public function __construct()
     {
         parent::__construct();
+
+        if(\Config::get('mail.driver') === 'smtp') {
+            // Send email notification
+            $transport = \Swift_SmtpTransport::newInstance(
+                \Config::get('mail.host'),
+                \Config::get('mail.port'),
+                \Config::get('mail.encryption'))
+                ->setUsername(\Config::get('mail.username'))
+                ->setPassword(\Config::get('mail.password'))
+                ->setStreamOptions(['ssl' => \Config::get('mail.ssloptions')]);
+
+            $mailer = \Swift_Mailer::newInstance($transport);
+            Mail::setSwiftMailer($mailer);
+        }
     }
 
     /**
@@ -102,8 +116,9 @@ class sendTickets extends Command
             return $this->error('All flag or Order not found.');
         }
 
+      $this->sendTicketMails($order);
         try {
-            $this->sendTicketMails($order);
+//            $this->sendTicketMails($order);
         }
         catch(Exception $e) {
             return $this->error('Error when sending mail for order #' . $order->id);

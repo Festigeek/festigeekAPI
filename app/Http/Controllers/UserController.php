@@ -218,8 +218,12 @@ class UserController extends Controller
     public function getOrders(Request $request, $user_id) {
         // TODO: filtrer par state
         if($this->isAdminOrOwner($user_id)) {
+            $event = ($request->has('event_id')) ? $request->get('event_id') : null;
             $id = ($user_id === 'me') ? JWTAuth::user()->id : $user_id;
-            $order = User::find($id)->orders()->get();
+
+            $order = User::find($id)->orders()->get()->filter(function($order) use ($event) {
+                return (!is_null($event)) ? $order->event_id == $event : true;
+            });
             return response()->json($order);
         }
         else abort(403);
