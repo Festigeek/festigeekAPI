@@ -13,7 +13,7 @@ class generateLanPassword extends Command
      *
      * @var string
      */
-    protected $signature = 'fg:generateLanPassword
+    protected $signature = 'fg:generateLanPassword {order=null}
     {--f|force : Skip confirmation when overwriting an existing key.}';
 
     /**
@@ -46,7 +46,13 @@ class generateLanPassword extends Command
 
       $confirmed = $this->option('force') || $this->confirm('This will invalidate all existing app key. Are you sure you want to override it ?');
       if ($confirmed) {
-        $orders = Order::all();
+        try {
+         $orders = (($this->argument('order')==='null')) ? Order::all() : Order::where('id', $this->argument('order'))->get();
+        }
+        catch(Exception $e) {
+            return $this->error('Order not found.');
+        }
+
 
         $passwords = array();
 
