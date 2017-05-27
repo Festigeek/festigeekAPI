@@ -87,3 +87,4 @@ class generateLanPassword extends Command
       }
     }
 }
+}
