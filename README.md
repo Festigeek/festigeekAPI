@@ -9,3 +9,7 @@ Back-end system of the geek association "Festigeek".
   - Create a user called `laravel` and grant it all permissions for the `festigeekapi` database.  
 - In project folder, run `php composer self-update` and `php composer install`
 - You can start the server with `php artisan serve --port=80` (be sure to have a free port 80)
+
+# Hints
+- If the `artisan` command is not available, you can use PHP itself. From PHP7, you can start a light webserver for Laravel with the command `php -S localhost:8000 -t public`. Then go on your browser and look at what Laravel have to say.
+> "It's part of the fun"
