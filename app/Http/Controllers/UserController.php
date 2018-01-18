@@ -28,18 +28,12 @@ class UserController extends Controller
 
     public function authenticate(Request $request) {
         $credentials = $request->only('email', 'password');
-//        $token = false;
-//        $response = [];
 
         if (!$token = JWTAuth::attempt($credentials)) {
             // We do not use the ORM because the property 'drupal_password' is hidden, and we need it.
             $drupal_user = DB::table('users')->where('email', $credentials['email'])->where('activated', false)->first();
 
-            if(is_null($drupal_user)) {
-                return response()->json(['error' => 'User not found'], 404);
-            }
-
-            if(user_check_password($credentials['password'], $drupal_user)) {
+            if(!is_null($drupal_user) && user_check_password($credentials['password'], $drupal_user)) {
                 if($request->has('newPassword')) {
                     // Update account
                     DB::table('users')
@@ -51,7 +45,7 @@ class UserController extends Controller
                     $token = JWTAuth::attempt($credentials);
                 }
                 else {
-                    return Response::json(['success' => 'drupal_account']);
+                    return response()->json(['error' => 'Missing parameters.'], 422);
                 }
             }
             else {
@@ -62,8 +56,6 @@ class UserController extends Controller
         if(!JWTAuth::user()->activated) {
             return response()->json(['error' => 'Inactive Account.'], 401);
         }
-
-//        $response = compact('token');
 
         return response()->json(['success' => 'Authenticated.', 'token' => $token]);
     }
