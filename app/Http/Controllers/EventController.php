@@ -16,8 +16,8 @@ class EventController extends Controller
      */
     public function teams(Request $request, $id){
 
-        $game = ($request->has('game')) ? $request->get('game') : null;
-        $strict = ($request->has('strict')) ? $request->get('strict') : null;
+        $game = ($request->filled('game')) ? $request->get('game') : null;
+        $strict = ($request->filled('strict')) ? $request->get('strict') : null;
         $orders = Order::where('event_id', $id)->get();
 
         $teams = $orders->filter(function($value) use ($game) {

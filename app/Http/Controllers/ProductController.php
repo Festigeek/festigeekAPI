@@ -15,10 +15,10 @@ class ProductController extends Controller
      */
     public function index(Request $request)
     {
-        if($request->has('type_id')) {
+        if($request->filled('type_id')) {
             $products = Product::where('product_type_id', $request->get('type_id'))->get();
         }
-        else if ($request->has('type')) {
+        else if ($request->filled('type')) {
             $type = $request->get('type');
             $products = Product::whereHas('product_type', function($query) use ($type) {
                 $query->whereRaw('LOWER(name) LIKE ?' , $type);

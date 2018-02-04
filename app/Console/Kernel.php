@@ -13,10 +13,10 @@ class Kernel extends ConsoleKernel
      * @var array
      */
     protected $commands = [
-        Commands\generateAppKey::class,
-        Commands\resetDB::class,
-        Commands\generateLanPassword::class,
-        Commands\sendTickets::class
+        // Commands\generateAppKey::class,
+        // Commands\resetDB::class,
+        // Commands\generateLanPassword::class,
+        // Commands\sendTickets::class
     ];
 
     /**
@@ -38,6 +38,7 @@ class Kernel extends ConsoleKernel
      */
     protected function commands()
     {
+        $this->load(__DIR__.'/Commands');
         require base_path('routes/console.php');
     }
 }

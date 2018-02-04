@@ -16,7 +16,7 @@ Route::pattern('user_id', '\d+|me');
 */
 
 Route::get('/', function() {
-  return response()->json(['success' => 'Festigeek API v1']);
+    return response()->json(['success' => 'Festigeek API v1']);
 });
 
 /*
@@ -25,8 +25,9 @@ Route::get('/', function() {
 Route::get('users/test', 'UserController@test');
 Route::get('users/activate', 'UserController@activation');
 Route::post('users/login', 'UserController@authenticate');
-Route::get('users/{user_id}/orders', 'UserController@getOrders');
+Route::get('users/refreshToken', 'UserController@refresh');
 
+Route::get('users/{user_id}/orders', 'UserController@getOrders');
 Route::resource('users', 'UserController');
 Route::post('users', 'UserController@register');
 
@@ -69,42 +70,3 @@ Route::delete('orders/{id}', 'OrderController@delete');
 
 //Route::resource('orders', 'OrderController'); TODO later, for now, manually created routes
 Route::delete('orders/{id}', 'OrderController@destroy');
-
-/*
- * ===============================================================================================================
- * ===============================================================================================================
- * TODO: Part to rewrite
- * ===============================================================================================================
- * ===============================================================================================================
- */
-
-/*
- * Resource: Events
- */
-//Route::resource('events', 'EventController');
-
-/*
- * Resource: AbstractProducts
- */
-//Route::put('abstract_products/{id}', 'AbstractProductController@update');
-
-/*
- * Resource: Inscriptions
- */
-//Route::resource('inscriptions', 'InscriptionController');
-
-/*
- * Resource: Orders
- */
-/*Route::get('orders/{id}/confirmPaypalPayment', array(
-    'as' => 'paypalPayment.status',
-    'uses' => 'OrderController@validatePaypalPayment',
-));
-Route::put('orders/{id}/confirmBankingPayment', 'OrderController@validateBankingPayment');
-Route::put('orders/{id}/productConsumption', 'OrderController@consumeProduct');
-Route::resource('orders', 'OrderController');*/
-
-/*
-* Resource: Products
-*/
-//Route::resource('products', 'ProductController');

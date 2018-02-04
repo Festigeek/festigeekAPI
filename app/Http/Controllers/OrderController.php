@@ -152,7 +152,6 @@ class OrderController extends Controller
             switch ($format) {
                 case 'pdf':
                 $html =  view('pdf.ticket', ['order' => $order, 'user' => $user]);
-              //  $snappy->generateFromHtml($html, '/tmp/bill-123.pdf');
                     return \PDF::loadHTML($html)->setPaper('a4')->setOption('margin-bottom', 0)->inline('ticket_lan.pdf');
                     break;
                 case 'json':

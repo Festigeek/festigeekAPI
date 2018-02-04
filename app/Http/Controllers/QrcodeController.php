@@ -25,7 +25,7 @@ class QrcodeController extends Controller
      */
     public function create(Request $request)
     {
-        if(!$request->has('payload')) {
+        if(!$request->filled('payload')) {
             return response()->json(['error' => 'No payload given'], 400);
         }
 
@@ -57,7 +57,7 @@ class QrcodeController extends Controller
      */
     public function decrypt(Request $request)
     {
-        if(!$request->has('payload')) {
+        if(!$request->filled('payload')) {
             return response()->json(['error' => 'No payload given'], 400);
         }
 

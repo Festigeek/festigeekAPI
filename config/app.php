@@ -169,9 +169,9 @@ return [
         /*
          * Package Service Providers...
          */
-        Tymon\JWTAuth\Providers\LaravelServiceProvider::class,
-        Barryvdh\Cors\ServiceProvider::class,
-        Barryvdh\Snappy\ServiceProvider::class,
+        // Tymon\JWTAuth\Providers\LaravelServiceProvider::class,
+        // Barryvdh\Cors\ServiceProvider::class,
+        // Barryvdh\Snappy\ServiceProvider::class,
         Laratrust\LaratrustServiceProvider::class,
         SimpleSoftwareIO\QrCode\QrCodeServiceProvider::class,
         'Netshell\Paypal\PaypalServiceProvider',
