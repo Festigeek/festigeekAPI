@@ -4,6 +4,8 @@
     "keywords": ["framework", "laravel"],
     "license": "MIT",
     "type": "project",
+    "minimum-stability": "rc",
+    "prefer-stable": true,
     "require": {
         "php": "^7.0",
         "laravel/framework": "^5.5",
