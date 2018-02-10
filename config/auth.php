@@ -42,7 +42,8 @@ return [
         ],
 
         'api' => [
-            'driver' => 'jwt',
+            'driver' => 'passport',
+//            'driver' => 'jwt',
             'provider' => 'users',
         ],
     ],

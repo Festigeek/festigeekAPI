@@ -15,7 +15,6 @@ class Kernel extends HttpKernel
      */
     protected $middleware = [
         \Illuminate\Foundation\Http\Middleware\CheckForMaintenanceMode::class,
-        // \Barryvdh\Cors\HandleCors::class,
     ];
 
     /**
@@ -34,7 +33,6 @@ class Kernel extends HttpKernel
         ],
 
         'api' => [
-//            'jwt.auth',
             \Barryvdh\Cors\HandleCors::class,
             'throttle:60,1',
             'bindings',
@@ -55,9 +53,9 @@ class Kernel extends HttpKernel
         'can' => \Illuminate\Auth\Middleware\Authorize::class,
         'guest' => \App\Http\Middleware\RedirectIfAuthenticated::class,
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
-        'jwt.auth' => \Tymon\JWTAuth\Http\Middleware\Authenticate::class,
-        'jwt.check' => \Tymon\JWTAuth\Http\Middleware\Check::class,
-        'jwt.refresh' => \Tymon\JWTAuth\Http\Middleware\RefreshToken::class,
+//        'jwt.auth' => \Tymon\JWTAuth\Http\Middleware\Authenticate::class,
+//        'jwt.check' => \Tymon\JWTAuth\Http\Middleware\Check::class,
+//        'jwt.refresh' => \Tymon\JWTAuth\Http\Middleware\RefreshToken::class,
         'role' => \Laratrust\Middleware\LaratrustRole::class,
         'permission' => \Laratrust\Middleware\LaratrustPermission::class,
         'ability' => \Laratrust\Middleware\LaratrustAbility::class,

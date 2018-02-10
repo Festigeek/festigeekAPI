@@ -8,8 +8,8 @@
     "prefer-stable": true,
     "require": {
         "php": "^7.0",
-        "laravel/framework": "^5.5",
-        "tymon/jwt-auth": "^1.0",
+        "laravel/framework": "^5.5.0",
+        "laravel/passport": "*",
         "simplesoftwareio/simple-qrcode": "~1.4.0",
         "paypal/rest-api-sdk-php": "*",
         "predis/predis": "^1.0",
@@ -49,12 +49,10 @@
             "php -r \"file_exists('.env') || copy('.env.example', '.env');\"",
             "php artisan fg:generateKey -f",
             "php artisan jwt:secret -f",
-            "Illuminate\\Foundation\\ComposerScripts::postInstall",
-            "php artisan optimize"
+            "Illuminate\\Foundation\\ComposerScripts::postInstall"
         ],
         "post-update-cmd": [
-            "Illuminate\\Foundation\\ComposerScripts::postUpdate",
-            "php artisan optimize"
+            "Illuminate\\Foundation\\ComposerScripts::postUpdate"
         ],
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
