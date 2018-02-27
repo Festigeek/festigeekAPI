@@ -22,7 +22,7 @@ class UserController extends Controller
     public function __construct()
     {
         parent::__construct();
-        $this->middleware('jwt.auth', ['except' => ['authenticate', 'register', 'activation', 'test']]);
+//        $this->middleware('jwt.auth', ['except' => ['authenticate', 'register', 'activation', 'test']]);
         $this->middleware('role:admin', ['only' => ['index']]);
     }
 

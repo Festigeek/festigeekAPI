@@ -19,33 +19,20 @@ Route::get('/', function() {
     return response()->json(['success' => 'Festigeek API v1']);
 });
 
-/*
- * Resource: User
- */
+//////////////////
+// NON-AUTH ROUTES
+//////////////////
+
 Route::get('users/test', 'UserController@test');
 Route::get('users/activate', 'UserController@activation');
-Route::post('users/login', 'UserController@authenticate');
 Route::get('users/refreshToken', 'UserController@refresh');
-
-Route::get('users/{user_id}/orders', 'UserController@getOrders');
-Route::resource('users', 'UserController');
+Route::post('users/login', 'UserController@authenticate');
 Route::post('users', 'UserController@register');
-
-/*
- * Resource: Qrcode
- */
-Route::post('qrcode', 'QrcodeController@create');
-Route::post('qrcode/decrypt', 'QrcodeController@decrypt');
 
 /*
  * Resource: Country
  */
 Route::resource('countries', 'CountryController');
-
-/*
- * Resource: Address
- */
-//Route::resource('users.addresses', 'UserAddressController');
 
 /*
  * Resource: Products
@@ -59,14 +46,36 @@ Route::get('events/current', 'EventController@current');
 Route::get('events/{id}/teams', 'EventController@teams');
 Route::get('events/{id}/products', 'EventController@products');
 
-Route::get('orders', 'OrderController@index');
-Route::post('orders', 'OrderController@create'); //creates a new order, based on type (paypal or banking)
-Route::get('orders/done', 'OrderController@paypalDone');
-Route::get('orders/cancel', 'OrderController@paypalCancel');
-Route::get('orders/{id}', 'OrderController@show');
-Route::patch('orders/{id}', 'OrderController@patch');
-Route::patch('orders/{order_id}/products/{product_id}', 'OrderController@consumeProduct'); //TODO Create nested routes / controller
-Route::delete('orders/{id}', 'OrderController@delete');
 
-//Route::resource('orders', 'OrderController'); TODO later, for now, manually created routes
-Route::delete('orders/{id}', 'OrderController@destroy');
+//////////////
+// AUTH ROUTES
+//////////////
+
+Route::group(['middleware' => 'auth:api'], function() {
+    /*
+    * Resource: User
+    */
+    Route::get('users/{user_id}/orders', 'UserController@getOrders');
+    Route::resource('users', 'UserController');
+
+    /*
+    * Resource: Qrcode
+    */
+    Route::post('qrcode', 'QrcodeController@create');
+    Route::post('qrcode/decrypt', 'QrcodeController@decrypt');
+
+    /*
+    * Resource: Orders
+    */
+    Route::get('orders', 'OrderController@index');
+    Route::post('orders', 'OrderController@create'); //creates a new order, based on type (paypal or banking)
+    Route::get('orders/done', 'OrderController@paypalDone');
+    Route::get('orders/cancel', 'OrderController@paypalCancel');
+    Route::get('orders/{id}', 'OrderController@show');
+    Route::patch('orders/{id}', 'OrderController@patch');
+    Route::patch('orders/{order_id}/products/{product_id}', 'OrderController@consumeProduct'); //TODO Create nested routes / controller
+    
+    //Route::resource('orders', 'OrderController'); TODO later, for now, manually created routes
+    Route::delete('orders/{id}', 'OrderController@delete');
+    Route::delete('orders/{id}', 'OrderController@destroy');
+});

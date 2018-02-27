@@ -5,6 +5,7 @@ namespace App;
 use Hash;
 use Crypt;
 
+use Laravel\Passport\HasApiTokens;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -15,7 +16,7 @@ use Laratrust\Traits\LaratrustUserTrait;
 
 class User extends Authenticatable //implements JWTSubject
 {
-    use Notifiable, LaratrustUserTrait, SoftDeletes;
+    use HasApiTokens, Notifiable, LaratrustUserTrait, SoftDeletes;
 
     /**
      * The attributes that are mass assignable.
