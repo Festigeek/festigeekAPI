@@ -245,12 +245,31 @@ class UserController extends Controller
      * @param  Request  $request
      * @return Response
      */
-    public function refresh(Request $request) {
-        return response()->json([
-            'success' => 'Token refreshed',
-            'access_token' => auth()->refresh(true, true),
-            'token_type' => 'bearer',
-            'expires_in' => auth()->factory()->getTTL() * 60
+    public function attemptRefresh(Request $request) {
+        $refreshToken = $request->cookie(self::REFRESH_TOKEN);
+
+        return $this->proxy('refresh_token', [
+            'refresh_token' => $refreshToken
         ]);
+    }
+
+    /**
+     * Logs out the user. We revoke access token and refresh token.
+     * Also instruct the client to forget the refresh cookie.
+     */
+    public function logout()
+    {
+        $accessToken = $this->auth->user()->token();
+
+        $refreshToken = $this->db
+            ->table('oauth_refresh_tokens')
+            ->where('access_token_id', $accessToken->id)
+            ->update([
+                'revoked' => true
+            ]);
+
+        $accessToken->revoke();
+
+        $this->cookie->queue($this->cookie->forget(self::REFRESH_TOKEN));
     }
 }

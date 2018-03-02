@@ -66,6 +66,12 @@ class Handler extends ExceptionHandler
             $exception->getPrevious() instanceof \Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException)
             return response()->json(['error' => 'Wrong HTTP Method'], 405);
 
+        // oAuth Ecexptions
+        if ($exception instanceof AuthenticationException ||
+            $exception->getPrevious() instanceof AuthenticationException)
+            return response()->json(['error' => 'Authentication error', 'infos' => $exception->getMessage()], 401);
+
+
         // JWT Ecexptions
 //        if ($exception instanceof \Tymon\JWTAuth\Exceptions\TokenExpiredException ||
 //            $exception->getPrevious() instanceof \Tymon\JWTAuth\Exceptions\TokenExpiredException)
