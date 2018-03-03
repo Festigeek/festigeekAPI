@@ -299,7 +299,7 @@ class OrderController extends Controller
         //TODO with eloquent
         //check if user already registered a payment order with event_id to his name
         $existingPayment = $currentUser->orders()->where('event_id', $data['event_id'])->get();
-        if ($existingPayment->isNotEmpty())
+        if ($existingPayment->isNotEmpty()) // TODO: Check if also valid
             return response()->json(['error' => 'You have already created an order for this event']);
 
         if (!$request->has('checked_legal') || !$request->get('checked_legal'))
