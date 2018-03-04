@@ -57,6 +57,7 @@ Route::resource('products', 'ProductController');
 
 Route::get('events/current', 'EventController@current');
 Route::get('events/{id}/teams', 'EventController@teams');
+Route::get('events/{event_id}/teams/{team_id}', 'EventController@team');
 Route::get('events/{id}/products', 'EventController@products');
 
 Route::get('orders', 'OrderController@index');
