@@ -70,14 +70,36 @@ class Team extends Model
 //        $orders = $this->orders()->get()->filter(function($order){
 //            return $order->state !== 3;
 //        });
+        //if dans l'equipe
+
 
         $orders = $this->orders()->where('state', '<>', 3)->get();
-
-        $users = $orders->map(function($order) {
+        $isAMember = $orders->contains('user_id', 1); //TODO get the real user !!!Very Important!!!! 
+        $users = $orders->map(function($order) use ($isAMember) {
             $roaster = $order->products()->where('product_type_id', 1)->first()->id == $this->defaultProduct()->id;
-            return ['username' => $order->user->username, 'gender' => $order->user->gender, 'roaster' => $roaster];
+            $user = [
+              'id' => $order->user->id,
+              'username' => $order->user->username,
+              'gender' => $order->user->gender,
+              'email' => $order->user->when($isAMember, function() use($order){
+                return $order->user->email;
+              }),
+              'roaster' => $roaster
+            ];
+            return $user;
         });
 
         return $users;
     }
+
+    // public function getDetailedUsersAttribute(){
+    //   $orders = $this->orders()->where('state', '<>', 3)->get();
+    //
+    //   $users = $orders->map(function($order) {
+    //       $roaster = $order->products()->where('product_type_id', 1)->first()->id == $this->defaultProduct()->id;
+    //       $fullname = $order->user->firstname ." ". $order->user->lastname;
+    //       return ['id' => $order->user->id,'username' => $order->user->username, 'email' => $order->user->email, 'name' => $fullname, 'gender' => $order->user->gender, 'roaster' => $roaster];
+    //   });
+    //   return $users;
+    // }
 }

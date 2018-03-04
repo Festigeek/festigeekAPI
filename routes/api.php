@@ -68,6 +68,8 @@ Route::get('orders/{id}', 'OrderController@show');
 Route::patch('orders/{id}', 'OrderController@patch');
 Route::patch('orders/{order_id}/products/{product_id}', 'OrderController@consumeProduct'); //TODO Create nested routes / controller
 Route::delete('orders/{id}', 'OrderController@delete');
+Route::get('orders/{order_id}/team', 'OrderController@getTeamDetailed'); //TODO is this ok ?
+
 
 //Route::resource('orders', 'OrderController'); TODO later, for now, manually created routes
 Route::delete('orders/{id}', 'OrderController@destroy');

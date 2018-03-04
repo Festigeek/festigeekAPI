@@ -285,7 +285,30 @@ class OrderController extends Controller
         }
     }
 
+    public function getTeamDetailed(Request $request, $order_id){
+      $currentUser = JWTAuth::user();
+      $data = $request->all();
+      $data['user_id'] = $currentUser->id;
 
+      try {
+        $order = Order::findOrFail($order_id);
+      }
+      catch (\Exception $e) {
+        return response()->json(['error' => 'Order not Found'], 404);
+      }
+
+      $team = $order->team()->get();
+
+
+    //  $detailedUsers = []
+      // foreach($teamDetailed->users as $user) {
+      //   $user = "lol"
+      // }
+
+    //  $detailedUsers = $team->detailedUsers()->get();
+
+      return response()->json($team);
+    }
     public function paypalPayment(Request $request)
     {
         $currentUser = JWTAuth::user();
