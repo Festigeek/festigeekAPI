@@ -12,6 +12,7 @@ use Validator;
 use App\Address;
 use App\User;
 use App\Mail\RegisterMail;
+use App\Services\OAuthProxy;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
@@ -24,6 +25,8 @@ class UserController extends Controller
         parent::__construct();
 //        $this->middleware('jwt.auth', ['except' => ['authenticate', 'register', 'activation', 'test']]);
         $this->middleware('role:admin', ['only' => ['index']]);
+
+        $this->proxy = new OAuthProxy(app());
     }
 
     /**
@@ -145,51 +148,6 @@ class UserController extends Controller
     ///////////////////////
 
     /**
-     * Authenticate user from email / password & generate a new token.
-     *
-     * @param  Request  $request
-     * @return Response
-     */
-    public function authenticate(Request $request) {
-        $credentials = $request->only('email', 'password');
-
-        if (!$token = JWTAuth::attempt($credentials)) {
-            // We do not use the ORM because the property 'drupal_password' is hidden, and we need it.
-            $drupal_user = DB::table('users')->where('email', $credentials['email'])->where('activated', false)->first();
-
-            if(!is_null($drupal_user) && user_check_password($credentials['password'], $drupal_user)) {
-                if($request->filled('newPassword')) {
-                    // Update account
-                    DB::table('users')
-                        ->where('id', $drupal_user->id)
-                        ->update(['password' => Hash::make($request->input('newPassword')), 'activated' => 1]);
-
-                    // Re-create JWToken
-                    $credentials['password'] = $request->input('newPassword');
-                    $token = JWTAuth::attempt($credentials);
-                }
-                else {
-                    return response()->json(['error' => 'Missing parameters.'], 422);
-                }
-            }
-            else {
-                return response()->json(['error' => 'Invalid Credentials.'], 401);
-            }
-        }
-
-        if(!JWTAuth::user()->activated) {
-            return response()->json(['error' => 'Inactive Account.'], 401);
-        }
-
-        return response()->json([
-            'success' => 'Authenticated.', 
-            'token' => $token, 
-            'token_type' => 'bearer', 
-            'expires_in' => auth()->factory()->getTTL() * 60
-        ]);
-    }
-
-    /**
      * Create a new user and send a activation mail.
      *
      * @param  Request  $request
@@ -240,13 +198,65 @@ class UserController extends Controller
     }
 
     /**
+     * Authenticate user from email / password & generate a new token.
+     *
+     * @param  Request  $request
+     * @return Response
+     */
+    public function authenticate(Request $request) {
+        $credentials = $request->only('email', 'password');
+
+        $proxyResponse = $this->proxy->request('password', [
+            'username' => $credentials['email'], 
+            'password' => $credentials['password']
+        ]);
+
+        return $proxyResponse;
+
+        // if (!$token = JWTAuth::attempt($credentials)) {
+        //     // We do not use the ORM because the property 'drupal_password' is hidden, and we need it.
+        //     $drupal_user = DB::table('users')->where('email', $credentials['email'])->where('activated', false)->first();
+
+        //     if(!is_null($drupal_user) && user_check_password($credentials['password'], $drupal_user)) {
+        //         if($request->filled('newPassword')) {
+        //             // Update account
+        //             DB::table('users')
+        //                 ->where('id', $drupal_user->id)
+        //                 ->update(['password' => Hash::make($request->input('newPassword')), 'activated' => 1]);
+
+        //             // Re-create JWToken
+        //             $credentials['password'] = $request->input('newPassword');
+        //             $token = JWTAuth::attempt($credentials);
+        //         }
+        //         else {
+        //             return response()->json(['error' => 'Missing parameters.'], 422);
+        //         }
+        //     }
+        //     else {
+        //         return response()->json(['error' => 'Invalid Credentials.'], 401);
+        //     }
+        // }
+
+        // if(!JWTAuth::user()->activated) {
+        //     return response()->json(['error' => 'Inactive Account.'], 401);
+        // }
+
+        // return response()->json([
+        //     'success' => 'Authenticated.', 
+        //     'token' => $token, 
+        //     'token_type' => 'bearer', 
+        //     'expires_in' => auth()->factory()->getTTL() * 60
+        // ]);
+    }
+
+    /**
      * Refresh given token
      *
      * @param  Request  $request
      * @return Response
      */
     public function attemptRefresh(Request $request) {
-        $refreshToken = $request->cookie(self::REFRESH_TOKEN);
+        $refreshToken = $this->request->cookie(self::REFRESH_TOKEN);
 
         return $this->proxy('refresh_token', [
             'refresh_token' => $refreshToken

@@ -26,8 +26,7 @@ Route::get('/', function() {
 Route::get('users/test', 'UserController@test');
 Route::get('users/activate', 'UserController@activation');
 Route::get('users/refreshToken', 'UserController@attemptRefresh');
-//Route::post('users/login', 'UserController@authenticate');
-Route::post('users/login', 'UserController@attemptLogin');
+Route::post('users/login', 'UserController@authenticate');
 Route::post('users/logout', 'UserController@logout');
 Route::post('users', 'UserController@register');
 
