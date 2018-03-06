@@ -11,10 +11,9 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
-//use Tymon\JWTAuth\Contracts\JWTSubject as JWTSubject;
 use Laratrust\Traits\LaratrustUserTrait;
 
-class User extends Authenticatable //implements JWTSubject
+class User extends Authenticatable
 {
     use HasApiTokens, Notifiable, LaratrustUserTrait, SoftDeletes;
 

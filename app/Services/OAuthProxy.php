@@ -1,8 +1,9 @@
 <?php
 namespace App\Services;
 
-use App\User;
-use App\Services\Proxy;
+use Illuminate\Http\Request;
+
+use App\Exceptions\Festigeek\InvalidCredentialsException;
 
 class OAuthProxy extends Proxy
 {
@@ -21,14 +22,12 @@ class OAuthProxy extends Proxy
     public function attemptLogin($email, $password)
     {
         try {
-            $user = User::where('email', $email)->firstOrFail();
-            return $this->proxy('password', [
+            return $this->request('password', [
                 'username' => $email,
                 'password' => $password
             ]);
-        }
-        catch(\Exception $e){
-            throw new InvalidCredentialsException();
+        } catch (InvalidCredentialsException $exception) {
+            return response()->json(['error' => 'Authentication error', 'infos' => $exception->getMessage()], 401);
         }
     }
 
@@ -36,9 +35,9 @@ class OAuthProxy extends Proxy
      * Attempt to refresh the access token used a refresh token that
      * has been saved in a cookie
      */
-    public function attemptRefresh()
+    public function attemptRefresh(Request $request)
     {
-        $refreshToken = $this->request->cookie(self::REFRESH_TOKEN);
+        $refreshToken = $request->cookie(self::REFRESH_TOKEN);
 
         return $this->proxy('refresh_token', [
             'refresh_token' => $refreshToken
@@ -52,7 +51,7 @@ class OAuthProxy extends Proxy
      * @param array $data the data to send to the server
      * @throws InvalidCredentialsException
      */
-    public function request($grantType, array $data = [])
+    private function request($grantType, array $data = [])
     {
         $data = array_merge($data, [
             'client_id'     => env('OAUTH_PASSWORD_CLIENT_ID'),

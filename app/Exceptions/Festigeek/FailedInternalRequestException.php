@@ -63,6 +63,6 @@ class FailedInternalRequestException extends \Exception
      */
     public function render($request)
     {
-        return response()->json(['error' => 'Invalid Credentials'], 401);
+        return response()->json(['error' => 'Internal proxy error'], 500);
     }
 }

@@ -9,7 +9,6 @@ use Response;
 use JWTAuth;
 use Validator;
 
-use App\Address;
 use App\User;
 use App\Mail\RegisterMail;
 use App\Services\OAuthProxy;
@@ -206,12 +205,13 @@ class UserController extends Controller
     public function authenticate(Request $request) {
         $credentials = $request->only('email', 'password');
 
-        $proxyResponse = $this->proxy->request('password', [
-            'username' => $credentials['email'], 
-            'password' => $credentials['password']
-        ]);
+        if($user = User::where('email', $credentials['email'])->first()){
+            return $this->proxy->attemptLogin($credentials['email'], $credentials['password']);
+        }
+        else {
+             return response()->json(['error' => 'Invalid Credentials.'], 401);
+         }
 
-        return $proxyResponse;
 
         // if (!$token = JWTAuth::attempt($credentials)) {
         //     // We do not use the ORM because the property 'drupal_password' is hidden, and we need it.
@@ -256,11 +256,7 @@ class UserController extends Controller
      * @return Response
      */
     public function attemptRefresh(Request $request) {
-        $refreshToken = $this->request->cookie(self::REFRESH_TOKEN);
-
-        return $this->proxy('refresh_token', [
-            'refresh_token' => $refreshToken
-        ]);
+        return $this->proxy->attemptRefresh($request);
     }
 
     /**
@@ -281,5 +277,7 @@ class UserController extends Controller
         $accessToken->revoke();
 
         $this->cookie->queue($this->cookie->forget(self::REFRESH_TOKEN));
+
+        return $this->response(null, 204);
     }
 }

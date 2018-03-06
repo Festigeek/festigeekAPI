@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Blade;
 use App\Mail\BankingWireTransfertMail;
 use App\Mail\PaypalConfirmation;
 use Illuminate\Support\Facades\Mail;
@@ -18,10 +17,10 @@ use Crypt;
 use DateTime;
 use Validator;
 
-use App\Order;
-use App\Product;
-use App\Team;
-use App\Configuration;
+use App\Models\Order;
+use App\Models\Product;
+use App\Models\Team;
+use App\Models\Configuration;
 
 class OrderController extends Controller
 {
