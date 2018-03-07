@@ -9,7 +9,7 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 use Mail;
 use PayPal;
-use JWTAuth;
+use Auth;
 
 class Controller extends BaseController
 {
@@ -47,6 +47,6 @@ class Controller extends BaseController
     }
 
     protected function isAdminOrOwner($user_id) {
-        return $user_id === 'me' || JWTAuth::user()->id == $user_id || JWTAuth::user()->hasRole('admin');
+        return $user_id === 'me' || Auth::user()->id == $user_id || Auth::user()->hasRole('admin');
     }
 }

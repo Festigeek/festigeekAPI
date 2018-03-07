@@ -3,19 +3,17 @@
 namespace App\Http\Controllers;
 include("Auth/drupal_password.inc");
 
-use DB;
-use Crypt;
-use Response;
-use JWTAuth;
-use Validator;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Response;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Http\Request;
 
 use App\User;
 use App\Mail\RegisterMail;
 use App\Services\OAuthProxy;
-
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
@@ -47,7 +45,7 @@ class UserController extends Controller
      */
     public function show($user_id) {
         if($this->isAdminOrOwner($user_id)) {
-            $id = ($user_id === 'me') ? JWTAuth::user()->id : $user_id;
+            $id = ($user_id === 'me') ? Auth::user()->id : $user_id;
             try {
                 $user = User::findOrFail($id);
                 return response()->json($user);
@@ -70,7 +68,7 @@ class UserController extends Controller
     {
         if($this->isAdminOrOwner($user_id)) {
             try {
-                $id = ($user_id === 'me') ? JWTAuth::user()->id : $user_id;
+                $id = ($user_id === 'me') ? Auth::user()->id : $user_id;
                 $user = User::findOrFail($id);
             }
             catch (\Exception $e) {
@@ -127,7 +125,7 @@ class UserController extends Controller
         // TODO: filtrer par state
         if($this->isAdminOrOwner($user_id)) {
             $event = ($request->filled('event_id')) ? $request->get('event_id') : null;
-            $id = ($user_id === 'me') ? JWTAuth::user()->id : $user_id;
+            $id = ($user_id === 'me') ? Auth::user()->id : $user_id;
 
             $order = User::find($id)->orders()->get()->filter(function($order) use ($event) {
                 return (!is_null($event)) ? $order->event_id == $event : true;
@@ -162,8 +160,6 @@ class UserController extends Controller
 
         Mail::to($newuser->email, $newuser->username)->send(new RegisterMail($newuser));
 
-        //$token = JWTAuth::fromUser($newuser);
-        //return response()->json(compact('token'));
         return response()->json(['success' => 'Account created.'], 200);
     }
 
@@ -205,48 +201,44 @@ class UserController extends Controller
     public function authenticate(Request $request) {
         $credentials = $request->only('email', 'password');
 
-        if($user = User::where('email', $credentials['email'])->first()){
-            return $this->proxy->attemptLogin($credentials['email'], $credentials['password']);
+        if(!$response = $this->proxy->attemptLogin($credentials['email'], $credentials['password'])) {
+            // We do not use the ORM because the property 'drupal_password' is hidden, and we need it.
+            $drupal_user = DB::table('users')->where('email', $credentials['email'])->where('activated', false)->first();
+
+            if(!is_null($drupal_user) && user_check_password($credentials['password'], $drupal_user)) {
+                if($request->filled('newPassword')) {
+                    // Update account
+                    DB::table('users')
+                        ->where('id', $drupal_user->id)
+                        ->update(['password' => Hash::make($request->input('newPassword')), 'activated' => 1]);
+
+                    $credentials['password'] = $request->input('newPassword');
+                    $response = $this->proxy->attemptLogin($credentials['email'], $credentials['password']);
+                }
+                else {
+                    return response()->json(['error' => 'Missing parameters.'], 422);
+                }
+            }
+            else {
+                return response()->json(['error' => 'Invalid Credentials.'], 401);
+            }
+
+            return response()->json(['error' => 'Invalid Credentials.'], 401);
         }
-        else {
-             return response()->json(['error' => 'Invalid Credentials.'], 401);
-         }
 
+        // Have to make some request when data doesn't comes from "auth:api" middleware...
+        if(is_null(Auth::user())) {
+            try {
+                User::where('activated', 0)->firstOrFail(
+                    DB::table('oauth_access_tokens')->where('id', $response->getData()->token)->value('user_id')
+                );
+            } catch (\Exception $exception) {
+                return response()->json(['error' => 'Inactive Account.'], 401);
+            }
+        }
+        // TODO if not null...
 
-        // if (!$token = JWTAuth::attempt($credentials)) {
-        //     // We do not use the ORM because the property 'drupal_password' is hidden, and we need it.
-        //     $drupal_user = DB::table('users')->where('email', $credentials['email'])->where('activated', false)->first();
-
-        //     if(!is_null($drupal_user) && user_check_password($credentials['password'], $drupal_user)) {
-        //         if($request->filled('newPassword')) {
-        //             // Update account
-        //             DB::table('users')
-        //                 ->where('id', $drupal_user->id)
-        //                 ->update(['password' => Hash::make($request->input('newPassword')), 'activated' => 1]);
-
-        //             // Re-create JWToken
-        //             $credentials['password'] = $request->input('newPassword');
-        //             $token = JWTAuth::attempt($credentials);
-        //         }
-        //         else {
-        //             return response()->json(['error' => 'Missing parameters.'], 422);
-        //         }
-        //     }
-        //     else {
-        //         return response()->json(['error' => 'Invalid Credentials.'], 401);
-        //     }
-        // }
-
-        // if(!JWTAuth::user()->activated) {
-        //     return response()->json(['error' => 'Inactive Account.'], 401);
-        // }
-
-        // return response()->json([
-        //     'success' => 'Authenticated.', 
-        //     'token' => $token, 
-        //     'token_type' => 'bearer', 
-        //     'expires_in' => auth()->factory()->getTTL() * 60
-        // ]);
+        return $response;
     }
 
     /**
@@ -255,7 +247,8 @@ class UserController extends Controller
      * @param  Request  $request
      * @return Response
      */
-    public function attemptRefresh(Request $request) {
+    public function refreshToken(Request $request) {
+        return response()->json(Auth::user());
         return $this->proxy->attemptRefresh($request);
     }
 
@@ -263,20 +256,9 @@ class UserController extends Controller
      * Logs out the user. We revoke access token and refresh token.
      * Also instruct the client to forget the refresh cookie.
      */
-    public function logout()
+    public function logout(Request $request)
     {
-        $accessToken = $this->auth->user()->token();
 
-        $refreshToken = $this->db
-            ->table('oauth_refresh_tokens')
-            ->where('access_token_id', $accessToken->id)
-            ->update([
-                'revoked' => true
-            ]);
-
-        $accessToken->revoke();
-
-        $this->cookie->queue($this->cookie->forget(self::REFRESH_TOKEN));
 
         return $this->response(null, 204);
     }

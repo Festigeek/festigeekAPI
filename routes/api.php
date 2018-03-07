@@ -2,7 +2,7 @@
 
 /* List of patterns */
 Route::pattern('id', '\d+');
-Route::pattern('user_id', '\d+|me');
+Route::pattern('user', '\d+|me');
 
 /*
 |--------------------------------------------------------------------------
@@ -25,7 +25,7 @@ Route::get('/', function() {
 
 Route::get('users/test', 'UserController@test');
 Route::get('users/activate', 'UserController@activation');
-Route::get('users/refreshToken', 'UserController@attemptRefresh');
+Route::get('users/refreshToken', 'UserController@refreshToken');
 Route::post('users/login', 'UserController@authenticate');
 Route::post('users/logout', 'UserController@logout');
 Route::post('users', 'UserController@register');
@@ -56,7 +56,7 @@ Route::group(['middleware' => 'auth:api'], function() {
     /*
     * Resource: User
     */
-    Route::get('users/{user_id}/orders', 'UserController@getOrders');
+    Route::get('users/{user}/orders', 'UserController@getOrders');
     Route::resource('users', 'UserController');
 
     /*

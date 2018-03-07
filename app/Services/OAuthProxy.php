@@ -5,6 +5,9 @@ use Illuminate\Http\Request;
 
 use App\Exceptions\Festigeek\InvalidCredentialsException;
 
+use App\User;
+use Illuminate\Support\Facades\Auth;
+
 class OAuthProxy extends Proxy
 {
     const REFRESH_TOKEN = 'refreshToken';
@@ -21,11 +24,17 @@ class OAuthProxy extends Proxy
      */
     public function attemptLogin($email, $password)
     {
+        if(!User::where('email', $email)->first()) {
+            return null;
+        }
+
         try {
-            return $this->request('password', [
+            $response = $this->request('password', [
                 'username' => $email,
                 'password' => $password
             ]);
+
+            return $response;
         } catch (InvalidCredentialsException $exception) {
             return response()->json(['error' => 'Authentication error', 'infos' => $exception->getMessage()], 401);
         }
@@ -78,5 +87,23 @@ class OAuthProxy extends Proxy
         );
 
         return $response;
+    }
+
+    /**
+     * Logs out the user. We revoke access token and refresh token.
+     * Also instruct the client to forget the refresh cookie.
+     */
+    public function logout(Request $request)
+    {
+        $accessToken = $request->user()->token();
+
+        $this->db
+        ->table('oauth_refresh_tokens')
+        ->where('access_token_id', $accessToken->id)
+        ->update(['revoked' => true]);
+
+        $accessToken->revoke();
+
+        return response()->cookie->queue($request->cookie->forget(self::REFRESH_TOKEN));
     }
 }

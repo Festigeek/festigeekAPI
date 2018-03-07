@@ -11,16 +11,16 @@ use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 use Mockery\Exception;
 
-use JWTAuth;
+use Auth;
 use PayPal;
 use Crypt;
 use DateTime;
 use Validator;
 
-use App\Models\Order;
-use App\Models\Product;
-use App\Models\Team;
-use App\Models\Configuration;
+use App\Order;
+use App\Product;
+use App\Team;
+use App\Configuration;
 
 class OrderController extends Controller
 {
@@ -178,7 +178,7 @@ class OrderController extends Controller
 
     public function bankTransferPayment(Request $request)
     {
-        $currentUser = JWTAuth::user();
+        $currentUser = Auth::user();
         $data = $request->all();
         $data['user_id'] = $currentUser->id;
 
@@ -287,7 +287,7 @@ class OrderController extends Controller
 
     public function paypalPayment(Request $request)
     {
-        $currentUser = JWTAuth::user();
+        $currentUser = Auth::user();
         $data = $request->all();
         $data['user_id'] = $currentUser->id;
 
