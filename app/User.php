@@ -196,49 +196,4 @@ class User extends Authenticatable
     {
         return $this->hasMany('App\Order');
     }
-
-
-//    /**
-//     * Get the first address for the user or instantiate an empty one.
-//     */
-//    public function getAddressAttribute()
-//    {
-//        return $this->addresses()->first();
-//    }
-
-
-    /*
-     * ===============================================================================================================
-     * ===============================================================================================================
-     * TODO: Part to rewrite
-     * ===============================================================================================================
-     * ===============================================================================================================
-     */
-    //
-
-    //
-    // /**
-    //  * Get the inscriptions for the user
-    //  * TODO: moche, très moche. dès qu'on a fait le checkin --> vérifier used dans abstract_product à 1
-    //  */
-    // public function inscriptions($userId)
-    // {
-    //     // Tableau des inscriptions
-    //    // return $this->hasMany('App\Order');
-    //     //return $this->morphedByMany('App\Inscription', 'abstract_products', 'orders')->withPivot('used');
-    //
-    //
-    //     $inscriptions = DB::table('users')
-    //         ->select('abstract_products.*')
-    //         ->join('orders', 'users.id', '=', 'orders.user_id') //bon
-    //         ->join('abstract_products', 'abstract_products.order_id', '=', 'orders.id')
-    //
-    //        ->join('inscriptions', 'abstract_products.abstract_products_id', '=', 'inscriptions.id')
-    //         ->where('users.id', '=', $userId)
-    //         ->where('abstract_products.abstract_products_type', "=", "App\\Inscription")
-    //        // ->groupBy('inscriptions.id')
-    //         ->get();
-    //
-    //     return $inscriptions;
-    // }
 }

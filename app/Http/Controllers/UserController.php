@@ -227,16 +227,17 @@ class UserController extends Controller
         }
 
         // Have to make some request when data doesn't comes from "auth:api" middleware...
-        if(is_null(Auth::user())) {
-            try {
-                User::where('activated', 0)->firstOrFail(
-                    DB::table('oauth_access_tokens')->where('id', $response->getData()->token)->value('user_id')
-                );
-            } catch (\Exception $exception) {
+        try {
+            if(!is_null(Auth::user()) && Auth::user()->activated == 0) {
                 return response()->json(['error' => 'Inactive Account.'], 401);
             }
+
+            User::where('activated', 0)->firstOrFail(
+                DB::table('oauth_access_tokens')->where('id', $response->getData()->token)->value('user_id')
+            );
+        } catch (\Exception $exception) {
+            return response()->json(['error' => 'Inactive Account.'], 401);
         }
-        // TODO if not null...
 
         return $response;
     }
@@ -248,6 +249,7 @@ class UserController extends Controller
      * @return Response
      */
     public function refreshToken(Request $request) {
+        //TODO Test function ^^'
         return response()->json(Auth::user());
         return $this->proxy->attemptRefresh($request);
     }
@@ -258,8 +260,7 @@ class UserController extends Controller
      */
     public function logout(Request $request)
     {
-
-
+        //TODO call proxy
         return $this->response(null, 204);
     }
 }
