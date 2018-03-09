@@ -94,11 +94,34 @@ class User extends Authenticatable
 //    }
 
     /**
+     * Boot function for using with User Events
+     *
+     * @return void
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($model)
+        {
+            $model->generateRegistrationToken();
+        });
+    }
+
+    /**
      * Get the teams of the user.
      */
     protected function teams()
     {
         return $this->belongsToMany('App\Team')->withPivot('captain')->withTimestamps();
+    }
+
+    /**
+     * Get the orders for the user.
+     */
+    public function orders()
+    {
+        return $this->hasMany('App\Order');
     }
 
     /**
@@ -139,41 +162,6 @@ class User extends Authenticatable
     }
 
     /**
-     * Boot function for using with User Events
-     *
-     * @return void
-     */
-    protected static function boot()
-    {
-        parent::boot();
-
-        static::creating(function ($model)
-        {
-            $model->generateRegistrationToken();
-        });
-    }
-
-    /**
-     * Get the identifier that will be stored in the subject claim of the JWT
-     *
-     * @return mixed
-     */
-    public function getJWTIdentifier()
-    {
-        return $this->getKey();
-    }
-
-    /**
-     * Return a key value array, containing any custom claims to be added to the JWT
-     *
-     * @return array
-     */
-    public function getJWTCustomClaims()
-    {
-        return [];
-    }
-
-    /**
      * Return a base_64 generated qrcode based on user informations
      *
      * @return String
@@ -189,11 +177,23 @@ class User extends Authenticatable
         return base64_encode(QrCode::encoding('UTF-8')->merge('/public/images/logo_carre.jpg', .2)->generate($payload));
     }
 
-    /**
-     * Get the orders for the user.
-     */
-    public function orders()
-    {
-        return $this->hasMany('App\Order');
-    }
+//    /**
+//     * Get the identifier that will be stored in the subject claim of the JWT
+//     *
+//     * @return mixed
+//     */
+//    public function getJWTIdentifier()
+//    {
+//        return $this->getKey();
+//    }
+//
+//    /**
+//     * Return a key value array, containing any custom claims to be added to the JWT
+//     *
+//     * @return array
+//     */
+//    public function getJWTCustomClaims()
+//    {
+//        return [];
+//    }
 }

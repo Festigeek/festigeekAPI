@@ -81,4 +81,13 @@ class Team extends Model
 
         return $users;
     }
+
+    /**
+     * Check if a given user is a member of this team
+     *
+     * @return bool
+     */
+    public function hasUser($user_id) {
+        return $this->users()->get()->contains('id', $user_id);
+    }
 }
