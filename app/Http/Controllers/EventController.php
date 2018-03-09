@@ -2,13 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Event;
-use App\Models\Order;
+use App\Event;
+use App\Order;
 use Illuminate\Http\Request;
 
 class EventController extends Controller
 {
-
     /**
      * @param Request $request
      * @param String $id
@@ -47,9 +46,7 @@ class EventController extends Controller
      * @param $id event id
      */
     public function current(){
-
         $currentEvent = Event::whereDate('ends_at', '>=', date('Y-m-d'))->orderBy('begins_at', 'asc')->first();
-
         return response()->json($currentEvent);
     }
 }

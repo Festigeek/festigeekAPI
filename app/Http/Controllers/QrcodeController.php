@@ -13,7 +13,7 @@ class QrcodeController extends Controller
     public function __construct()
     {
         parent::__construct();
-//        $this->middleware('jwt.auth');
+        $this->middleware('auth:api');
         $this->middleware('role:admin|comite', ['only' => ['decrypt']]);
     }
 

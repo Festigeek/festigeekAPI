@@ -10,10 +10,11 @@
         "php": "^7.0",
         "laravel/framework": "^5.5.0",
         "laravel/passport": "*",
+        "laravel/tinker": "^1.0",
+        "doctrine/dbal": "^2.0",
         "simplesoftwareio/simple-qrcode": "~1.4.0",
         "paypal/rest-api-sdk-php": "*",
         "predis/predis": "^1.0",
-        "laravel/tinker": "^1.0",
         "netshell/paypal": "dev-master",
         "santigarcor/laratrust": "3.2.*",
         "maatwebsite/excel": "^2.1.0",
@@ -31,6 +32,10 @@
         "filp/whoops": "~2.0"
     },
     "autoload": {
+        "files": [
+            "vendor/laravel/framework/src/Illuminate/Foundation/helpers.php",
+            "vendor/laravel/framework/src/Illuminate/Support/helpers.php"
+        ],
         "classmap": [
             "database"
         ],

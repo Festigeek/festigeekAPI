@@ -3,8 +3,8 @@
 namespace App\Exceptions;
 
 use Exception;
-use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use Psr\Log\LoggerInterface;
 
 class Handler extends ExceptionHandler
 {
@@ -20,7 +20,7 @@ class Handler extends ExceptionHandler
         \Illuminate\Database\Eloquent\ModelNotFoundException::class,
         \Illuminate\Session\TokenMismatchException::class,
         \Illuminate\Validation\ValidationException::class,
-//        \Tymon\JWTAuth\Exceptions\JWTException::class,
+//        \League\OAuth2\Server\Exception\OAuthServerException::class,
     ];
 
     /**
@@ -33,7 +33,20 @@ class Handler extends ExceptionHandler
      */
     public function report(Exception $exception)
     {
-        parent::report($exception);
+        if ($exception instanceof \League\OAuth2\Server\Exception\OAuthServerException) {
+            try {
+                $logger = $this->container->make(LoggerInterface::class);
+            } catch (Exception $e) {
+                throw $exception; // throw the original exception
+            }
+
+            $logger->error(
+                $exception->getMessage(),
+                ['exception' => $exception]
+            );
+        } else {
+            parent::report($exception);
+        }
     }
 
     /**
@@ -66,12 +79,15 @@ class Handler extends ExceptionHandler
             $exception->getPrevious() instanceof \Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException)
             return response()->json(['error' => 'Wrong HTTP Method'], 405);
 
-        // oAuth Ecexptions
-        if ($exception instanceof AuthenticationException ||
-            $exception->getPrevious() instanceof AuthenticationException)
-            return response()->json(['error' => 'Authentication error', 'infos' => $exception->getMessage()], 401);
+        // oAuth Exception(s)
+        if ($exception instanceof \Illuminate\Auth\AuthenticationException ||
+            $exception->getPrevious() instanceof \Illuminate\Auth\AuthenticationException)
+            if (\App::environment('production'))
+                return response()->json(['error' => 'Authentication error'], 401);
+            else
+                return response()->json(['error' => 'Authentication error', 'infos' => $exception->getMessage()], 401);
 
-
+        // TODO Delete if not needed anymore
         // JWT Ecexptions
 //        if ($exception instanceof \Tymon\JWTAuth\Exceptions\TokenExpiredException ||
 //            $exception->getPrevious() instanceof \Tymon\JWTAuth\Exceptions\TokenExpiredException)
@@ -80,10 +96,10 @@ class Handler extends ExceptionHandler
 //        if ($exception instanceof \Tymon\JWTAuth\Exceptions\TokenInvalidException ||
 //            $exception->getPrevious() instanceof \Tymon\JWTAuth\Exceptions\TokenInvalidException)
 //            return response()->json(['error' => 'Token is invalid'], 401);
-
-        if ($exception instanceof \Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException ||
-            $exception->getPrevious() instanceof \Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException)
-            return response()->json(['error' => 'Token not provided'], 401);
+//
+//        if ($exception instanceof \Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException ||
+//            $exception->getPrevious() instanceof \Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException)
+//            return response()->json(['error' => 'Token not provided'], 401);
 
         // Other Exceptions in production
         if (\App::environment('production'))
@@ -107,14 +123,16 @@ class Handler extends ExceptionHandler
             return response()->json(['error' => 'PayPal Missing Credential Exception'], 502);
 
         dd($exception); // Only for BIG trouble.
-        //return parent::render($request, $exception);
 
-        if (method_exists('getStatusCode', $exception))
-            $status = $exception->getStatusCode();
-        else
-            $status = 'unavailable';
-
-        return response()->json(['error' => $exception->getMessage(), 'status_code' => $status, 'class' => get_class($exception), 'trace' => $exception->getTraceAsString()], 500);
+        // TODO Delete if not needed
+//        return parent::render($request, $exception);
+//
+//        if (method_exists('getStatusCode', $exception))
+//            $status = $exception->getStatusCode();
+//        else
+//            $status = 'unavailable';
+//
+//        return response()->json(['error' => $exception->getMessage(), 'status_code' => $status, 'class' => get_class($exception), 'trace' => $exception->getTraceAsString()], 500);
     }
 
     /**
@@ -124,7 +142,7 @@ class Handler extends ExceptionHandler
      * @param  \Illuminate\Auth\AuthenticationException  $exception
      * @return \Illuminate\Http\Response
      */
-    protected function unauthenticated($request, AuthenticationException $exception)
+    protected function unauthenticated($request, \Illuminate\Auth\AuthenticationException $exception)
     {
         if ($request->expectsJson()) {
             return response()->json(['error' => 'Unauthenticated.'], 401);

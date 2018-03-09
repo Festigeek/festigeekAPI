@@ -4,10 +4,16 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 
-use App\Models\Country;
+use App\Country;
 
 class CountryController extends Controller
 {
+    public function __construct()
+    {
+        parent::__construct();
+        $this->middleware('role:admin', ['except' => ['index']]);
+    }
+
     /**
      * Display a listing of the resource.
      *

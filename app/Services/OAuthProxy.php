@@ -2,11 +2,9 @@
 namespace App\Services;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 use App\Exceptions\Festigeek\InvalidCredentialsException;
-
-use App\User;
-use Illuminate\Support\Facades\Auth;
 
 class OAuthProxy extends Proxy
 {
@@ -24,10 +22,6 @@ class OAuthProxy extends Proxy
      */
     public function attemptLogin($email, $password)
     {
-        if(!User::where('email', $email)->first()) {
-            return null;
-        }
-
         try {
             $response = $this->request('password', [
                 'username' => $email,
@@ -97,13 +91,12 @@ class OAuthProxy extends Proxy
     {
         $accessToken = $request->user()->token();
 
-        $this->db
-        ->table('oauth_refresh_tokens')
+        DB::table('oauth_refresh_tokens')
         ->where('access_token_id', $accessToken->id)
         ->update(['revoked' => true]);
 
         $accessToken->revoke();
 
-        return response()->cookie->queue($request->cookie->forget(self::REFRESH_TOKEN));
+        return response()->json(['Logout successful'], 204)->withCookie($request->cookie->forget(self::REFRESH_TOKEN));
     }
 }

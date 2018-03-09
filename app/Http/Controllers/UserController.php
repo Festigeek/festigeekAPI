@@ -20,7 +20,7 @@ class UserController extends Controller
     public function __construct()
     {
         parent::__construct();
-//        $this->middleware('jwt.auth', ['except' => ['authenticate', 'register', 'activation', 'test']]);
+        $this->middleware('auth:api', ['except' => ['authenticate', 'register', 'activation', 'test']]);
         $this->middleware('role:admin', ['only' => ['index']]);
 
         $this->proxy = new OAuthProxy(app());
@@ -135,11 +135,6 @@ class UserController extends Controller
         else abort(403);
     }
 
-    public function test(Request $request) {
-        // Test function
-    }
-
-
     ///////////////////////
     // AUTHENTICATION STUFF
     ///////////////////////
@@ -201,12 +196,15 @@ class UserController extends Controller
     public function authenticate(Request $request) {
         $credentials = $request->only('email', 'password');
 
-        if(!$response = $this->proxy->attemptLogin($credentials['email'], $credentials['password'])) {
+        if(!$user = User::where('email', $credentials['email'])->first())
+            return response()->json(['error' => 'Invalid Credentials.'], 401);
+
+        if (!$response = $this->proxy->attemptLogin($credentials['email'], $credentials['password'])) {
             // We do not use the ORM because the property 'drupal_password' is hidden, and we need it.
             $drupal_user = DB::table('users')->where('email', $credentials['email'])->where('activated', false)->first();
 
-            if(!is_null($drupal_user) && user_check_password($credentials['password'], $drupal_user)) {
-                if($request->filled('newPassword')) {
+            if (!is_null($drupal_user) && user_check_password($credentials['password'], $drupal_user)) {
+                if ($request->filled('newPassword')) {
                     // Update account
                     DB::table('users')
                         ->where('id', $drupal_user->id)
@@ -214,30 +212,18 @@ class UserController extends Controller
 
                     $credentials['password'] = $request->input('newPassword');
                     $response = $this->proxy->attemptLogin($credentials['email'], $credentials['password']);
-                }
-                else {
+                } else {
                     return response()->json(['error' => 'Missing parameters.'], 422);
                 }
-            }
-            else {
+            } else {
                 return response()->json(['error' => 'Invalid Credentials.'], 401);
             }
 
             return response()->json(['error' => 'Invalid Credentials.'], 401);
         }
 
-        // Have to make some request when data doesn't comes from "auth:api" middleware...
-        try {
-            if(!is_null(Auth::user()) && Auth::user()->activated == 0) {
-                return response()->json(['error' => 'Inactive Account.'], 401);
-            }
-
-            User::where('activated', 0)->firstOrFail(
-                DB::table('oauth_access_tokens')->where('id', $response->getData()->token)->value('user_id')
-            );
-        } catch (\Exception $exception) {
+        if($user->activated == 0)
             return response()->json(['error' => 'Inactive Account.'], 401);
-        }
 
         return $response;
     }
@@ -249,8 +235,6 @@ class UserController extends Controller
      * @return Response
      */
     public function refreshToken(Request $request) {
-        //TODO Test function ^^'
-        return response()->json(Auth::user());
         return $this->proxy->attemptRefresh($request);
     }
 
@@ -260,7 +244,7 @@ class UserController extends Controller
      */
     public function logout(Request $request)
     {
-        //TODO call proxy
-        return $this->response(null, 204);
+        $response = $this->proxy->logout($request);
+        return $response->cookie(null);
     }
 }

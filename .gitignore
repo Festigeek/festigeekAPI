@@ -1,5 +1,6 @@
 node_modules/
 public/storage/app/
+public/storage/app/*.key
 vendor/
 .idea/
 .vscode/

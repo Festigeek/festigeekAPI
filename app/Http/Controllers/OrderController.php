@@ -15,6 +15,7 @@ use Auth;
 use PayPal;
 use Crypt;
 use DateTime;
+use phpDocumentor\Reflection\Types\Integer;
 use Validator;
 
 use App\Order;
@@ -27,7 +28,7 @@ class OrderController extends Controller
     public function __construct()
     {
         parent::__construct();
-//        $this->middleware('jwt.auth', ['except' => ['paypalDone', 'paypalCancel']]);
+        $this->middleware('auth:api', ['except' => ['paypalDone', 'paypalCancel']]);
         $this->middleware('role:admin|comite', ['only' => ['index', 'patch', 'consumeProduct']]);
         $this->middleware('role:admin', ['only' => ['delete']]);
     }
@@ -102,6 +103,8 @@ class OrderController extends Controller
         });
     }
 
+    // CRUD
+
     /**
      * Show all orders.
      *
@@ -175,6 +178,79 @@ class OrderController extends Controller
         else if ($request->get('payment_type_id') === 2)
             return $this->paypalPayment($request);
     }
+
+    /**
+     * Update an order
+     * @param Request $request
+     * @param Integer $order_id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function patch(Request $request, $order_id)
+    {
+        try {
+            $order = Order::findOrFail($order_id);
+        }
+        catch (\Exception $e) {
+            return response()->json(['error' => 'Order not Found'], 404);
+        }
+
+        $inputs = $request->only([
+            'state',
+            'code_lan'
+        ]);
+
+        $validator = Validator::make($inputs, [
+            'state' => 'nullable|numeric',
+            'code_lan' => 'nullable|string',
+        ]);
+
+        if ($validator->fails())
+            return response()->json(['error' => 'Validation error.', 'validation' => $validator], 400);
+
+        if($request->has("state"))
+            $order->state =$request->get("state");
+        if($request->has("code_lan"))
+            $order->code_lan = $request->get("code_lan");
+
+        $order->save();
+        return response()->json($order);
+    }
+
+    /**
+     * Delete an order
+     * @param Integer $order_id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function delete($order_id){
+        DB::beginTransaction();
+
+        try{
+            $order = Order::find($order_id);
+            foreach($order->products()->get() as $product) {
+                $product->sold -= $product->pivot->amount;
+                $product->save();
+            }
+
+            $order->products()->detach();
+            $order->delete();
+
+            DB::commit();
+            return response()->json(['success']);
+        }
+        catch (\Throwable $e) {
+            DB::rollback();
+
+            return response()->json(['error'=>$e]);
+        }
+    }
+
+    // Others
+
+    public function getTeam($order_id) {
+        return Order::find($order_id)->team()->get();
+    }
+
+    // PayPal Stuff
 
     public function bankTransferPayment(Request $request)
     {
@@ -283,7 +359,6 @@ class OrderController extends Controller
             return response()->json(['error' => 'request was well-formed but was unable to be followed due to semantic errors'], 422);
         }
     }
-
 
     public function paypalPayment(Request $request)
     {
@@ -473,89 +548,33 @@ class OrderController extends Controller
         return redirect('https://www.festigeek.ch/#!/checkout?state=cancelled');
     }
 
-  public function patch(Request $request, $order_id)
-  {
-    try {
-      $order = Order::findOrFail($order_id);
-    }
-    catch (\Exception $e) {
-      return response()->json(['error' => 'Order not Found'], 404);
-    }
-
-    $inputs = $request->only([
-      'state',
-      'code_lan'
-    ]);
-
-    $validator = Validator::make($inputs, [
-      'state' => 'nullable|numeric',
-      'code_lan' => 'nullable|string',
-    ]);
-
-    if ($validator->fails())
-      return response()->json(['error' => 'Validation error.', 'validation' => $validator], 400);
-
-    if($request->has("state"))
-      $order->state =$request->get("state");
-    if($request->has("code_lan"))
-      $order->code_lan = $request->get("code_lan");
-
-    $order->save();
-    return response()->json($order);
-  }
-
-  public function consumeProduct(Request $request, $order_id, $product_id){
-    try {
-      $order = Order::findOrFail($order_id);
-    }
-    catch (\Exception $e) {
-      return response()->json(['error' => 'Order not Found'], 404);
-    }
-
-    $inputs = $request->only(['consume']);
-
-    $validator = Validator::make($inputs, [
-      'consume' => 'required|numeric'
-    ]);
-
-    if ($validator->fails())
-      return response()->json(['error' => 'Validation error.', 'validation' => $validator], 400);
-
-    $consume = $request->get("consume");
-    $product = $order->products()->where('product_id', $product_id)->first();
-
-    if(intval($consume) <= $product->pivot->amount) {
-      $order->products()->updateExistingPivot((int)$product_id, ['consume' => intval($consume)]);
-    }else
-      return response()->json(['error' => 'Try to consume more then ordered.', 'validation' => $validator], 400);
-
-    return response()->json($order);
-  }
-
-    public function destroy($id){
-        //get order
-
-        DB::beginTransaction();
-        try{
-            $order = Order::find($id);
-            foreach($order->products()->get() as $product){
-                $product->sold -= $product->pivot->amount;
-
-
-                $product->save();
-            }
-
-            $order->products()->detach();
-            $order->delete();
-
-            DB::commit();
-            return response()->json(['success']);
-
-
-        }catch (\Throwable $e) {
-            DB::rollback();
-
-            return response()->json(['error'=>$e]);
+    public function consumeProduct(Request $request, $order_id, $product_id)
+    {
+        try {
+            $order = Order::findOrFail($order_id);
         }
+        catch (\Exception $e) {
+            return response()->json(['error' => 'Order not Found'], 404);
+        }
+
+        $inputs = $request->only(['consume']);
+
+        $validator = Validator::make($inputs, [
+            'consume' => 'required|numeric'
+        ]);
+
+        if ($validator->fails())
+            return response()->json(['error' => 'Validation error.', 'validation' => $validator], 400);
+
+        $consume = $request->get("consume");
+        $product = $order->products()->where('product_id', $product_id)->first();
+
+        if(intval($consume) <= $product->pivot->amount) {
+            $order->products()->updateExistingPivot((int)$product_id, ['consume' => intval($consume)]);
+        }
+        else
+            return response()->json(['error' => 'Try to consume more then ordered.', 'validation' => $validator], 400);
+
+        return response()->json($order);
     }
 }

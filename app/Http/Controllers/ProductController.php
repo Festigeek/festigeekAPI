@@ -2,11 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Product;
+use App\Product;
 use Illuminate\Http\Request;
 
 class ProductController extends Controller
 {
+    public function __construct()
+    {
+        parent::__construct();
+        $this->middleware('role:admin', ['except' => ['index']]);
+    }
+
     /**
      * Display a listing of the resource.
      *

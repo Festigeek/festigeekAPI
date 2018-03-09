@@ -65,6 +65,7 @@ class Team extends Model
      * @return String
      */
     public function getUsersAttribute() {
+        // TODO write different value if user is in the team (or admin) maybe create user->isInTeam($team_id) ?
 //        $users = $this->users()->get(['username', 'gender'])->makeHidden(['QRCode', 'pivot']);
 
 //        $orders = $this->orders()->get()->filter(function($order){
