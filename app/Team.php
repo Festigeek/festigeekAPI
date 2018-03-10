@@ -68,15 +68,18 @@ class Team extends Model
         // TODO write different value if user is in the team (or admin) maybe create user->isInTeam($team_id) ?
 //        $users = $this->users()->get(['username', 'gender'])->makeHidden(['QRCode', 'pivot']);
 
-//        $orders = $this->orders()->get()->filter(function($order){
-//            return $order->state !== 3;
-//        });
-
+        // Get correct users for a specific team
         $orders = $this->orders()->where('state', '<>', 3)->get();
-
         $users = $orders->map(function($order) {
             $roaster = $order->products()->where('product_type_id', 1)->first()->id == $this->defaultProduct()->id;
-            return ['username' => $order->user->username, 'gender' => $order->user->gender, 'roaster' => $roaster];
+            $user = ['username' => $order->user->username, 'gender' => $order->user->gender, 'roaster' => $roaster];
+
+            // Add some informations for members of the team
+            if (auth()->user() && $this->hasUser(auth()->user()->id)) {
+                $user['email'] = $order->user->email;
+            }
+
+            return $user;
         });
 
         return $users;
@@ -87,7 +90,7 @@ class Team extends Model
      *
      * @return bool
      */
-    public function hasUser($user_id) {
+    private function hasUser($user_id) {
         return $this->users()->get()->contains('id', $user_id);
     }
 }
