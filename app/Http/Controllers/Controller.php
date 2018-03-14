@@ -20,16 +20,16 @@ class Controller extends BaseController
     public function __construct() {
         if(\Config::get('mail.driver') === 'smtp') {
             // Send email notification
-            $transport = \Swift_SmtpTransport::newInstance(
-                \Config::get('mail.host'),
-                \Config::get('mail.port'),
-                \Config::get('mail.encryption'))
-                    ->setUsername(\Config::get('mail.username'))
-                    ->setPassword(\Config::get('mail.password'))
-                    ->setStreamOptions(['ssl' => \Config::get('mail.ssloptions')]);
-
-            $mailer = \Swift_Mailer::newInstance($transport);
-            Mail::setSwiftMailer($mailer);
+//            $transport = \Swift_SmtpTransport::newInstance(
+//                \Config::get('mail.host'),
+//                \Config::get('mail.port'),
+//                \Config::get('mail.encryption'))
+//                    ->setUsername(\Config::get('mail.username'))
+//                    ->setPassword(\Config::get('mail.password'))
+//                    ->setStreamOptions(['ssl' => \Config::get('mail.ssloptions')]);
+//
+//            $mailer = \Swift_Mailer::newInstance($transport);
+//            Mail::setSwiftMailer($mailer);
         }
         
         $this->_apiContext = PayPal::ApiContext(
