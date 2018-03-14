@@ -81,7 +81,9 @@ class Handler extends ExceptionHandler
 
         // oAuth Exception(s)
         if ($exception instanceof \Illuminate\Auth\AuthenticationException ||
-            $exception->getPrevious() instanceof \Illuminate\Auth\AuthenticationException)
+            $exception->getPrevious() instanceof \Illuminate\Auth\AuthenticationException ||
+            $exception instanceof \App\Exceptions\Festigeek\FailedInternalRequestException ||
+            $exception->getPrevious() instanceof \App\Exceptions\Festigeek\FailedInternalRequestException)
             if (\App::environment('production'))
                 return response()->json(['error' => 'Authentication error'], 401);
             else
