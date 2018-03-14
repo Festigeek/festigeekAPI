@@ -81,13 +81,18 @@ class Handler extends ExceptionHandler
 
         // oAuth Exception(s)
         if ($exception instanceof \Illuminate\Auth\AuthenticationException ||
-            $exception->getPrevious() instanceof \Illuminate\Auth\AuthenticationException ||
-            $exception instanceof \App\Exceptions\Festigeek\FailedInternalRequestException ||
-            $exception->getPrevious() instanceof \App\Exceptions\Festigeek\FailedInternalRequestException)
+            $exception->getPrevious() instanceof \Illuminate\Auth\AuthenticationException)
             if (\App::environment('production'))
                 return response()->json(['error' => 'Authentication error'], 401);
             else
                 return response()->json(['error' => 'Authentication error', 'infos' => $exception->getMessage()], 401);
+
+        if($exception instanceof \App\Exceptions\Festigeek\FailedInternalRequestException ||
+            $exception->getPrevious() instanceof \App\Exceptions\Festigeek\FailedInternalRequestException)
+            if (\App::environment('production'))
+                return response()->json(['error' => 'Authentication error'], 401);
+            else
+                return response()->json(['error' => 'Authentication error', 'infos' => $exception->getRequest()->getContent(true)], 401);
 
         // TODO Delete if not needed anymore
         // JWT Ecexptions
