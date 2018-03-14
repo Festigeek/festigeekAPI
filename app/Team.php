@@ -72,10 +72,16 @@ class Team extends Model
         $orders = $this->orders()->where('state', '<>', 3)->get();
         $users = $orders->map(function($order) {
             $roaster = $order->products()->where('product_type_id', 1)->first()->id == $this->defaultProduct()->id;
-            $user = ['username' => $order->user->username, 'gender' => $order->user->gender, 'roaster' => $roaster];
+            $user = [
+                'username' => $order->user->username,
+                'gender' => $order->user->gender,
+                'roaster' => $roaster
+            ];
 
             // Add some informations for members of the team
             if (auth()->user() && $this->hasUser(auth()->user()->id)) {
+                $user['firstname'] = $order->user->firstname;
+                $user['lastname'] = $order->user->lastname;
                 $user['email'] = $order->user->email;
             }
 
