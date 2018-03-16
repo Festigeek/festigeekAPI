@@ -43,6 +43,7 @@ class Proxy
 
         // Get response
         $response = $this->app->handle($request);
+        dd($response->getStatusCode());
         if ($response->getStatusCode() >= 400) {
             throw new FailedInternalRequestException($request, $response);
         }
