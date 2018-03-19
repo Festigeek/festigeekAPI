@@ -15,7 +15,6 @@ use Auth;
 use PayPal;
 use Crypt;
 use DateTime;
-use phpDocumentor\Reflection\Types\Integer;
 use Validator;
 
 use App\Order;
@@ -25,12 +24,29 @@ use App\Configuration;
 
 class OrderController extends Controller
 {
+    private $apiContext;
+    private $client_id;
+    private $secret;
+
     public function __construct()
     {
         parent::__construct();
         $this->middleware('auth:api', ['except' => ['paypalDone', 'paypalCancel']]);
         $this->middleware('role:admin|comite', ['only' => ['index', 'patch', 'consumeProduct']]);
         $this->middleware('role:admin', ['only' => ['delete']]);
+
+        // Detect if we are running in live mode or sandbox
+        if(config('paypal.settings.mode') == 'live'){
+            $this->client_id = config('paypal.live_client_id');
+            $this->secret = config('paypal.live_secret');
+        } else {
+            $this->client_id = config('paypal.sandbox_client_id');
+            $this->secret = config('paypal.sandbox_secret');
+        }
+
+        // Set the Paypal API Context/Credentials
+        $this->apiContext = new ApiContext(new OAuthTokenCredential($this->client_id, $this->secret));
+        $this->apiContext->setConfig(config('paypal.settings'));
     }
 
     private function getCSV(Collection $orders)
@@ -475,7 +491,7 @@ class OrderController extends Controller
         $payment->setTransactions(array($transaction));
 
         try {
-            $response = $payment->create($this->_apiContext);
+            $response = $payment->create($this->apiContext);
             $redirectUrl = $response->links[1]->href;
 
             return response()->json(['success' => 'Ready for PayPal transaction', 'link' => $redirectUrl], 200);
@@ -527,8 +543,8 @@ class OrderController extends Controller
             $order->save();
 
             DB::commit();
-            $payment = PayPal::getById($id, $this->_apiContext);
-            $executePayment = $payment->execute($paymentExecution, $this->_apiContext);
+            $payment = PayPal::getById($id, $this->apiContext);
+            $executePayment = $payment->execute($paymentExecution, $this->apiContext);
 
             $win = $order->products()->where('product_id', 7)->count();
             $user = $order->user()->get()[0];
