@@ -44,6 +44,17 @@ class OrderController extends Controller
             $this->secret = config('paypal.sandbox_secret');
         }
 
+//        $this->apiContext = PayPal::ApiContext($this->client_id, $this->secret);
+//
+//        $this->apiContext->setConfig(array(
+//            'mode' => config('services.paypal.mode'),
+//            'service.EndPoint' => config('services.paypal.end_point'),
+//            'http.ConnectionTimeOut' => 60,
+//            'log.LogEnabled' => true,
+//            'log.FileName' => storage_path('logs/paypal.log'),
+//            'log.LogLevel' => 'FINE'
+//        ));
+
         // Set the Paypal API Context/Credentials
         $this->apiContext = new ApiContext(new OAuthTokenCredential($this->client_id, $this->secret));
         $this->apiContext->setConfig(config('paypal.settings'));

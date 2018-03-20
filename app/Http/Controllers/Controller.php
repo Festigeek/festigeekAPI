@@ -16,7 +16,7 @@ class Controller extends BaseController
     use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
 
     public function __construct() {
-        if(\Config::get('mail.driver') === 'smtp') {
+//        if(\Config::get('mail.driver') === 'smtp') {
             // Send email notification
 //            $transport = \Swift_SmtpTransport::newInstance(
 //                \Config::get('mail.host'),
@@ -28,7 +28,7 @@ class Controller extends BaseController
 //
 //            $mailer = \Swift_Mailer::newInstance($transport);
 //            Mail::setSwiftMailer($mailer);
-        }
+//        }
     }
 
     protected function isAdminOrOwner($user_id) {
