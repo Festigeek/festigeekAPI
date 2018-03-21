@@ -3,9 +3,12 @@
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Team extends Model
 {
+    use SoftDeletes;
+
     private $caracteres = array(
         'À' => 'a', 'Á' => 'a', 'Â' => 'a', 'Ä' => 'a', 'à' => 'a', 'á' => 'a', 'â' => 'a', 'ä' => 'a', '@' => 'a',
         'È' => 'e', 'É' => 'e', 'Ê' => 'e', 'Ë' => 'e', 'è' => 'e', 'é' => 'e', 'ê' => 'e', 'ë' => 'e', '€' => 'e',
@@ -41,6 +44,31 @@ class Team extends Model
     protected $appends = [
         'users'
     ];
+
+    /**
+     * Define model event callbacks.
+     *
+     * @return void
+     */
+    public static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($model) {
+            $keys = array_merge(range('A','Z'), range('0', '9'));
+
+            do {
+                $rand_keys = array_rand($keys, 5);
+                $code = "";
+
+                foreach ($rand_keys as $k) {
+                    $code .= $keys[$k];
+                }
+            } while(static::where('code', '=', $code)->exists());
+
+            $model->code = $code;
+        });
+    }
 
     /**
      * Get the EventProduct for the Team.
