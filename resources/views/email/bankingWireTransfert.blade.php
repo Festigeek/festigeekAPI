@@ -32,7 +32,7 @@
     <div>
       <p>
         Salut {{ $username }}, <br/><br/>
-        Félicitation! Tu es inscrit à la LAN FestiGeek 2017 !<br/>
+        Félicitation! Tu es inscrit à la LAN FestiGeek 2018 !<br/>
         Ou enfin presque, reste encore à régler la facture. ;)
       </p>
 
@@ -63,7 +63,7 @@
       </table>
 
       <p>
-        Afin de valider ton inscription, nous te demandons d'effectuer un transfert de <strong>{{ $total }} CHF</strong> avant le <strong>22 mai</strong> à<br/>
+        Afin de valider ton inscription, nous te demandons d'effectuer un transfert de <strong>{{ $total }} CHF</strong> avant le <strong>07 mai</strong> à<br/>
 
         <span style="display: inline-block; border: 2px solid black; padding: 8px; margin-top: 8px;">
           PostFinance SA<br />
@@ -75,7 +75,7 @@
       </p>
 
       <p>
-        Si tu as des questions, n'hésites-pas à nous contacter sur <a href="https://www.facebook.com/festigeek.yverdon/">Facebook</a> ou <a href="https://discord.gg/QQ2KEUY">Discord</a>.<br>
+        Si tu as des questions, n'hésites-pas à nous contacter sur <a href="https://www.facebook.com/festigeek.yverdon/">Facebook</a> ou <a href="https://discord.gg/festigeek">Discord</a>.<br>
         On se réjouit de te voir à la LAN.
       </p>
 

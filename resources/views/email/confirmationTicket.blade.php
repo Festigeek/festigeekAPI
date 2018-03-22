@@ -76,11 +76,11 @@
 </div>
 
 <p>
-  Les portes ouvrent le <strong>vendredi 26 mai, à 16h00</strong>. Tu trouveras toutes les informations importantes <a href="https://festigeek.ch/#!/infolan">ici</a>.
+  Les portes ouvrent le <strong>vendredi 11 mai, à 16h00</strong>. Tu trouveras toutes les informations importantes <a href="https://festigeek.ch/#!/infolan">ici</a>.
 </p>
 
 <p>
-  Si tu as des questions, n'hésites-pas à nous contacter sur <a href="https://www.facebook.com/festigeek.yverdon/">Facebook</a> ou <a href="https://discord.gg/QQ2KEUY">Discord</a>.<br>
+  Si tu as des questions, n'hésites-pas à nous contacter sur <a href="https://www.facebook.com/festigeek.yverdon/">Facebook</a> ou <a href="https://discord.gg/festigeek">Discord</a>.<br>
   On se réjouit de te voir à la LAN.
 </p>
 
