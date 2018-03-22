@@ -9,15 +9,6 @@ class Team extends Model
 {
     use SoftDeletes;
 
-    private $caracteres = array(
-        'À' => 'a', 'Á' => 'a', 'Â' => 'a', 'Ä' => 'a', 'à' => 'a', 'á' => 'a', 'â' => 'a', 'ä' => 'a', '@' => 'a',
-        'È' => 'e', 'É' => 'e', 'Ê' => 'e', 'Ë' => 'e', 'è' => 'e', 'é' => 'e', 'ê' => 'e', 'ë' => 'e', '€' => 'e',
-        'Ì' => 'i', 'Í' => 'i', 'Î' => 'i', 'Ï' => 'i', 'ì' => 'i', 'í' => 'i', 'î' => 'i', 'ï' => 'i',
-        'Ò' => 'o', 'Ó' => 'o', 'Ô' => 'o', 'Ö' => 'o', 'ò' => 'o', 'ó' => 'o', 'ô' => 'o', 'ö' => 'o',
-        'Ù' => 'u', 'Ú' => 'u', 'Û' => 'u', 'Ü' => 'u', 'ù' => 'u', 'ú' => 'u', 'û' => 'u', 'ü' => 'u', 'µ' => 'u',
-        'Œ' => 'oe', 'œ' => 'oe', '$' => 's'
-    );
-
     /**
      * The attributes that are mass assignable.
      *
@@ -33,7 +24,7 @@ class Team extends Model
      * @var array
      */
     protected $hidden = [
-        'pivot'
+        'pivot', 'captain'
     ];
 
     /**
@@ -42,7 +33,7 @@ class Team extends Model
      * @var array
      */
     protected $appends = [
-        'users'
+        'users', 'captain'
     ];
 
     /**
@@ -68,6 +59,22 @@ class Team extends Model
 
             $model->code = $code;
         });
+    }
+
+    public static function generateAlias($value)
+    {
+        $caracteres = array(
+            'À' => 'a', 'Á' => 'a', 'Â' => 'a', 'Ä' => 'a', 'à' => 'a', 'á' => 'a', 'â' => 'a', 'ä' => 'a', '@' => 'a',
+            'È' => 'e', 'É' => 'e', 'Ê' => 'e', 'Ë' => 'e', 'è' => 'e', 'é' => 'e', 'ê' => 'e', 'ë' => 'e', '€' => 'e',
+            'Ì' => 'i', 'Í' => 'i', 'Î' => 'i', 'Ï' => 'i', 'ì' => 'i', 'í' => 'i', 'î' => 'i', 'ï' => 'i',
+            'Ò' => 'o', 'Ó' => 'o', 'Ô' => 'o', 'Ö' => 'o', 'ò' => 'o', 'ó' => 'o', 'ô' => 'o', 'ö' => 'o',
+            'Ù' => 'u', 'Ú' => 'u', 'Û' => 'u', 'Ü' => 'u', 'ù' => 'u', 'ú' => 'u', 'û' => 'u', 'ü' => 'u', 'µ' => 'u',
+            'Œ' => 'oe', 'œ' => 'oe', '$' => 's'
+        );
+
+        $chaine = strtr($value, $caracteres);
+        $chaine = preg_replace('/[^A-Za-z0-9]+/', '', $chaine);
+        return strtolower($chaine);
     }
 
     /**
@@ -104,10 +111,7 @@ class Team extends Model
     public function setNameAttribute($value)
     {
         $this->attributes['name'] = $value;
-        $chaine = strtr($this->attributes['name'], $this->caracteres);
-        $chaine = preg_replace('/[^A-Za-z0-9]+/', '', $chaine);
-
-        $this->attributes['alias'] = strtolower($chaine);
+        $this->attributes['alias'] = self::generateAlias($value);
     }
 
     /**
@@ -115,7 +119,8 @@ class Team extends Model
      *
      * @return String
      */
-    public function getUsersAttribute() {
+    public function getUsersAttribute()
+    {
         // TODO write different value if user is in the team (or admin) maybe create user->isInTeam($team_id) ?
 //        $users = $this->users()->get(['username', 'gender'])->makeHidden(['QRCode', 'pivot']);
 
@@ -140,6 +145,16 @@ class Team extends Model
         });
 
         return $users;
+    }
+
+    /**
+     * Return the captain of the team
+     *
+     * @return String
+     */
+    public function getCaptainAttribute()
+    {
+        return User::find($this->pivot->captain);
     }
 
     /**

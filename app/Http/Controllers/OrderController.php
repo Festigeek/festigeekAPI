@@ -180,7 +180,7 @@ class OrderController extends Controller
             $format = $request->has('format') ? $request->get('format') : 'json';
             switch ($format) {
                 case 'pdf':
-                $html =  view('pdf.ticket', ['order' => $order, 'user' => $user]);
+                    $html =  view('pdf.ticket', ['order' => $order, 'user' => $user]);
                     return \PDF::loadHTML($html)->setPaper('a4')->setOption('margin-bottom', 0)->inline('ticket_lan.pdf');
                     break;
                 case 'json':
@@ -279,6 +279,7 @@ class OrderController extends Controller
 
     // PayPal Stuff
 
+    //TODO rewrite this part cuz I lost my sight & got brain cancer after reading it to try to understand it
     public function bankTransferPayment(Request $request)
     {
         $currentUser = Auth::user();
@@ -313,6 +314,7 @@ class OrderController extends Controller
 
             //TODO add form data in 'data' field
             //TODO add product_type => bon
+            //TODO WARNING Hard-coded IDs
             if (array_search(7, array_column($products, 'product_id')))
                 return response()->json(['error' => 'Go fuck yourself'], 422);
 
@@ -367,14 +369,31 @@ class OrderController extends Controller
                 $total += $ProductDetails->price * $product['amount'];
             }
 
-            if ($request->has('team')) {
-                $team = Team::firstOrNew(array('name' => $request->get('team')));
-                $team->save();
+            // Check Teams
+            $team = null;
+            if ($request->has('team_code')) {
+                $team = Team::where('code', '=', $request->get('team_code'))->first();
+                if(is_null($team)){
+                    DB::rollback();
+                    return response()->json(['error' => 'Wrong team code'], 422);
+                }
                 $order->team()->attach($team->id, ['captain' => false, 'user_id' => $currentUser->id]);
             }
-            $order->save();
+            else if ($request->has('team')) {
+                if(!is_null(Team::where('alias', '=', Team::generateAlias($request->get('team')))->first())) {
+                    DB::rollback();
+                    return response()->json(['error' => 'Team already exists.'], 422);
+                }
+                $team = Team::create(array('name' => $request->get('team')));
+                $team->save();
+                $order->team()->attach($team->id, ['captain' => true, 'user_id' => $currentUser->id]);
+                $order->save();
+            }
 
             $user = $order->user()->get()[0];
+            //TODO Create mail template to send team code
+//            if(!is_null($team) && $team->captain->id == $currentUser->id)
+//                Mail::to($user->email, $user->username)->send(new TeamOwnerMail($user, $team));
             Mail::to($user->email, $user->username)->send(new BankingWireTransfertMail($user, $order, $total));
             DB::commit();
             if ($winner)
@@ -383,7 +402,7 @@ class OrderController extends Controller
                 return response()->json(['success' => 'Bank transfer subscription valid', 'state' => 'success'], 200);
         } catch (Throwable $e) {
             DB::rollback();
-            return response()->json(['error' => 'request was well-formed but was unable to be followed due to semantic errors'], 422);
+            return response()->json(['error' => 'Request was well-formed but was unable to be followed due to semantic errors'], 422);
         }
     }
 
@@ -393,7 +412,7 @@ class OrderController extends Controller
         $data = $request->all();
         $data['user_id'] = $currentUser->id;
 
-        //check event_id
+        // screw you greendragon18
         if (!$request->has('event_id'))
             return response()->json(['error' => 'add event id']);
 
@@ -408,7 +427,6 @@ class OrderController extends Controller
 
         if (!$request->has('products'))
             return response()->json(['error' => 'Please select products']);
-
 
         $products = $request->get('products');
         $total = 0;
@@ -441,7 +459,7 @@ class OrderController extends Controller
         $payer->setPaymentMethod('paypal');
 
         $itemList = PayPal::ItemList();
-        //TODO find better way than a foreach
+
         foreach ($products as $product) {
             $ProductDetails = Product::findOrFail($product['product_id']);
 
@@ -542,12 +560,33 @@ class OrderController extends Controller
                 // $total += $ProductDetails->price * $product['amount'];
             }
 
-            if (array_key_exists('team', $data)){
-                $team = Team::firstOrNew(array('name' => $data['team']));
-                $team->save();
+            // Check Teams
+            $team = null;
+            if (array_key_exists('team_code', $data)) {
+                $team = Team::where('code', '=', $data['team_code'])->first();
+                if(is_null($team)){
+                    DB::rollback();
+                    return response()->json(['error' => 'Wrong team code'], 422);
+                }
                 $order->team()->attach($team->id, ['captain' => false, 'user_id' => $data['user_id']]);
             }
+            else if (array_key_exists('team', $data)) {
+                if(!is_null(Team::where('alias', '=', Team::generateAlias($data['team']))->first())) {
+                    DB::rollback();
+                    return response()->json(['error' => 'Team already exists.'], 422);
+                }
+                $team = Team::create(array('name' => $data['team']));
+                $team->save();
+                $order->team()->attach($team->id, ['captain' => true, 'user_id' => $data['user_id']]);
+            }
             $order->save();
+
+//            if (array_key_exists('team', $data)){
+//                $team = Team::firstOrNew(array('name' => $data['team']));
+//                $team->save();
+//                $order->team()->attach($team->id, ['captain' => false, 'user_id' => $data['user_id']]);
+//            }
+//            $order->save();
 
             $order->state = 1;
             $order->paypal_paymentId = $id;
