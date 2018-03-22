@@ -127,11 +127,13 @@ class Team extends Model
         // Get correct users for a specific team
         $orders = $this->orders()->where('state', '<>', 3)->get();
         $users = $orders->map(function($order) {
+            // Roaster: This person is on the team with a order for an "tournament" product.
             $roaster = $order->products()->where('product_type_id', 1)->first()->id == $this->defaultProduct()->id;
             $user = [
                 'username' => $order->user->username,
                 'gender' => $order->user->gender,
-                'roaster' => $roaster
+                'roaster' => $roaster,
+                'captain' => (bool)$order->team->pivot->captain
             ];
 
             // Add some informations for members of the team
@@ -154,7 +156,7 @@ class Team extends Model
      */
     public function getCaptainAttribute()
     {
-        return User::find($this->pivot->captain);
+        return $this->users()->where('captain', '=', 1)->first();
     }
 
     /**
