@@ -16,19 +16,30 @@ class EventController extends Controller
     public function teams(Request $request, $id){
 
         $game = ($request->filled('game')) ? $request->get('game') : null;
-        $strict = ($request->filled('strict')) ? $request->get('strict') : null;
-        $orders = Order::where('event_id', $id)->get();
+        $orders = (!is_null($game)) ? Order::where('event_id', $id)->has('products', $game)->get() : Order::where('event_id', $id)->get();
 
-        $teams = $orders->filter(function($value) use ($game) {
-            return (!is_null($game)) ? $value->products()->where('product_id', $game)->count() > 0 : true;
-        })->map(function($order) use ($game, $strict) {
-            $teams = $order->team()->get();
-            return $teams;
-        })->flatten()->filter(function($value) {
-            return !is_null($value);
-        })->unique('id')->sortBy('name')->values();
+        try{
+            $teams = Event::findOrFail($id)->teams();
+        }
+        catch (\Exception $e) {
+            return response()->json(['error' => 'Event not found.'], 404);
+        }
 
-        return response()->json($teams);
+        $filteredTeams = $teams->filter(function($team) use($orders) {
+            return $orders->pluck('team')->contains('id', $team->id);
+        });
+
+        return response()->json($filteredTeams);
+
+//        $temp = $orders->filter(function($value) use ($game) {
+//            return (!is_null($game)) ? $value->products()->where('product_id', $game)->count() > 0 : true;
+//        })->map(function($order) {
+//            return $order->team()->get();
+//        })->flatten()->filter(function($value) {
+//            return !is_null($value);
+//        })->unique('id')->sortBy('name')->values();
+//
+//        return response()->json($temp);
     }
 
     /**
@@ -37,7 +48,6 @@ class EventController extends Controller
      */
     public function products(Request $request, $id){
         $products = Event::find($id)->products()->get();
-
         return response()->json($products);
     }
 
