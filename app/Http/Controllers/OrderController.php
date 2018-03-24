@@ -12,9 +12,10 @@ use Maatwebsite\Excel\Facades\Excel;
 use Mockery\Exception;
 
 use Auth;
-use PayPal;
 use Crypt;
 use DateTime;
+use PayPal\Auth\OAuthTokenCredential;
+use PayPal\Rest\ApiContext;
 use Validator;
 
 use App\Order;
