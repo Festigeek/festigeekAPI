@@ -84,9 +84,9 @@ class DatabaseSeeder extends Seeder
 
         // Events
 
-        Event::create(['name' => 'LAN 2017',
-            'begins_at' => Carbon::create(2017, 05, 26, 20)->toDateTimeString(),
-            'ends_at' => Carbon::create(2017, 05, 28, 18)->toDateTimeString()]);
+        Event::create(['name' => 'LAN 2018',
+            'begins_at' => Carbon::create(2018, 05, 26, 20)->toDateTimeString(),
+            'ends_at' => Carbon::create(2018, 05, 28, 18)->toDateTimeString()]);
 
         // Products
 

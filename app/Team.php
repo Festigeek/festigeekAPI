@@ -164,7 +164,7 @@ class Team extends Model
      *
      * @return bool
      */
-    private function hasUser($user_id) {
+    public function hasUser($user_id) {
         return $this->users()->get()->contains('id', $user_id);
     }
 }
