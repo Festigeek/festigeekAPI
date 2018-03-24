@@ -65,3 +65,4 @@ Route::patch('orders/{id}', 'OrderController@patch');
 Route::patch('orders/{order_id}/products/{product_id}', 'OrderController@consumeProduct'); //TODO Create nested routes / controller
 //Route::resource('orders', 'OrderController'); TODO later, for now, manually created routes
 Route::delete('orders/{id}', 'OrderController@delete');
+

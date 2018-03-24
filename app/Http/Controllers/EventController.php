@@ -89,6 +89,29 @@ class EventController extends Controller
         return response()->json(['success' => 'Team updated'], 200);
     }
 
+
+    public function team(Request $request, $event_id, $team_id){
+
+        $game = ($request->filled('game')) ? $request->get('game') : null;
+        $strict = ($request->filled('strict')) ? $request->get('strict') : null;
+        $orders = Order::where('event_id', $event_id)->get();
+        $team = $orders[0]->team;
+        if($team->id != $team_id){
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
+
+        // $teams = $orders->filter(function($value) use ($game) {
+        //     return (!is_null($game)) ? $value->products()->where('product_id', $game)->count() > 0 : true;
+        // })->map(function($order) use ($game, $strict) {
+        //     $teams = $order->team()->get();
+        //     return $teams;
+        // })->flatten()->filter(function($value) {
+        //     return !is_null($value);
+        // })->unique('id')->sortBy('name')->values();
+
+        return response()->json($team);
+    }
+
     /**
      * @param Request $request
      * @param $id event id
