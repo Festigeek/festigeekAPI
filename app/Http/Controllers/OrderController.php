@@ -27,6 +27,7 @@ class OrderController extends Controller
     private $apiContext;
     private $client_id;
     private $secret;
+    private $settings;
 
     public function __construct()
     {
@@ -35,13 +36,16 @@ class OrderController extends Controller
         $this->middleware('role:admin|comite', ['only' => ['index', 'patch', 'consumeProduct']]);
         $this->middleware('role:admin', ['only' => ['delete']]);
 
+        $this->settings = config('paypal.settings');
         // Detect if we are running in live mode or sandbox
         if(config('paypal.settings.mode') == 'live'){
             $this->client_id = config('paypal.live_client_id');
             $this->secret = config('paypal.live_secret');
+            $this->settings['service.EndPoint'] = config('paypal.live_end_point');
         } else {
             $this->client_id = config('paypal.sandbox_client_id');
             $this->secret = config('paypal.sandbox_secret');
+            $this->settings['service.EndPoint'] = config('paypal.sandbox_end_point');
         }
 
 //        $this->apiContext = PayPal::ApiContext($this->client_id, $this->secret);
@@ -57,7 +61,7 @@ class OrderController extends Controller
 
         // Set the Paypal API Context/Credentials
         $this->apiContext = new ApiContext(new OAuthTokenCredential($this->client_id, $this->secret));
-        $this->apiContext->setConfig(config('paypal.settings'));
+        $this->apiContext->setConfig($this->settings);
     }
 
     private function getCSV(Collection $orders)
