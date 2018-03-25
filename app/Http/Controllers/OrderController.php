@@ -258,9 +258,14 @@ class OrderController extends Controller
 
         try{
             $order = Order::find($order_id);
+
             foreach($order->products()->get() as $product) {
+
                 $product->sold -= $product->pivot->amount;
+
+                      //  dd($product->updated_at);
                 $product->save();
+
             }
 
             $order->products()->detach();
@@ -341,7 +346,7 @@ class OrderController extends Controller
                 $winnerTimestamp->value = 0;
                 $winnerTimestamp->save();
             }
-
+            $count = [];
             //TODO find better way than a foreach
             foreach ($products as $product) {
 
@@ -352,6 +357,8 @@ class OrderController extends Controller
 
                 if ($ProductDetails->event_id != $request->get('event_id')) {
                     DB::rollback();
+                    $count[] = $ProductDetails;
+                    //TODO remove debug statements
                     return response()->json(['error' => 'Product not from the same event', "product details id" => $ProductDetails->event_id, "request id" => $request->get('event_id')], 422);
                 }
 

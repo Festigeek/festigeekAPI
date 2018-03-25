@@ -123,6 +123,8 @@ class DatabaseSeeder extends Seeder
         // Orders
 //
         Order::create(['state' => '1', 'user_id' => '1', 'event_id' => '1', 'payment_type_id' => '1'])->products()->sync([$p1->id, $p5->id => ['amount' => '2']]);
+        //create an existing order to test the joining of a team
+          Order::create(['state' => '1', 'user_id' => '2', 'event_id' => '2', 'payment_type_id' => '1'])->products()->sync([$p7->id, $p12->id => ['amount' => '2']]);
 //        Order::create(['state' => '0', 'user_id' => '2', 'event_id' => '1', 'payment_type_id' => '2'])->products()->sync([$p2->id, $p5->id, $p6->id]);
 
 //        Order::create(['state' => '1', 'user_id' => '1'])->products()->sync([$p1->id, $p5->id => ['amount' => '2']]);
@@ -131,6 +133,7 @@ class DatabaseSeeder extends Seeder
         // Teams
 
         Team::create(['name' => "RageQuit"])->users()->sync([$adminUser->id => ['captain' => true, 'order_id' => '1']]);
+        Team::create(['name' => "Testing Baby"])->users()->sync([2 => ['captain' => true, 'order_id' => '2']]);
 
 
         //////////////////
