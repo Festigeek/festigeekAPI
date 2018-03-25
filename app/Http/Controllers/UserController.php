@@ -20,7 +20,14 @@ class UserController extends Controller
     public function __construct()
     {
         parent::__construct();
-        $this->middleware('auth:api', ['except' => ['authenticate', 'register', 'activation', 'test']]);
+        $this->middleware('auth:api', [
+            'except' => [
+                'authenticate',
+                'register',
+                'activation',
+                'test'
+            ]
+        ]);
         $this->middleware('role:admin', ['only' => ['index']]);
 
         $this->proxy = new OAuthProxy(app());
@@ -186,6 +193,8 @@ class UserController extends Controller
         else
             return response()->json(['error' => 'No registration token provided'], 422);
     }
+
+    // OAUTH RELATED METHODS
 
     /**
      * Authenticate user from email / password & generate a new token.

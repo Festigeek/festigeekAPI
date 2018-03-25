@@ -27,11 +27,16 @@ Route::resource('countries', 'CountryController');
 /*
  * Resource: User
  */
-Route::get('users/activate', 'UserController@activation');
+// Proxified oAuth2 routes
 Route::get('users/refreshToken', 'UserController@refreshToken');
 Route::post('users/login', 'UserController@authenticate');
 Route::post('users/logout', 'UserController@logout');
+// Account management
 Route::post('users', 'UserController@register');
+Route::get('users/activate', 'UserController@activation');
+Route::post('users/getResetToken', 'Auth\ForgotPasswordController@getToken');
+Route::post('users/resetPassword', 'Auth\ResetPasswordController@reset');
+// Others
 Route::get('users/{user}/orders', 'UserController@getOrders');
 Route::resource('users', 'UserController');
 

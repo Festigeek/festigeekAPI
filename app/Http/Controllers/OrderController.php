@@ -107,7 +107,7 @@ class OrderController extends Controller
                     $bGratuits = $item->products->first(function($val){ return $val->id == 7; });
 
                     $sheet->appendRow([
-                        "20" . $item->id . "13 (ID# $item->id)", // Numéro de commande
+                        "XX" . $item->id . "XX (ID# $item->id)", // Numéro de commande
 
                         $item->user->lastname, // Nom
                         $item->user->firstname, // Prénom

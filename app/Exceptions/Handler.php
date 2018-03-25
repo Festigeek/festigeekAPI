@@ -92,21 +92,7 @@ class Handler extends ExceptionHandler
             if (\App::environment('production'))
                 return response()->json(['error' => 'Authentication error'], 401);
             else
-                return response()->json(['error' => 'Authentication error', 'infos' => $exception->getRequest()->getContent(true)], 401);
-
-        // TODO Delete if not needed anymore
-        // JWT Ecexptions
-//        if ($exception instanceof \Tymon\JWTAuth\Exceptions\TokenExpiredException ||
-//            $exception->getPrevious() instanceof \Tymon\JWTAuth\Exceptions\TokenExpiredException)
-//            return response()->json(['error' => 'Token has expired'], 401);
-//
-//        if ($exception instanceof \Tymon\JWTAuth\Exceptions\TokenInvalidException ||
-//            $exception->getPrevious() instanceof \Tymon\JWTAuth\Exceptions\TokenInvalidException)
-//            return response()->json(['error' => 'Token is invalid'], 401);
-//
-//        if ($exception instanceof \Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException ||
-//            $exception->getPrevious() instanceof \Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException)
-//            return response()->json(['error' => 'Token not provided'], 401);
+                return response()->json(['error' => 'Authentication error', 'infos' => $exception->getRequest()->getContent()], 401);
 
         // Other Exceptions in production
         if (\App::environment('production'))

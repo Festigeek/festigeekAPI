@@ -9,6 +9,7 @@ use Laravel\Passport\HasApiTokens;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Http\Request;
 
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use Laratrust\Traits\LaratrustUserTrait;
@@ -131,7 +132,14 @@ class User extends Authenticatable
      */
     public function setPasswordAttribute($password)
     {
-        $this->attributes['password'] = Hash::make($password);
+        // check if the value is already a hash
+        // (Regex: String begins with '$2y$##$' followed by at least 50 characters)
+        if (preg_match('/^\$2y\$[0-9]*\$.{50,}$/', $password)){
+            $this->attributes['password'] = $password;
+        }
+        else {
+            $this->attributes['password'] = Hash::make($password);
+        }
     }
 
     /**
@@ -176,24 +184,4 @@ class User extends Authenticatable
         QrCode::backgroundColor(250,250,250);
         return base64_encode(QrCode::encoding('UTF-8')->merge('/public/images/logo_carre.jpg', .2)->generate($payload));
     }
-
-//    /**
-//     * Get the identifier that will be stored in the subject claim of the JWT
-//     *
-//     * @return mixed
-//     */
-//    public function getJWTIdentifier()
-//    {
-//        return $this->getKey();
-//    }
-//
-//    /**
-//     * Return a key value array, containing any custom claims to be added to the JWT
-//     *
-//     * @return array
-//     */
-//    public function getJWTCustomClaims()
-//    {
-//        return [];
-//    }
 }
