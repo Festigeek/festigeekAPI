@@ -104,7 +104,7 @@ class OrderController extends Controller
                     $tournoi = $item->products->first(function($val){ return $val->product_type_id == 1; });
                     $burgers = $item->products->first(function($val){ return $val->id == 5; });
                     $dejs = $item->products->first(function($val){ return $val->id == 6; });
-                    $bGratuits = $item->products->first(function($val){ return $val->id == 7; });
+                    $bGratuits = $item->products->first(function($val){ return $val->id == 15; });
 
                     $sheet->appendRow([
                         "XX" . $item->id . "XX (ID# $item->id)", // Numéro de commande
@@ -320,7 +320,7 @@ class OrderController extends Controller
             //TODO add form data in 'data' field
             //TODO add product_type => bon
             //TODO WARNING Hard-coded IDs
-            if (array_search(7, array_column($products, 'product_id')))
+            if (array_search(15, array_column($products, 'product_id')))
                 return response()->json(['error' => 'Go fuck yourself'], 422);
 
             $winnerTimestamp = Configuration::where('name', 'winner-timestamp')->first();
@@ -336,7 +336,7 @@ class OrderController extends Controller
                         unset($products[$key]);
                 }
 
-                array_push($products, ['product_id' => 7, 'amount' => 1]);
+                array_push($products, ['product_id' => 15, 'amount' => 1]);
 
                 $winnerTimestamp->value = 0;
                 $winnerTimestamp->save();
@@ -344,13 +344,17 @@ class OrderController extends Controller
 
             //TODO find better way than a foreach
             foreach ($products as $product) {
-                $ProductDetails = Product::findOrFail($product['product_id']);
 
+                $ProductDetails = Product::findOrFail($product['product_id']);
                 //test if products are all from the same event
-                if ($ProductDetails->event_id !== $request->get('event_id')) {
+              //  dd($ProductDetails->event_id, $request->get('event_id'));
+
+
+                if ($ProductDetails->event_id != $request->get('event_id')) {
                     DB::rollback();
-                    return response()->json(['error' => 'Product not from the same event'], 422);
+                    return response()->json(['error' => 'Product not from the same event', "product details id" => $ProductDetails->event_id, "request id" => $request->get('event_id')], 422);
                 }
+
 
                 //we find an subscription
                 if ($ProductDetails->product_types_id === 1) {
@@ -438,8 +442,8 @@ class OrderController extends Controller
         $nbSubscription = 0;
         $winner = false;
 
-        if (array_search(7, array_column($products, 'product_id')))
-            return response()->json(['error' => 'Go fuck yourself'], 422);
+        if (array_search(15, array_column($products, 'product_id')))
+            return response()->json(['error' => 'Go fuck yourself'], 418);
 
         $winnerTimestamp = Configuration::where('name', 'winner-timestamp')->first();
 
@@ -454,7 +458,7 @@ class OrderController extends Controller
                     unset($products[$key]);
             }
 
-            array_push($products, ['product_id' => 7, 'amount' => 1]);
+            array_push($products, ['product_id' => 15, 'amount' => 1]);
 
             $winnerTimestamp->value = 0;
             $winnerTimestamp->save();
@@ -469,7 +473,7 @@ class OrderController extends Controller
             $ProductDetails = Product::findOrFail($product['product_id']);
 
             //test if products are all from the same event
-            if ($ProductDetails->event_id !== $request->get('event_id')) {
+            if ($ProductDetails->event_id != $request->get('event_id')) {
                 return response()->json(['error' => 'Product not from the same event'], 422);
             }
 
@@ -601,7 +605,7 @@ class OrderController extends Controller
             $payment = PayPal::getById($id, $this->apiContext);
             $executePayment = $payment->execute($paymentExecution, $this->apiContext);
 
-            $win = $order->products()->where('product_id', 7)->count();
+            $win = $order->products()->where('product_id', 15)->count();
             $user = $order->user()->get()[0];
             Mail::to($user->email, $user->username)->send(new PaypalConfirmation($user, $order, $total));
             if ($win)
