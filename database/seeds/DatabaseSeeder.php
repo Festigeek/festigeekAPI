@@ -10,6 +10,7 @@ use App\Team;
 use App\User;
 use App\PaymentType;
 
+//use Database\Seeds\DatabaseSeederv2;
 use Carbon\Carbon;
 use Illuminate\Database\Seeder;
 use Illuminate\Database\Eloquent\Model;
@@ -104,16 +105,6 @@ class DatabaseSeeder extends Seeder
         Product::create(['name' => 'Burger Gratuit', 'description' => "Bon pour un Burger Festigeek gratuit.", 'price' => '0.00', 'product_type_id' => 2, 'sold' => '0', 'event_id' => 1, 'need_team'=>0]);
 
         Product::create(['name' => 'Donation', 'description' => 'Donation pour l\'association.', 'price' => '0.00', 'product_type_id' => '3']);
-        //2018 event id
-        $p7 = Product::create(['name' => 'League Of Legend', 'description' => 'Inscription LoL 2017.', 'price' => '20.00','quantity_max' => '80', 'sold' => '0', 'event_id' => 2, 'product_type_id' => 1, 'need_team'=>1]);
-        $p8 = Product::create(['name' => 'Overwatch', 'description' => 'Inscription Overwatch 2017.', 'price' => '20.00', 'quantity_max' => '48', 'sold' => '0', 'event_id' => 2, 'product_type_id' => 1, 'need_team'=>1]);
-        $p9 = Product::create(['name' => 'Counter-Strike: GO', 'description' => 'Inscription CS:GO 2017.', 'price' => '20.00', 'quantity_max' => '40', 'sold' => '0', 'event_id' => 2, 'product_type_id' => 1, 'need_team'=>1]);
-        $p10 = Product::create(['name' => 'Animations', 'description' => 'Place joueur LAN 2017.', 'price' => '20.00', 'quantity_max' => '6', 'sold' => '0', 'event_id' => 2, 'product_type_id' => 1, 'need_team'=>0]);
-        $p11 = Product::create(['name' => 'Burger', 'description' => "Bon d'achat pour un Burger Festigeek !", 'price' => '14.00', 'product_type_id' => 2, 'sold' => '0', 'event_id' => 2, 'need_team'=>0]);
-        $p12 = Product::create(['name' => 'Petit-déjeuner', 'description' => "Bon d'achat pour un petit-déjeuner.", 'price' => '5.00', 'product_type_id' => 2, 'sold' => '0', 'event_id' => 2, 'need_team'=>0]);
-        Product::create(['name' => 'Burger Gratuit', 'description' => "Bon pour un Burger Festigeek gratuit.", 'price' => '0.00', 'product_type_id' => 2, 'sold' => '0', 'event_id' => 2, 'need_team'=>0]);
-
-        Product::create(['name' => 'Donation', 'description' => 'Donation pour l\'association.', 'price' => '0.00', 'product_type_id' => '3']);
 
         //Payment types
 
@@ -124,7 +115,6 @@ class DatabaseSeeder extends Seeder
 //
         Order::create(['state' => '1', 'user_id' => '1', 'event_id' => '1', 'payment_type_id' => '1'])->products()->sync([$p1->id, $p5->id => ['amount' => '2']]);
         //create an existing order to test the joining of a team
-          Order::create(['state' => '1', 'user_id' => '2', 'event_id' => '2', 'payment_type_id' => '1'])->products()->sync([$p7->id, $p12->id => ['amount' => '2']]);
 //        Order::create(['state' => '0', 'user_id' => '2', 'event_id' => '1', 'payment_type_id' => '2'])->products()->sync([$p2->id, $p5->id, $p6->id]);
 
 //        Order::create(['state' => '1', 'user_id' => '1'])->products()->sync([$p1->id, $p5->id => ['amount' => '2']]);
@@ -133,8 +123,7 @@ class DatabaseSeeder extends Seeder
         // Teams
 
         Team::create(['name' => "RageQuit"])->users()->sync([$adminUser->id => ['captain' => true, 'order_id' => '1']]);
-        Team::create(['name' => "Testing Baby"])->users()->sync([2 => ['captain' => true, 'order_id' => '2']]);
-
+      //
 
         //////////////////
         //     CMS
@@ -169,6 +158,10 @@ class DatabaseSeeder extends Seeder
 
         // Menu::create(['name' => 'Principal'])->sync([$lien1, $lien2]);
 
+
+        $this->call([
+          DatabaseSeederv2::class,
+        ]);
 
         Model::reguard();
     }
