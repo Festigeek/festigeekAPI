@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\TeamOwnerMail;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use App\Mail\BankingWireTransfertMail;
@@ -408,8 +409,9 @@ class OrderController extends Controller
 
             $user = $order->user()->get()[0];
             //TODO Create mail template to send team code
-//            if(!is_null($team) && $team->captain->id == $currentUser->id)
-//                Mail::to($user->email, $user->username)->send(new TeamOwnerMail($user, $team));
+            if(!is_null($team) && $team->captain->id == $currentUser->id)
+                Mail::to($user->email, $user->username)->send(new TeamOwnerMail($user, $team));
+
             Mail::to($user->email, $user->username)->send(new BankingWireTransfertMail($user, $order, $total));
             DB::commit();
             if ($winner)
@@ -614,6 +616,9 @@ class OrderController extends Controller
 
             $win = $order->products()->where('product_id', 15)->count();
             $user = $order->user()->get()[0];
+            if(!is_null($team) && $team->captain->id == $user->id)
+                Mail::to($user->email, $user->username)->send(new TeamOwnerMail($user, $team));
+
             Mail::to($user->email, $user->username)->send(new PaypalConfirmation($user, $order, $total));
             if ($win)
                 return redirect('https://www.festigeek.ch/#!/checkout?state=win');

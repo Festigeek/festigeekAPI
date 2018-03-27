@@ -32,16 +32,17 @@ class DatabaseSeederv2 extends Seeder
   $p11 = Product::create(['name' => 'Burger', 'description' => "Bon d'achat pour un Burger Festigeek !", 'price' => '14.00', 'product_type_id' => 2, 'sold' => '0', 'event_id' => 2, 'need_team'=>0]);
   $p12 = Product::create(['name' => 'Petit-déjeuner', 'description' => "Bon d'achat pour un petit-déjeuner.", 'price' => '5.00', 'product_type_id' => 2, 'sold' => '0', 'event_id' => 2, 'need_team'=>0]);
   Product::create(['name' => 'Burger Gratuit', 'description' => "Bon pour un Burger Festigeek gratuit.", 'price' => '0.00', 'product_type_id' => 2, 'sold' => '0', 'event_id' => 2, 'need_team'=>0]);
-
-  Product::create(['name' => 'Donation', 'description' => 'Donation pour l\'association.', 'price' => '0.00', 'product_type_id' => '3']);
+  Product::create(['name' => 'Donation', 'description' => 'Donation pour l\'association.', 'price' => '0.00', 'product_type_id' => 3]);
 
   //orders
-  $oldOrder = Order::create(['state' => '1', 'user_id' => $returningUser->id, 'event_id' => '1', 'payment_type_id' => '1'])->products()->sync([1, 2 => ['amount' => '2']]);
-  $newOrderReturning = Order::create(['state' => '1', 'user_id' => $returningUserWithOrder->id, 'event_id' => '2', 'payment_type_id' => '1'])->products()->sync([$p7->id, $p12->id => ['amount' => '2']]);
+  $oldOrder = Order::create(['state' => '1', 'user_id' => $returningUser->id, 'event_id' => 1, 'payment_type_id' => '1']);
+  $oldOrder->products()->sync([1, 2 => ['amount' => '2']]);
+  $newOrderReturning = Order::create(['state' => '1', 'user_id' => $returningUserWithOrder->id, 'event_id' => 2, 'payment_type_id' => 1]);
+  $newOrderReturning->products()->sync([$p7->id, $p12->id => ['amount' => '2']]);
 
-//TODO test if we can use old team.. ? ATTENTION is it possible to only view current event_id (not here, in controller)
+  //TODO test if we can use old team.. ? ATTENTION is it possible to only view current event_id (not here, in controller)
   //Team
-  Team::create(['name' => "old Team"])->users()->sync([2 => ['captain' => true, 'order_id' => $oldOrder]]);
+  Team::create(['name' => "old Team"])->users()->sync([2 => ['captain' => true, 'order_id' => $oldOrder->id]]);
   Team::create(['name' => "Testing Baby"])->users()->sync([2 => ['captain' => true, 'order_id' => '2']]);
 }
 

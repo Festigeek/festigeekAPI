@@ -89,7 +89,7 @@ class DatabaseSeeder extends Seeder
             'begins_at' => Carbon::create(2017, 05, 26, 20)->toDateTimeString(),
             'ends_at' => Carbon::create(2017, 05, 28, 18)->toDateTimeString()]);
 
-//TODO seeder update
+        //TODO seeder update
         Event::create(['name' => 'LAN 2018',
               'begins_at' => Carbon::create(2018, 05, 26, 20)->toDateTimeString(),
               'ends_at' => Carbon::create(2018, 05, 28, 18)->toDateTimeString()]);
@@ -123,40 +123,6 @@ class DatabaseSeeder extends Seeder
         // Teams
 
         Team::create(['name' => "RageQuit"])->users()->sync([$adminUser->id => ['captain' => true, 'order_id' => '1']]);
-      //
-
-        //////////////////
-        //     CMS
-        //////////////////
-
-        // ContentsTypes
-
-        // DB::table('contents_types')->delete();
-        // ContentsType::create(['name' => 'Page']);
-        // ContentsType::create(['name' => 'Article']);
-
-        // DatasTypes
-
-        // DB::table('datas_types')->delete();
-        // DatasType::create(['name' => 'Texte Brut']);
-        // DatasType::create(['name' => 'HTML']);
-
-        // Datas
-
-        // Data::create([]);
-
-        // Contents
-
-        // Content::create([]);
-
-        // Links
-
-        // $lien1 = Link::create(['display_text' => "L'association", 'content_id' => '1']);
-        // $lien2 = Link::create(['display_text' => "Contact", 'url' => '/contact']);
-
-        // Menus
-
-        // Menu::create(['name' => 'Principal'])->sync([$lien1, $lien2]);
 
 
         $this->call([
