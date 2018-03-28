@@ -44,7 +44,10 @@ class Proxy
         // Get response
         $response = $this->app->handle($request);
         if ($response->getStatusCode() >= 400) {
-            throw new FailedInternalRequestException($request, $response);
+            if (\App::environment('production'))
+                throw new FailedInternalRequestException($request, $response);
+            else
+                dd("PROXY ERROR", $request, $response);
         }
 
         // Dispatch the request
