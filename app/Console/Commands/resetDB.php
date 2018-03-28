@@ -69,7 +69,7 @@ class resetDB extends Command
 
             $this->comment(PHP_EOL . 'Seeding database...');
             $this->call('db:seed');
-            $this->call('passport:install');
+            $this->call('passport:install', ['--force' => true]);
 
             $this->comment('Database correctly reseted. Do not forget to update your OAUTH_PASSWORD_CLIENT_SECRET in your .env file.');
         }

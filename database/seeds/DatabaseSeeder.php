@@ -58,7 +58,8 @@ class DatabaseSeeder extends Seeder
 
         // Configurations
 
-        Configuration::create(['name' => 'winner-timestamp', 'value' => time()]);
+//        Configuration::create(['name' => 'timestamp-winner-2017', 'value' => time()]);
+        Configuration::create(['name' => 'timestamp-winner-2018', 'value' => time()]);
 
         // Users
 
