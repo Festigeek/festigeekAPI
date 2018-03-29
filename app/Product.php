@@ -4,6 +4,7 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use phpDocumentor\Reflection\Types\Boolean;
 
 class Product extends Model
 {
@@ -27,6 +28,15 @@ class Product extends Model
         'created_at',
         'updated_at',
         'deleted_at'
+    ];
+
+    /**
+     * The attributes added to the model.
+     *
+     * @var array
+     */
+    protected $appends = [
+
     ];
 
     /////////////////////
@@ -53,5 +63,17 @@ class Product extends Model
     public function orders()
     {
         return $this->belongsToMany('App\Order')->withPivot('amount', 'data', 'consume');
+    }
+
+    /**
+     * Return the real number of unit sold for this product (better than "sold" field)
+     *
+     * @param boolean $confirmed Add only paid orders
+     * @return integer Sum of product (unit) sold
+     */
+    public function sales(boolean $confirmed = false) {
+        return $this->orders()->get()->reduce(function($acc, $order) use ($confirmed) {
+            return (!$confirmed || ($confirmed && $order->state == 1)) ? $acc + $order->pivot->amount : $acc;
+        }, 0);
     }
 }
