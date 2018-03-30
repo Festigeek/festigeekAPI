@@ -17,16 +17,14 @@ class EventController extends Controller
      * @param mixed $game (product_id)
      */
     public function teams(Request $request, $id){
+        $event = Event::find($id);
+
+        if(is_null($event))
+            return response()->json(['error' => 'Event not found.'], 404);
 
         $game = ($request->filled('game')) ? $request->get('game') : null;
         $orders = (!is_null($game)) ? Order::where('event_id', $id)->has('products', $game)->get() : Order::where('event_id', $id)->get();
-
-        try{
-            $teams = Event::findOrFail($id)->teams();
-        }
-        catch (\Exception $e) {
-            return response()->json(['error' => 'Event not found.'], 404);
-        }
+        $teams = $event->teams();
 
         $filteredTeams = $teams->filter(function($team) use($orders) {
             return $orders->pluck('team')->contains('id', $team->id);
