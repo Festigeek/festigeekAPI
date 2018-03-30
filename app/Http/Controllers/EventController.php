@@ -44,7 +44,7 @@ class EventController extends Controller
     }
 
     public function teamFromCode(Request $request, $event_id, $team_code) {
-        $team = Event::where('code', $team_code)->first();
+        $team = Team::where('code', $team_code)->first();
 
         if(is_null($team))
             return response()->json(['error' => 'Team not found.'], 404);
