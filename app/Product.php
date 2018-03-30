@@ -71,7 +71,7 @@ class Product extends Model
      * @param boolean $confirmed Add only paid orders
      * @return integer Sum of product (unit) sold
      */
-    public function sales(boolean $confirmed = false) {
+    public function sales($confirmed = false) {
         return $this->orders()->get()->reduce(function($acc, $order) use ($confirmed) {
             return (!$confirmed || ($confirmed && $order->state == 1)) ? $acc + $order->pivot->amount : $acc;
         }, 0);
