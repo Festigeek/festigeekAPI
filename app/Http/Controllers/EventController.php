@@ -43,6 +43,15 @@ class EventController extends Controller
 //        return response()->json($temp);
     }
 
+    public function teamFromCode(Request $request, $event_id, $team_code) {
+        $team = Event::where('code', $team_code)->first();
+
+        if(is_null($team))
+            return response()->json(['error' => 'Team not found.'], 404);
+        else
+            return response()->json($team);
+    }
+
     public function updateTeam(Request $request, $event_id, $team_id) {
         if(!$request->has('users') || !$request->has('captain'))
             return response()->json(['error' => 'Missing parameters.'], 422);
@@ -58,9 +67,6 @@ class EventController extends Controller
 
         if(is_null($team))
             return response()->json(['error' => 'Team not found.'], 404);
-
-        // Can only REMOVE users.
-        dd(!$team->hasUser($captain_id), $team->users()->get()->count() < $nb_users, $nb_users === 0);
 
         if(!$team->hasUser($captain_id) || $team->users()->get()->count() < $nb_users || $nb_users === 0)
             return response()->json(['error' => 'Request was well-formed but was unable to be followed due to content errors'], 422);
