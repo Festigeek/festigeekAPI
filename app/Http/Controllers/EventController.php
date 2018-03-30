@@ -49,7 +49,7 @@ class EventController extends Controller
         if(is_null($team))
             return response()->json(['error' => 'Team not found.'], 404);
         else
-            return response()->json($team);
+            return response()->json(['name' => $team->name]);
     }
 
     public function updateTeam(Request $request, $event_id, $team_id) {
