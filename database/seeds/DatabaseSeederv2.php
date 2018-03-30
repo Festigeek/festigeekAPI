@@ -43,7 +43,7 @@ class DatabaseSeederv2 extends Seeder
   //TODO test if we can use old team.. ? ATTENTION is it possible to only view current event_id (not here, in controller)
   //Team
   Team::create(['name' => "old Team"])->users()->sync([2 => ['captain' => true, 'order_id' => $oldOrder->id]]);
-  Team::create(['name' => "Testing Baby"])->users()->sync([2 => ['captain' => true, 'order_id' => $newOrderReturning->id]]);
+  Team::create(['name' => "Testing Baby"])->users()->sync([$returningUserWithOrder->id => ['captain' => true, 'order_id' => $newOrderReturning->id]]);
 }
 
 }
