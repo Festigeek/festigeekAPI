@@ -33,7 +33,7 @@ class Order extends Model
      * @var array
      */
     protected $appends = [
-        'user', 'team', 'products', 'payment_type'
+        'user', 'team', 'products', 'payment_type', 'total'
     ];
 
     /**
@@ -81,22 +81,22 @@ class Order extends Model
         return $this->belongsTo('App\PaymentType');
     }
 
-    /**
-     * Get the event_id of the first product of type 'Inscriptions'.
-     *
-     * @return int event_id
-     */
-    public function getEventIdAttribute()
-    {
-        try {
-            return $this->products()->whereHas('product_type', function ($query) {
-                $query->where('name', 'Inscriptions');
-            })->firstOrFail()->event_id;
-        }
-        catch(\Exception $e) {
-            return null;
-        }
-    }
+//    /**
+//     * Get the event_id of the first product of type 'Inscriptions'.
+//     *
+//     * @return int event_id
+//     */
+//    public function getEventIdAttribute()
+//    {
+//        try {
+//            return $this->products()->whereHas('product_type', function ($query) {
+//                $query->where('name', 'Inscriptions');
+//            })->firstOrFail()->event_id;
+//        }
+//        catch(\Exception $e) {
+//            return null;
+//        }
+//    }
 
     /**
      * Return the user entry
@@ -132,5 +132,16 @@ class Order extends Model
      */
     public function getProductsAttribute() {
         return $this->products()->get(['products.id', 'name', 'price', 'product_type_id'])->makeHidden(['updated_at', 'created_at']);
+    }
+
+    /**
+     * Return a simplified products array for each order
+     *
+     * @return String
+     */
+    public function getTotalAttribute() {
+        return $this->products()->get(['price', 'amount'])->sum(function($product) {
+            return $product->price * $product->amount;
+            });
     }
 }
