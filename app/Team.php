@@ -144,7 +144,6 @@ class Team extends Model
                 $user['email'] = $order->user->email;
             }
 
-
             return $user;
         });
 

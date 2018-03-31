@@ -27,11 +27,10 @@ class BankingWireTransfertMail extends Mailable
      *
      * @return void
      */
-    public function __construct(User $user, Order $order, $total)
+    public function __construct(User $user, Order $order)
     {
         $this->user = $user;
         $this->order = $order;
-        $this->total = $total;
     }
     /**
      * Build the message.

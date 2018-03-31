@@ -58,12 +58,12 @@
         @endforeach
         <tr>
           <td colspan="3">Total</td>
-          <td style="text-align: right;"><strong>{{ number_format($total, 2) }} CHF</strong></td>
+          <td style="text-align: right;"><strong>{{ number_format($order->total, 2) }} CHF</strong></td>
         </tr>
       </table>
 
       <p>
-        Afin de valider ton inscription, nous te demandons d'effectuer un transfert de <strong>{{ $total }} CHF</strong> avant le <strong>07 mai</strong> à<br/>
+        Afin de valider ton inscription, nous te demandons d'effectuer un transfert de <strong>{{ $order->total }} CHF</strong> avant le <strong>07 mai</strong> à<br/>
 
         <span style="display: inline-block; border: 2px solid black; padding: 8px; margin-top: 8px;">
           PostFinance SA<br />
