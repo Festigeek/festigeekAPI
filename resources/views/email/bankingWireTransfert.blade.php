@@ -71,7 +71,10 @@
           FestiGeek<br />
           CH83 0900 0000 1448 4050 7
         </span>
-        <p><strong>Note importante:</strong> indique la référence numéro <strong>20{{ $order_id }}13</strong> lors de ton virement pour qu'on puisse identifier ton paiement!</p>
+      </p>
+
+      <p>
+          <strong>Note importante:</strong> indique la référence numéro <strong>{{ $order_id }}</strong> lors de ton virement pour qu'on puisse identifier ton paiement !
       </p>
 
       <p>

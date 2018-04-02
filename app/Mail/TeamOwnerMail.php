@@ -37,8 +37,9 @@ class TeamOwnerMail extends Mailable
      */
     public function build()
     {
+        $name = $this->team->name;
         return $this->view('email.teamOwner')
-            ->subject("Informations pour l'équipe $this->team.name")
+            ->subject("Informations pour l'équipe $name")
             ->with([
                 'team' => $this->team,
                 'username' => $this->user->username
