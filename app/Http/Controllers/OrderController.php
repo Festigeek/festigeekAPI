@@ -320,17 +320,19 @@ class OrderController extends Controller
         if ($request->has('team_code')) {
             $result['team'] = Team::where('code', '=', $request->get('team_code'))->first();
             if(is_null($result['team'])){
-                DB::rollback();
                 $result['error'] = true;
                 $result['infoError'] = ['error' => 'Wrong team code'];
+                DB::rollback();
+                return $result;
             }
             $order->team()->attach($result['team']->id, ['captain' => false, 'user_id' => Auth::user()->id]);
         }
         else if ($request->has('team')) {
             if(!is_null(Team::where('alias', '=', Team::generateAlias($request->get('team')))->first())) {
-                DB::rollback();
                 $result['error'] = true;
                 $result['infoError'] = ['error' => 'Team already exists.'];
+                DB::rollback();
+                return $result;
             }
             $result['team'] = Team::create(array('name' => $request->get('team')));
             $result['team']->save();
@@ -344,82 +346,11 @@ class OrderController extends Controller
 
     public function bankTransferPayment(Order $order, Collection $products, $winner = false)
     {
-//        $order = Order::create($data);
-//        $products = $request->get('products');
-//        $products = collect($request->get('products'));
-//        $total = 0;
-
-        //TODO add form data in 'data' field
-        //TODO add product_type => bon
-        //TODO WARNING Hard-coded IDs
-//        $winnerTimestamp = Configuration::where('name', 'winner-timestamp')->first();
-//
-//        if (time() > $winnerTimestamp->value && $winnerTimestamp->value != 0) {
-//            $winner = true;
-//            //check if the user has order a burger (in that case we subtract a burger)
-//            $key = array_search(5, array_column($products, 'product_id'));
-//
-//            if ($key) {
-//                --$products[$key]['amount'];
-//                if ($products[$key]['amount'] == 0)
-//                    unset($products[$key]);
-//            }
-//
-//            array_push($products, ['product_id' => 15, 'amount' => 1]);
-//
-//            $winnerTimestamp->value = 0;
-//            $winnerTimestamp->save();
-//        }
-
-        // Move product from stock to user's order
         $products->each(function($product) use($order, &$total) {
-//        foreach ($products as $product) {
-//            $ProductDetails = Product::findOrFail($product['product_id']);
-//
-//            // Test the subscription
-//            if ($ProductDetails->product_type_id === 1) {
-//                ++$nbSubscription;
-//                //test if there is not more then 1 subscription
-//                if ($nbSubscription > 1 || $product['amount'] > 1) {
-//                    $error = ['error' => 'More than one inscription'];
-//                    DB::rollback();
-//                    return false;
-//                }
-//            }
-//
-//         Test items availability
-//            if ($ProductDetails->quantity_max != null && $ProductDetails->sold >= $ProductDetails->quantity_max) {
-//                $error = ['error' => 'No more tickets available'];
-//                DB::rollback();
-//                return false;
-//            }
-
-                $product['data']->sold += $product['amount'];
-                $product['data']->save();
-                $order->products()->save($product['data'], ['amount' => $product['amount']]);
-//                $total += $product['data']->price * $product['amount'];
+            $product['data']->sold += $product['amount'];
+            $product['data']->save();
+            $order->products()->save($product['data'], ['amount' => $product['amount']]);
         });
-
-//        if ($request->has('team_code')) {
-//            $team = Team::where('code', '=', $request->get('team_code'))->first();
-//            if(is_null($team)){
-//                DB::rollback();
-//                return response()->json(['error' => 'Wrong team code'], 422);
-//            }
-//            $order->team()->attach($team->id, ['captain' => false, 'user_id' => $user_id]);
-//        }
-//        else if ($request->has('team')) {
-//            if(!is_null(Team::where('alias', '=', Team::generateAlias($request->get('team')))->first())) {
-//                DB::rollback();
-//                return response()->json(['error' => 'Team already exists.'], 422);
-//            }
-//            $team = Team::create(array('name' => $request->get('team')));
-//            $team->save();
-//            $order->team()->attach($team->id, ['captain' => true, 'user_id' => $user_id]);
-//            $order->save();
-//        }
-//
-//        $user = $order->user()->get()[0];
 
         $user = $order->user()->first();
         $team = $order->team()->first();
