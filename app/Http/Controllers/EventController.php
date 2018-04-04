@@ -28,7 +28,7 @@ class EventController extends Controller
 
         $filteredTeams = $teams->filter(function($team) use($orders) {
             return $orders->pluck('team')->contains('id', $team->id);
-        });
+        })->all();
 
         return response()->json($filteredTeams);
 
@@ -53,6 +53,31 @@ class EventController extends Controller
     }
 
     public function updateTeam(Request $request, $event_id, $team_id) {
+        if(!$request->has('captain'))
+            return response()->json(['error' => 'Missing parameters.'], 422);
+
+        $event = Event::find($event_id)->first();
+        if(is_null($event))
+            return response()->json(['error' => 'Event not found.'], 404);
+
+        $team = Team::find($team_id)->first();
+        if(is_null($team))
+            return response()->json(['error' => 'Team not found.'], 404);
+
+        $newCaptain = $team->users()->where('username', $request->get('captain'))->first();
+        if(is_null($newCaptain->id))
+            return response()->json(['error' => 'Request was well-formed but was unable to be followed due to content errors'], 422);
+
+        if(!$this->isAdminOrOwner($team->captain->id)) {
+            return response()->json(['error' => 'Invalid Credentials.'], 401);
+        }
+
+        $team->captain->pivot->captain = false;
+        $team->captain->pivot->save();
+        $newCaptain->pivot->captain = true;
+        $newCaptain->pivot->save();
+
+        /*
         if(!$request->has('users') || !$request->has('captain'))
             return response()->json(['error' => 'Missing parameters.'], 422);
 
@@ -91,6 +116,7 @@ class EventController extends Controller
         $team->users()->detach();
         $team->users()->attach($users->all());
         $team->save();
+        */
 
         return response()->json(['success' => 'Team updated'], 200);
     }
