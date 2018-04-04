@@ -553,7 +553,7 @@ class OrderController extends Controller
         DB::beginTransaction();
 
         try{
-            $order = Order::find($order_id);
+            $order = Order::findOrFail($order_id);
 
             foreach($order->products()->get() as $product) {
                 $product->sold -= $product->pivot->amount;
@@ -569,7 +569,20 @@ class OrderController extends Controller
         catch (\Throwable $e) {
             DB::rollback();
 
-            return response()->json(['error'=>$e]);
+            return response()->json(['error' => $e]);
         }
+    }
+
+    /**
+     * Get the team associate to an order
+     * @param Integer $order_id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getTeam($order_id) {
+        $order = Order::find($order_id);
+        if(!is_null($order))
+            return response()->json($order->team, 200);
+        else
+            return response()->json(['error' => 'Order not Found'], 404);
     }
 }
