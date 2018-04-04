@@ -64,7 +64,11 @@ class EventController extends Controller
         if(is_null($team))
             return response()->json(['error' => 'Team not found.'], 404);
 
-        $newCaptain = $team->users()->where('username', $request->get('captain'))->first();
+        $newCaptain = User::where('username', $request->get('captain'))->first();
+        if(is_null($newCaptain))
+            return response()->json(['error' => 'New captain not found.'], 404);
+
+        $newCaptain = $team->users()->where('user_id', $newCaptain->id)->first();
         if(is_null($newCaptain))
             return response()->json(['error' => 'Request was well-formed but was unable to be followed due to content errors'], 422);
 
