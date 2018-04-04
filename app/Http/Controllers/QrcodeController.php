@@ -18,7 +18,7 @@ class QrcodeController extends Controller
     }
 
     /**
-     * Return a newly created QRCode from payload sended.
+     * Return a newly created QRCode from payload sent.
      *
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response

@@ -371,7 +371,7 @@ class OrderController extends Controller
 
         Mail::to($user->email, $user->username)->send(new BankingWireTransfertMail($user, $order));
 
-        // Save info only if mail have been sended correctly
+        // Save info only if mail have been sent correctly
         DB::commit();
 
         return response()->json(['success' => 'Bank transfer subscription valid', 'state' => ($winner) ? 'win' : 'success'], 200);
@@ -423,7 +423,7 @@ class OrderController extends Controller
             $response = $payment->create($this->apiContext);
             $redirectUrl = $response->links[1]->href;
 
-            // Save info only if Paypal request have been sended correctly
+            // Save info only if Paypal request have been sent correctly
             DB::commit();
 
             return response()->json(['success' => 'Ready for PayPal transaction', 'link' => $redirectUrl], 200);

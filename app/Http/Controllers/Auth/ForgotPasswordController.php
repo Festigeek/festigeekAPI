@@ -50,6 +50,6 @@ class ForgotPasswordController extends Controller
         }
         $token = $this->broker()->createToken($user);
         Mail::to($user->email, $user->username)->send(new ResetPasswordTokenMail($user, $token));
-        return response()->json(['success' => 'Reset token sended.'], 200);
+        return response()->json(['success' => 'Reset token sent.'], 200);
     }
 }
