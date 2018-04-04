@@ -63,17 +63,6 @@ class OrderController extends Controller
             $this->settings['service.EndPoint'] = config('paypal.sandbox_end_point');
         }
 
-//        $this->apiContext = PayPal::ApiContext($this->client_id, $this->secret);
-//
-//        $this->apiContext->setConfig(array(
-//            'mode' => config('services.paypal.mode'),
-//            'service.EndPoint' => config('services.paypal.end_point'),
-//            'http.ConnectionTimeOut' => 60,
-//            'log.LogEnabled' => true,
-//            'log.FileName' => storage_path('logs/paypal.log'),
-//            'log.LogLevel' => 'FINE'
-//        ));
-
         // Set the Paypal API Context/Credentials
         $this->apiContext = new ApiContext(new OAuthTokenCredential($this->client_id, $this->secret));
         $this->apiContext->setConfig($this->settings);
@@ -583,34 +572,4 @@ class OrderController extends Controller
             return response()->json(['error'=>$e]);
         }
     }
-
-//    public function consumeProduct(Request $request, $order_id, $product_id)
-//    {
-//        try {
-//            $order = Order::findOrFail($order_id);
-//        }
-//        catch (\Exception $e) {
-//            return response()->json(['error' => 'Order not Found'], 404);
-//        }
-//
-//        $inputs = $request->only(['consume']);
-//
-//        $validator = Validator::make($inputs, [
-//            'consume' => 'required|numeric'
-//        ]);
-//
-//        if ($validator->fails())
-//            return response()->json(['error' => 'Validation error.', 'validation' => $validator], 400);
-//
-//        $consume = $request->get("consume");
-//        $product = $order->products()->where('product_id', $product_id)->first();
-//
-//        if(intval($consume) <= $product->pivot->amount) {
-//            $order->products()->updateExistingPivot((int)$product_id, ['consume' => intval($consume)]);
-//        }
-//        else
-//            return response()->json(['error' => 'Try to consume more then ordered.', 'validation' => $validator], 400);
-//
-//        return response()->json($order);
-//    }
 }
