@@ -38,7 +38,7 @@ class ResetPasswordTokenMail extends Mailable
      */
     public function build()
     {
-        return $this->view('email.activate')
+        return $this->view('email.resetPassword')
           ->subject(Lang::get('festigeek.reset_token'))
           ->with([
             'reset_token' => $this->token,
