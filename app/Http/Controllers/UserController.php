@@ -136,7 +136,7 @@ class UserController extends Controller
 
             $order = User::find($id)->orders()->get()->filter(function($order) use ($event) {
                 return (!is_null($event)) ? $order->event_id == $event : true;
-            });
+            })->all();
             return response()->json($order);
         }
         else abort(403);
