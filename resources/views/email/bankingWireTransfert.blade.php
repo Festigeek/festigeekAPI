@@ -32,7 +32,7 @@
     <div>
       <p>
         Salut {{ $username }}, <br/><br/>
-        Félicitation! Tu es inscrit à la LAN FestiGeek 2018 !<br/>
+        Félicitations! Tu es inscrit à la LAN FestiGeek 2018 !<br/>
         Ou enfin presque, reste encore à régler la facture. ;)
       </p>
 
@@ -75,6 +75,7 @@
 
       <p>
           <strong>Note importante:</strong> indique la référence numéro <strong>{{ $order_id }}</strong> lors de ton virement pour qu'on puisse identifier ton paiement !
+          <strong>Autre information importante:</strong> ne fait pas de paiement en <strong>bulletin de versement rouge</strong>, autrement ça te sera facturé 5 CHF de plus. Merci !
       </p>
 
       <p>

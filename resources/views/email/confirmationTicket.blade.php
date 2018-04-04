@@ -36,7 +36,7 @@
   N'oublie pas de <strong>l'imprimer ou le mettre sur ton smartphone</strong>, le code sera scanné à l'entrée.
 </p>
 
-<p><strong>Nouveau !</strong> Cette année, des douches seront mises à ta disposition. Si tu es intéressé, prends un linge !</p>
+<p>Des douches seront mises à ta disposition. Si tu es intéressé, prends un linge !</p>
 
 @if ($order->state == 0)
   <div style="background-color:#ffaaaa;width:550px;margin:20px auto;border-radius:5px;text-align:center;">
@@ -62,7 +62,7 @@
 </p>
 
 <p>
-  Vous pouvez également le récupérer sur votre page de profil, sur le site:
+  Tu peux également le récupérer sur ta page de profil, sur le site:
 </p>
 
 <div style="text-align:center;">

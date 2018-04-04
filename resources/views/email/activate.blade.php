@@ -8,7 +8,7 @@
 
         <div>
         	Salut {{ $username }} !<br />
-        	Merci d'avoir crée un compte sur le site de Festigeek !<br />
+        	Merci d'avoir créé un compte sur le site de Festigeek !<br />
         	Cliquez sur le lien ci-dessous pour vérifier l'adresse e-mail de votre compte.
          <br />
          <br />
