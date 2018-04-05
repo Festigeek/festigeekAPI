@@ -29,21 +29,9 @@ class EventController extends Controller
 
         $filteredTeams = $teams->filter(function($team) use($orders) {
             return $orders->pluck('team')->contains('id', $team->id);
-        })->transform(function($team) {
-            return (auth()->user() && $team->hasUser(auth()->user()->id)) ? $team->makeVisible('code') : $team;
         })->all();
 
         return response()->json($filteredTeams);
-
-//        $temp = $orders->filter(function($value) use ($game) {
-//            return (!is_null($game)) ? $value->products()->where('product_id', $game)->count() > 0 : true;
-//        })->map(function($order) {
-//            return $order->team()->get();
-//        })->flatten()->filter(function($value) {
-//            return !is_null($value);
-//        })->unique('id')->sortBy('name')->values();
-//
-//        return response()->json($temp);
     }
 
     public function teamFromCode(Request $request, $event_id, $team_code) {
@@ -78,10 +66,6 @@ class EventController extends Controller
         
         $team->users()->updateExistingPivot($team->captain->id, ['captain' => false]);
         $team->users()->updateExistingPivot($newCaptain->id, ['captain' => true]);
-        // $team->captain->pivot->captain = false;
-        // $team->captain->pivot->save();
-        // $newCaptain->pivot->captain = true;
-        // $newCaptain->pivot->save();
 
         /*
         if(!$request->has('users') || !$request->has('captain'))
@@ -127,7 +111,7 @@ class EventController extends Controller
         return response()->json(['success' => 'Team updated'], 200);
     }
 
-
+    /*
     public function team(Request $request, $event_id, $team_id){
 
         $game = ($request->filled('game')) ? $request->get('game') : null;
@@ -149,6 +133,7 @@ class EventController extends Controller
 
         return response()->json($team);
     }
+    */
 
     /**
      * @param Request $request
