@@ -35,7 +35,7 @@ Route::get('users/refreshToken', 'UserController@refreshToken');
 Route::post('users/login', 'UserController@authenticate');
 Route::post('users/logout', 'UserController@logout');
 // Account management
-Route::post('users', 'UserController@register');
+// Route::post('users', 'UserController@register');
 Route::get('users/activate', 'UserController@activation');
 Route::post('users/getResetToken', 'Auth\ForgotPasswordController@getToken');
 Route::post('users/resetPassword', 'Auth\ResetPasswordController@reset');

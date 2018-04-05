@@ -23,7 +23,7 @@ class UserController extends Controller
         $this->middleware('auth:api', [
             'except' => [
                 'authenticate',
-                'register',
+                'store',
                 'activation',
                 'test'
             ]
@@ -153,7 +153,7 @@ class UserController extends Controller
      * @param  Request  $request
      * @return Response
      */
-    public function register(Request $request) {
+    public function store(Request $request) {
         try {
             $newuser = User::create($request->all());
         }
@@ -162,7 +162,6 @@ class UserController extends Controller
         }
 
         Mail::to($newuser->email, $newuser->username)->send(new RegisterMail($newuser));
-
         return response()->json(['success' => 'Account created.'], 200);
     }
 
