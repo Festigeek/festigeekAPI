@@ -287,7 +287,7 @@ class OrderController extends Controller
         $winnerTimestamp = Configuration::where('name', "timestamp-winner-" . self::EVENT_YEAR)->first();
 
         if (!is_null($winnerTimestamp) && time() > $winnerTimestamp->value && $winnerTimestamp->value != 0) {
-            //check if the user has order a burger (in that case we subtract a burger)
+            //check if the user has ordered a burger (in that case we subtract a burger)
             $index = $products->search(function ($item) {
                 return $item['product_id'] == self::BURGER_ID;
             });
