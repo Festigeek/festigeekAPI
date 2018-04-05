@@ -51,8 +51,8 @@ class UserController extends Controller
      * @return Response
      */
     public function show($user_id) {
-        if($this->isAdminOrOwner($user_id)) {
-            $id = ($user_id === 'me') ? Auth::user()->id : $user_id;
+        $id = ($user_id === 'me') ? Auth::user()->id : $user_id;
+        if($this->isAdminOrOwner($id)) {
             try {
                 $user = User::findOrFail($id);
                 return response()->json($user);
@@ -73,9 +73,9 @@ class UserController extends Controller
      */
     public function update(Request $request, $user_id)
     {
-        if($this->isAdminOrOwner($user_id)) {
+        $id = ($user_id === 'me') ? Auth::user()->id : $user_id;
+        if($this->isAdminOrOwner($id)) {
             try {
-                $id = ($user_id === 'me') ? Auth::user()->id : $user_id;
                 $user = User::findOrFail($id);
             }
             catch (\Exception $e) {
@@ -129,14 +129,15 @@ class UserController extends Controller
      * @param String $id
      */
     public function getOrders(Request $request, $user_id) {
-        // TODO: filtrer par state
-        if($this->isAdminOrOwner($user_id)) {
+        $id = ($user_id === 'me') ? Auth::user()->id : $user_id;
+        if($this->isAdminOrOwner($id)) {
             $event = ($request->filled('event_id')) ? $request->get('event_id') : null;
-            $id = ($user_id === 'me') ? Auth::user()->id : $user_id;
-
-            $order = User::find($id)->orders()->get()->filter(function($order) use ($event) {
-                return (!is_null($event)) ? $order->event_id == $event : true;
+            $state = ($request->filled('state')) ? $request->get('state') : null;
+            $order = User::find($id)->orders()->get()->filter(function($order) use ($event, $state) {
+                return ( (!is_null($event)) ? $order->event_id == $event : true ) 
+                    && ( (!is_null($state)) ? $order->state == $state : true );
             })->all();
+            
             return response()->json($order);
         }
         else abort(403);
