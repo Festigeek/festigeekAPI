@@ -39,11 +39,13 @@ class DatabaseSeederv2 extends Seeder
   $oldOrder->products()->sync([1, 2 => ['amount' => '2']]);
   $newOrderReturning = Order::create(['state' => '1', 'user_id' => $returningUserWithOrder->id, 'event_id' => 2, 'payment_type_id' => 1]);
   $newOrderReturning->products()->sync([$p7->id, $p12->id => ['amount' => '2']]);
-
+  $newUserOrder = Order::create(['state' => '1', 'user_id' => $newUser->id, 'event_id' => 2, 'payment_type_id' => 1]);
+  $newUserOrder->products()->sync([$p7->id, $p12->id => ['amount' => '2']]);
   //TODO test if we can use old team.. ? ATTENTION is it possible to only view current event_id (not here, in controller)
   //Team
   Team::create(['name' => "old Team"])->users()->sync([2 => ['captain' => true, 'order_id' => $oldOrder->id]]);
-  Team::create(['name' => "Testing Baby"])->users()->sync([$returningUserWithOrder->id => ['captain' => true, 'order_id' => $newOrderReturning->id]]);
+  $newTeam = Team::create(['name' => "Testing Baby"])->users()->sync([$returningUserWithOrder->id => ['captain' => true, 'order_id' => $newOrderReturning->id], $newUser->id =>['captain' => false, 'order_id'=>$newUserOrder->id]]);
+
 }
 
 }
