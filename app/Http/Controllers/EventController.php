@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Event;
 use App\Order;
 use App\Team;
+
 use Illuminate\Http\Request;
 
 class EventController extends Controller
@@ -56,19 +57,16 @@ class EventController extends Controller
         if(!$request->has('captain'))
             return response()->json(['error' => 'Missing parameters.'], 422);
 
-        $event = Event::find($event_id)->first();
+        $username = $request->get('captain');
+        $event = Event::find($event_id);
         if(is_null($event))
             return response()->json(['error' => 'Event not found.'], 404);
 
-        $team = Team::find($team_id)->first();
+        $team = Team::find($team_id);
         if(is_null($team))
             return response()->json(['error' => 'Team not found.'], 404);
 
-        $newCaptain = User::where('username', $request->get('captain'))->first();
-        if(is_null($newCaptain))
-            return response()->json(['error' => 'New captain not found.'], 404);
-
-        $newCaptain = $team->users()->where('user_id', $newCaptain->id)->first();
+        $newCaptain = $team->users()->where('username', $username)->first();
         if(is_null($newCaptain))
             return response()->json(['error' => 'Request was well-formed but was unable to be followed due to content errors'], 422);
 
@@ -85,8 +83,8 @@ class EventController extends Controller
         if(!$request->has('users') || !$request->has('captain'))
             return response()->json(['error' => 'Missing parameters.'], 422);
 
-        $event = Event::find($event_id)->first();
-        $team = Team::find($team_id)->first();
+        $event = Event::find($event_id);
+        $team = Team::find($team_id);
         $users_ids = collect($request->get('users'));
         $nb_users = $users_ids->count();
         $captain_id = $request->get('captain');

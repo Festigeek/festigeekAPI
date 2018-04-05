@@ -2,6 +2,9 @@
 
 /* List of patterns */
 Route::pattern('id', '\d+');
+Route::pattern('event_id', '\d+');
+Route::pattern('team_id', '\d+');
+Route::pattern('product_id', '\d+');
 Route::pattern('user', '\d+|me');
 
 /*
