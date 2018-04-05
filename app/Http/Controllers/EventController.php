@@ -29,6 +29,8 @@ class EventController extends Controller
 
         $filteredTeams = $teams->filter(function($team) use($orders) {
             return $orders->pluck('team')->contains('id', $team->id);
+        })->transform(function($team) {
+            return (auth()->user() && $team->hasUser(auth()->user()->id)) ? $team->makeVisible('code') : $team;
         })->all();
 
         return response()->json($filteredTeams);
@@ -71,13 +73,15 @@ class EventController extends Controller
             return response()->json(['error' => 'Request was well-formed but was unable to be followed due to content errors'], 422);
 
         if(!$this->isAdminOrOwner($team->captain->id)) {
-            return response()->json(['error' => 'Invalid Credentials.'], 401);
+            return response()->json(['error' => 'Permission denied'], 401);
         }
-
-        $team->captain->pivot->captain = false;
-        $team->captain->pivot->save();
-        $newCaptain->pivot->captain = true;
-        $newCaptain->pivot->save();
+        
+        $team->users()->updateExistingPivot($team->captain->id, ['captain' => false]);
+        $team->users()->updateExistingPivot($newCaptain->id, ['captain' => true]);
+        // $team->captain->pivot->captain = false;
+        // $team->captain->pivot->save();
+        // $newCaptain->pivot->captain = true;
+        // $newCaptain->pivot->save();
 
         /*
         if(!$request->has('users') || !$request->has('captain'))
