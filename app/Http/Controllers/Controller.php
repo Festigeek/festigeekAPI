@@ -15,7 +15,7 @@ class Controller extends BaseController
 {
     use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
 
-    // public function __construct() { }
+    public function __construct() { }
 
     protected function isAdminOrOwner($ressource_user_id) {
         return Auth::user()->id == $ressource_user_id || Auth::user()->hasRole('admin');
