@@ -551,27 +551,21 @@ class OrderController extends Controller
      */
     public function delete($order_id)
     {
-        DB::beginTransaction();
+        // Role:admin middleware, no stress boyz ;)
+        $order = Order::find($order_id);
 
-        try{
-            $order = Order::findOrFail($order_id);
+        if(is_null($order))
+            return response()->json(['error' => 'Order not Found'], 404);
 
-            foreach($order->products()->get() as $product) {
-                $product->sold -= $product->pivot->amount;
-                $product->save();
-            }
+        $order->products()->get()->each(function($product) {
+            $product->sold -= $product->pivot->amount;
+            $product->save();
+        });
 
-            $order->products()->detach();
-            $order->delete();
+        $order->products()->delete();
+        $order->delete();
 
-            DB::commit();
-            return response()->json(['success']);
-        }
-        catch (\Throwable $e) {
-            DB::rollback();
-
-            return response()->json(['error' => $e]);
-        }
+        return response()->json(['success']);
     }
 
     /**
