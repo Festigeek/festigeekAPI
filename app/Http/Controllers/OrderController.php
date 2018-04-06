@@ -314,7 +314,7 @@ class OrderController extends Controller
     private function manageTeam(Request $request ,Order $order)
     {
         $result = ['error' => false];
-        if ($request->has('team_code')) {
+        if ($request->filled('team_code')) {
             $result['team'] = Team::where('code', '=', $request->get('team_code'))->first();
             if(is_null($result['team'])){
                 $result['error'] = true;
@@ -324,7 +324,7 @@ class OrderController extends Controller
             }
             $order->team()->attach($result['team']->id, ['captain' => false, 'user_id' => Auth::user()->id]);
         }
-        else if ($request->has('team')) {
+        else if ($request->filled('team')) {
             if(!is_null(Team::where('alias', '=', Team::generateAlias($request->get('team')))->first())) {
                 $result['error'] = true;
                 $result['infoError'] = ['error' => 'Team already exists.'];
@@ -335,6 +335,14 @@ class OrderController extends Controller
             $result['team']->save();
             $order->team()->attach($result['team']->id, ['captain' => true, 'user_id' => Auth::user()->id]);
             $order->save();
+        }
+        else {
+            if($order->products()->get()->contains('need_team', 1)) {
+                $result['error'] = true;
+                $result['infoError'] = ['error' => 'You need a team !'];
+                DB::rollback();
+                return $result; 
+            }
         }
         return $result;
     }
