@@ -581,6 +581,9 @@ class OrderController extends Controller
     public function getTeam($order_id) {
         $order = Order::find($order_id);
         if(!is_null($order)) {
+            if(is_null($order->team))
+                return response()->json(['error' => 'No team found for this order'], 404);
+                
             $team = (auth()->user() && $order->team->hasUser(auth()->user()->id)) ? $order->team->makeVisible('code') : $order->team;
             return response()->json($team, 200);
         }
