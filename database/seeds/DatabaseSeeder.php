@@ -59,7 +59,7 @@ class DatabaseSeeder extends Seeder
         // Configurations
 
 //        Configuration::create(['name' => 'timestamp-winner-2017', 'value' => time()]);
-        Configuration::create(['name' => 'timestamp-winner-2018', 'value' => time()]);
+      //  Configuration::create(['name' => 'timestamp-winner-2018', 'value' => time()]);
 
         // Users
 
@@ -126,9 +126,9 @@ class DatabaseSeeder extends Seeder
         Team::create(['name' => "RageQuit"])->users()->sync([$adminUser->id => ['captain' => true, 'order_id' => '1']]);
 
 
-        $this->call([
-          DatabaseSeederv2::class,
-        ]);
+        // $this->call([
+        //   DatabaseSeederv2::class,
+        // ]);
 
         Model::reguard();
     }
