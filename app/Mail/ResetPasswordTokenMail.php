@@ -42,7 +42,8 @@ class ResetPasswordTokenMail extends Mailable
           ->subject(Lang::get('festigeek.reset_token'))
           ->with([
             'reset_token' => $this->token,
-            'username' => $this->user->username
+            'username' => $this->user->username,
+            'email' => $this->user->email
           ]);
     }
 }

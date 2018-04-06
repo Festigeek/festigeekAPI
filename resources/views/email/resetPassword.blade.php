@@ -15,7 +15,7 @@
 
         	Cliquez sur le lien ci-dessous pour modifier le mot de passe de votre compte :
             <br />
-            {{ URL::to('https://www.festigeek.ch/#!/resetPassword/' . $reset_token) }}<br/>
+            {{ URL::to('https://www.festigeek.ch/#!/resetPassword/' . $reset_token . "/" . $email) }}<br/>
         </div>
 
     </body>
