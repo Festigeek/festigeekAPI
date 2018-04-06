@@ -90,6 +90,7 @@ class sendTickets extends Command
         //     $mailer = \Swift_Mailer::newInstance($transport);
         //     Mail::setSwiftMailer($mailer);
         // }
+
     }
 
     /**

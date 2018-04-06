@@ -3,27 +3,34 @@
 namespace App\Http\Controllers;
 include("Auth/drupal_password.inc");
 
-use DB;
-use Crypt;
-use Response;
-use JWTAuth;
-use Validator;
-
-use App\Address;
-use App\User;
-use App\Mail\RegisterMail;
-
-use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Response;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Http\Request;
+
+use App\User;
+use App\Mail\RegisterMail;
+use App\Services\OAuthProxy;
 
 class UserController extends Controller
 {
     public function __construct()
     {
         parent::__construct();
-        $this->middleware('jwt.auth', ['except' => ['authenticate', 'register', 'activation', 'test']]);
+        $this->middleware('auth:api', [
+            'except' => [
+                'authenticate',
+                'store',
+                'activation',
+                'test'
+            ]
+        ]);
         $this->middleware('role:admin', ['only' => ['index']]);
+
+        $this->proxy = new OAuthProxy(app());
     }
 
     /**
@@ -44,8 +51,8 @@ class UserController extends Controller
      * @return Response
      */
     public function show($user_id) {
-        if($this->isAdminOrOwner($user_id)) {
-            $id = ($user_id === 'me') ? JWTAuth::user()->id : $user_id;
+        $id = ($user_id === 'me') ? Auth::user()->id : $user_id;
+        if($this->isAdminOrOwner($id)) {
             try {
                 $user = User::findOrFail($id);
                 return response()->json($user);
@@ -66,9 +73,9 @@ class UserController extends Controller
      */
     public function update(Request $request, $user_id)
     {
-        if($this->isAdminOrOwner($user_id)) {
+        $id = ($user_id === 'me') ? Auth::user()->id : $user_id;
+        if($this->isAdminOrOwner($id)) {
             try {
-                $id = ($user_id === 'me') ? JWTAuth::user()->id : $user_id;
                 $user = User::findOrFail($id);
             }
             catch (\Exception $e) {
@@ -122,72 +129,27 @@ class UserController extends Controller
      * @param String $id
      */
     public function getOrders(Request $request, $user_id) {
-        // TODO: filtrer par state
-        if($this->isAdminOrOwner($user_id)) {
+        $id = ($user_id === 'me') ? Auth::user()->id : $user_id;
+        if($this->isAdminOrOwner($id)) {
             $event = ($request->filled('event_id')) ? $request->get('event_id') : null;
-            $id = ($user_id === 'me') ? JWTAuth::user()->id : $user_id;
+            $state = ($request->filled('state')) ? $request->get('state') : null;
+            $user = User::find($id);
+            if(is_null($user))
+                return response()->json(['error' => 'User not found'], 404);
 
-            $order = User::find($id)->orders()->get()->filter(function($order) use ($event) {
-                return (!is_null($event)) ? $order->event_id == $event : true;
-            });
+            $order = $user->orders()->get()->filter(function($order) use ($event, $state) {
+                return ( (!is_null($event)) ? $order->event_id == $event : true ) 
+                    && ( (!is_null($state)) ? $order->state == $state : true );
+            })->all();
+            
             return response()->json($order);
         }
         else abort(403);
     }
 
-    public function test(Request $request) {
-        // Test function
-    }
-
-
     ///////////////////////
     // AUTHENTICATION STUFF
     ///////////////////////
-
-    /**
-     * Authenticate user from email / password & generate a new token.
-     *
-     * @param  Request  $request
-     * @return Response
-     */
-    public function authenticate(Request $request) {
-        $credentials = $request->only('email', 'password');
-
-        if (!$token = JWTAuth::attempt($credentials)) {
-            // We do not use the ORM because the property 'drupal_password' is hidden, and we need it.
-            $drupal_user = DB::table('users')->where('email', $credentials['email'])->where('activated', false)->first();
-
-            if(!is_null($drupal_user) && user_check_password($credentials['password'], $drupal_user)) {
-                if($request->filled('newPassword')) {
-                    // Update account
-                    DB::table('users')
-                        ->where('id', $drupal_user->id)
-                        ->update(['password' => Hash::make($request->input('newPassword')), 'activated' => 1]);
-
-                    // Re-create JWToken
-                    $credentials['password'] = $request->input('newPassword');
-                    $token = JWTAuth::attempt($credentials);
-                }
-                else {
-                    return response()->json(['error' => 'Missing parameters.'], 422);
-                }
-            }
-            else {
-                return response()->json(['error' => 'Invalid Credentials.'], 401);
-            }
-        }
-
-        if(!JWTAuth::user()->activated) {
-            return response()->json(['error' => 'Inactive Account.'], 401);
-        }
-
-        return response()->json([
-            'success' => 'Authenticated.', 
-            'token' => $token, 
-            'token_type' => 'bearer', 
-            'expires_in' => auth()->factory()->getTTL() * 60
-        ]);
-    }
 
     /**
      * Create a new user and send a activation mail.
@@ -195,7 +157,7 @@ class UserController extends Controller
      * @param  Request  $request
      * @return Response
      */
-    public function register(Request $request) {
+    public function store(Request $request) {
         try {
             $newuser = User::create($request->all());
         }
@@ -204,9 +166,6 @@ class UserController extends Controller
         }
 
         Mail::to($newuser->email, $newuser->username)->send(new RegisterMail($newuser));
-
-        //$token = JWTAuth::fromUser($newuser);
-        //return response()->json(compact('token'));
         return response()->json(['success' => 'Account created.'], 200);
     }
 
@@ -239,18 +198,66 @@ class UserController extends Controller
             return response()->json(['error' => 'No registration token provided'], 422);
     }
 
+    // OAUTH RELATED METHODS
+
+    /**
+     * Authenticate user from email / password & generate a new token.
+     *
+     * @param  Request  $request
+     * @return Response
+     */
+    public function authenticate(Request $request) {
+        $credentials = $request->only('email', 'password');
+
+        if(!$user = User::where('email', $credentials['email'])->first())
+            return response()->json(['error' => 'Invalid Credentials.'], 401);
+
+        if (!$response = $this->proxy->attemptLogin($credentials['email'], $credentials['password'])) {
+            // We do not use the ORM because the property 'drupal_password' is hidden, and we need it.
+            $drupal_user = DB::table('users')->where('email', $credentials['email'])->where('activated', false)->first();
+
+            if (!is_null($drupal_user) && user_check_password($credentials['password'], $drupal_user)) {
+                if ($request->filled('newPassword')) {
+                    // Update account
+                    DB::table('users')
+                        ->where('id', $drupal_user->id)
+                        ->update(['password' => Hash::make($request->input('newPassword')), 'activated' => 1]);
+
+                    $credentials['password'] = $request->input('newPassword');
+                    $response = $this->proxy->attemptLogin($credentials['email'], $credentials['password']);
+                } else {
+                    return response()->json(['error' => 'Missing parameters.'], 422);
+                }
+            } else {
+                return response()->json(['error' => 'Invalid Credentials.'], 401);
+            }
+
+            return response()->json(['error' => 'Invalid Credentials.'], 401);
+        }
+
+        if($user->activated == 0)
+            return response()->json(['error' => 'Inactive Account.'], 401);
+
+        return $response;
+    }
+
     /**
      * Refresh given token
      *
      * @param  Request  $request
      * @return Response
      */
-    public function refresh(Request $request) {
-        return response()->json([
-            'success' => 'Token refreshed',
-            'access_token' => auth()->refresh(true, true),
-            'token_type' => 'bearer',
-            'expires_in' => auth()->factory()->getTTL() * 60
-        ]);
+    public function refreshToken(Request $request) {
+        return $this->proxy->attemptRefresh($request);
+    }
+
+    /**
+     * Logs out the user. We revoke access token and refresh token.
+     * Also instruct the client to forget the refresh cookie.
+     */
+    public function logout(Request $request)
+    {
+        $response = $this->proxy->logout($request);
+        return $response->cookie(null);
     }
 }

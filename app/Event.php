@@ -30,4 +30,17 @@ class Event extends Model
     {
         return Order::where('event_id', $this->id);
     }
+
+    /**
+     * Get all the teams for the event.
+     */
+    public function teams(){
+        $orders = Order::where('event_id', $this->id)->get();
+
+        return $orders->map( function($order) {
+            return $order->team()->get();
+        })->flatten()->filter(function($value) {
+            return !is_null($value);
+        })->unique('id')->sortBy('name')->values();
+    }
 }

@@ -9,44 +9,15 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 use Mail;
 use PayPal;
-use JWTAuth;
+use Auth;
 
 class Controller extends BaseController
 {
     use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
 
-    public $_apiContext;
+    public function __construct() { }
 
-    public function __construct() {
-        if(\Config::get('mail.driver') === 'smtp') {
-            // Send email notification
-            $transport = \Swift_SmtpTransport::newInstance(
-                \Config::get('mail.host'),
-                \Config::get('mail.port'),
-                \Config::get('mail.encryption'))
-                    ->setUsername(\Config::get('mail.username'))
-                    ->setPassword(\Config::get('mail.password'))
-                    ->setStreamOptions(['ssl' => \Config::get('mail.ssloptions')]);
-
-            $mailer = \Swift_Mailer::newInstance($transport);
-            Mail::setSwiftMailer($mailer);
-        }
-        
-        $this->_apiContext = PayPal::ApiContext(
-            config('services.paypal.client_id'),
-            config('services.paypal.secret'));
-
-        $this->_apiContext->setConfig(array(
-            'mode' => config('services.paypal.mode'),
-            'service.EndPoint' => config('services.paypal.end_point'),
-            'http.ConnectionTimeOut' => 60,
-            'log.LogEnabled' => true,
-            'log.FileName' => storage_path('logs/paypal.log'),
-            'log.LogLevel' => 'FINE'
-        ));
-    }
-
-    protected function isAdminOrOwner($user_id) {
-        return $user_id === 'me' || JWTAuth::user()->id == $user_id || JWTAuth::user()->hasRole('admin');
+    protected function isAdminOrOwner($ressource_user_id) {
+        return Auth::user()->id == $ressource_user_id || Auth::user()->hasRole('admin');
     }
 }

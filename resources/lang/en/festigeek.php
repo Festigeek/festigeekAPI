@@ -16,5 +16,5 @@ return [
     /* MAILS */
 
     'notify_registration'   => 'Activate your Festigeek account',
-
+    'reset_token'   => 'Reset your Festigeek account\'s password',
 ];

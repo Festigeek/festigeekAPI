@@ -7,7 +7,6 @@ use App\Order;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Contracts\Queue\ShouldQueue;
 
 class BankingWireTransfertMail extends Mailable
 {
@@ -27,11 +26,10 @@ class BankingWireTransfertMail extends Mailable
      *
      * @return void
      */
-    public function __construct(User $user, Order $order, $total)
+    public function __construct(User $user, Order $order)
     {
         $this->user = $user;
         $this->order = $order;
-        $this->total = $total;
     }
     /**
      * Build the message.
@@ -40,13 +38,14 @@ class BankingWireTransfertMail extends Mailable
      */
     public function build()
     {
-      return $this->view('email.bankingWireTransfert')
-        ->subject('Confirmation de ton inscription')
-        ->with([  
-          'order_id'=>$this->order->id,
-          'total' => $this->total,
-          'order' => $this->order,
-          'username' => $this->user->username
-        ]);
+        $order_id = rand(10, 99) . $this->order->id . rand(10, 99);
+        return $this->view('email.bankingWireTransfert')
+            ->subject('Confirmation de ton inscription')
+            ->with([
+                'order_id'=> $order_id,
+                'total' => $this->total,
+                'order' => $this->order,
+                'username' => $this->user->username
+            ]);
     }
 }

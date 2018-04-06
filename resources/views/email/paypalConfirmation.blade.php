@@ -32,7 +32,7 @@
   <div>
     <p>
       Salut {{ $username }}, <br/><br/>
-      Félicitation tu es inscrits à la LAN FestiGeek 2017 !<br/>
+      Félicitation tu es inscrits à la LAN FestiGeek 2018 !<br/>
       On a bien reçu ton paiement PayPal, MERCI !
     </p>
 
@@ -63,7 +63,7 @@
     </table>
 
     <p>
-      Si tu as des qusetions, n'hésites pas à nous contacter sur <a href="https://www.facebook.com/festigeek.yverdon/">Facebook</a> ou <a href="https://discord.gg/QQ2KEUY">Discord</a>.<br>
+      Si tu as des qusetions, n'hésites pas à nous contacter sur <a href="https://www.facebook.com/festigeek.yverdon/">Facebook</a> ou <a href="https://discord.gg/festigeek">Discord</a>.<br>
       On se réjouit de te voir à la LAN.
     </p>
 
@@ -71,6 +71,9 @@
       A+<br/>
       L'équipe FestiGeek
     </p>
+    
+    <br />
+    {{ Html::image('images/logo.full.png', 'Logo Festigeek', array('style' => 'width:50%;')) }}
 
   </div>
 </body>

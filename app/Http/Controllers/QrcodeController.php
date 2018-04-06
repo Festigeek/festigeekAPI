@@ -13,12 +13,12 @@ class QrcodeController extends Controller
     public function __construct()
     {
         parent::__construct();
-        $this->middleware('jwt.auth');
+        $this->middleware('auth:api');
         $this->middleware('role:admin|comite', ['only' => ['decrypt']]);
     }
 
     /**
-     * Return a newly created QRCode from payload sended.
+     * Return a newly created QRCode from payload sent.
      *
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response

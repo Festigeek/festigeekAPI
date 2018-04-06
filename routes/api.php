@@ -2,7 +2,10 @@
 
 /* List of patterns */
 Route::pattern('id', '\d+');
-Route::pattern('user_id', '\d+|me');
+Route::pattern('event_id', '\d+');
+Route::pattern('team_id', '\d+');
+Route::pattern('product_id', '\d+');
+Route::pattern('user', '\d+|me');
 
 /*
 |--------------------------------------------------------------------------
@@ -20,16 +23,25 @@ Route::get('/', function() {
 });
 
 /*
+ * Resource: Country
+ */
+Route::resource('countries', 'CountryController');
+
+/*
  * Resource: User
  */
-Route::get('users/test', 'UserController@test');
-Route::get('users/activate', 'UserController@activation');
+// Proxified oAuth2 routes
+Route::get('users/refreshToken', 'UserController@refreshToken');
 Route::post('users/login', 'UserController@authenticate');
-Route::get('users/refreshToken', 'UserController@refresh');
-
-Route::get('users/{user_id}/orders', 'UserController@getOrders');
+Route::post('users/logout', 'UserController@logout');
+// Account management
+// Route::post('users', 'UserController@register');
+Route::get('users/activate', 'UserController@activation');
+Route::post('users/getResetToken', 'Auth\ForgotPasswordController@getToken');
+Route::post('users/resetPassword', 'Auth\ResetPasswordController@reset');
+// Others
+Route::get('users/{user}/orders', 'UserController@getOrders');
 Route::resource('users', 'UserController');
-Route::post('users', 'UserController@register');
 
 /*
  * Resource: Qrcode
@@ -38,36 +50,28 @@ Route::post('qrcode', 'QrcodeController@create');
 Route::post('qrcode/decrypt', 'QrcodeController@decrypt');
 
 /*
- * Resource: Country
- */
-Route::resource('countries', 'CountryController');
-
-/*
- * Resource: Address
- */
-//Route::resource('users.addresses', 'UserAddressController');
-
-/*
  * Resource: Products
  */
-Route::resource('productTypes', 'ProductTypesController', ['only' => [
-    'index'
-]]);
+Route::resource('productTypes', 'ProductTypesController', ['only' => ['index']]);
 Route::resource('products', 'ProductController');
 
 Route::get('events/current', 'EventController@current');
 Route::get('events/{id}/teams', 'EventController@teams');
-Route::get('events/{event_id}/teams/{team_id}', 'EventController@team');
+Route::get('events/{event_id}/teams/{team_code}', 'EventController@teamFromCode');
+Route::put('events/{event_id}/teams/{team_id}', 'EventController@updateTeam');
 Route::get('events/{id}/products', 'EventController@products');
 
+/*
+ * Resource: Orders
+ */
 Route::get('orders', 'OrderController@index');
 Route::post('orders', 'OrderController@create'); //creates a new order, based on type (paypal or banking)
 Route::get('orders/done', 'OrderController@paypalDone');
 Route::get('orders/cancel', 'OrderController@paypalCancel');
 Route::get('orders/{id}', 'OrderController@show');
+Route::get('orders/{id}/team', 'OrderController@getTeam');
 Route::patch('orders/{id}', 'OrderController@patch');
 Route::patch('orders/{order_id}/products/{product_id}', 'OrderController@consumeProduct'); //TODO Create nested routes / controller
+//Route::resource('orders', 'OrderController'); TODO later, for now, manually created routes
 Route::delete('orders/{id}', 'OrderController@delete');
 
-//Route::resource('orders', 'OrderController'); TODO later, for now, manually created routes
-Route::delete('orders/{id}', 'OrderController@destroy');

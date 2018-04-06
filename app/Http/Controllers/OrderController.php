@@ -3,20 +3,30 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Blade;
-use App\Mail\BankingWireTransfertMail;
-use App\Mail\PaypalConfirmation;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Http\Request;
+
+use Crypt;
+use Validator;
+use DateTime;
+use PayPal\Auth\OAuthTokenCredential;
+use PayPal\Rest\ApiContext;
+use PayPal\Api\ItemList;
+use PayPal\Api\Payer;
+use PayPal\Api\Amount;
+use PayPal\Api\Item;
+use PayPal\Api\Payment;
+use PayPal\Api\PaymentExecution;
+use PayPal\Api\RedirectUrls;
+use PayPal\Api\Transaction;
 use Maatwebsite\Excel\Facades\Excel;
 use Mockery\Exception;
 
-use JWTAuth;
-use PayPal;
-use Crypt;
-use DateTime;
-use Validator;
+use App\Mail\TeamOwnerMail;
+use App\Mail\BankingWireTransfertMail;
+use App\Mail\PaypalConfirmation;
 
 use App\Order;
 use App\Product;
@@ -25,12 +35,38 @@ use App\Configuration;
 
 class OrderController extends Controller
 {
+    // WARNING To adapt each year !
+    private const EVENT_YEAR = 2018;
+    private const BURGER_ID = 14;
+    private const FREE_BURGER_ID = 16;
+
+    private $apiContext;
+    private $client_id;
+    private $secret;
+    private $settings;
+
     public function __construct()
     {
         parent::__construct();
-        $this->middleware('jwt.auth', ['except' => ['paypalDone', 'paypalCancel']]);
+        $this->middleware('auth:api', ['except' => ['paypalDone', 'paypalCancel']]);
         $this->middleware('role:admin|comite', ['only' => ['index', 'patch', 'consumeProduct']]);
         $this->middleware('role:admin', ['only' => ['delete']]);
+
+        $this->settings = config('paypal.settings');
+        // Detect if we are running in live mode or sandbox
+        if(config('paypal.settings.mode') == 'live'){
+            $this->client_id = config('paypal.live_client_id');
+            $this->secret = config('paypal.live_secret');
+            $this->settings['service.EndPoint'] = config('paypal.live_end_point');
+        } else {
+            $this->client_id = config('paypal.sandbox_client_id');
+            $this->secret = config('paypal.sandbox_secret');
+            $this->settings['service.EndPoint'] = config('paypal.sandbox_end_point');
+        }
+
+        // Set the Paypal API Context/Credentials
+        $this->apiContext = new ApiContext(new OAuthTokenCredential($this->client_id, $this->secret));
+        $this->apiContext->setConfig($this->settings);
     }
 
     private function getCSV(Collection $orders)
@@ -72,10 +108,10 @@ class OrderController extends Controller
                     $tournoi = $item->products->first(function($val){ return $val->product_type_id == 1; });
                     $burgers = $item->products->first(function($val){ return $val->id == 5; });
                     $dejs = $item->products->first(function($val){ return $val->id == 6; });
-                    $bGratuits = $item->products->first(function($val){ return $val->id == 7; });
+                    $bGratuits = $item->products->first(function($val){ return $val->id == self::FREE_BURGER_ID; });
 
                     $sheet->appendRow([
-                        "20" . $item->id . "13 (ID# $item->id)", // Numéro de commande
+                        "XX" . $item->id . "XX (ID# $item->id)", // Numéro de commande
 
                         $item->user->lastname, // Nom
                         $item->user->firstname, // Prénom
@@ -102,6 +138,8 @@ class OrderController extends Controller
             });
         });
     }
+
+    // CRUD
 
     /**
      * Show all orders.
@@ -151,7 +189,7 @@ class OrderController extends Controller
             $format = $request->has('format') ? $request->get('format') : 'json';
             switch ($format) {
                 case 'pdf':
-                $html =  view('pdf.ticket', ['order' => $order, 'user' => $user]);
+                    $html =  view('pdf.ticket', ['order' => $order, 'user' => $user]);
                     return \PDF::loadHTML($html)->setPaper('a4')->setOption('margin-bottom', 0)->inline('ticket_lan.pdf');
                     break;
                 case 'json':
@@ -159,9 +197,7 @@ class OrderController extends Controller
                     return response()->json($order);
             }
         }
-        else {
-
-        }
+        else abort(403);
     }
 
     /**
@@ -171,392 +207,382 @@ class OrderController extends Controller
      */
     public function create(Request $request)
     {
-        if ($request->get('payment_type_id') === 1)
-            return $this->bankTransferPayment($request);
-        else if ($request->get('payment_type_id') === 2)
-            return $this->paypalPayment($request);
-    }
-
-    public function bankTransferPayment(Request $request)
-    {
-        $currentUser = JWTAuth::user();
-        $data = $request->all();
-        $data['user_id'] = $currentUser->id;
-
-        //check event_id
-        if (!$request->has('event_id'))
-            return response()->json(['error' => 'add event id']);
-
-        //TODO with eloquent
-        //check if user already registered a payment order with event_id to his name
-        $existingPayment = $currentUser->orders()->where('event_id', $data['event_id'])->get();
-        if ($existingPayment->isNotEmpty())
-            return response()->json(['error' => 'You have already created an order for this event']);
-
-        if (!$request->has('checked_legal') || !$request->get('checked_legal'))
-            return response()->json(['error' => 'Please accept the general sales conditions']);
-
-        if (!$request->has('products'))
-            return response()->json(['error' => 'Please select products']);
-
         try {
             DB::beginTransaction();
 
-            $order = Order::create($data);
-            $order->data = json_encode($request->all());
-            $products = $request->get('products');
-            $total = 0;
-            $nbSubscription = 0;
-            $winner = false;
+            $event_id = $request->get('event_id');
+            if (is_null($event_id))
+                return response()->json(['error' => 'add event id']);
 
-            //TODO add form data in 'data' field
-            //TODO add product_type => bon
-            if (array_search(7, array_column($products, 'product_id')))
-                return response()->json(['error' => 'Go fuck yourself'], 422);
+            if (Auth::user()->orders()->where('event_id', $request->get('event_id'))->get()->isNotEmpty())
+                return response()->json(['error' => 'You have already created an order for this event'], 422);
 
-            $winnerTimestamp = Configuration::where('name', 'winner-timestamp')->first();
+            if (!$request->filled('checked_legal'))
+                return response()->json(['error' => 'Please accept the general sales conditions'], 422);
 
-            if (time() > $winnerTimestamp->value && $winnerTimestamp->value != 0) {
-                $winner = true;
-                //check if the user has order a burger (in that case we subtract a burger)
-                $key = array_search(5, array_column($products, 'product_id'));
+            if (!$request->filled('products'))
+                return response()->json(['error' => 'Please select products'], 422);
 
-                if ($key) {
-                    --$products[$key]['amount'];
-                    if ($products[$key]['amount'] == 0)
-                        unset($products[$key]);
-                }
+            // Get products in DB
+            $products = collect($request->get('products'))->transform(function ($item) {
+                $item['data'] = Product::find($item['product_id']);
+                return $item;
+            });
 
-                array_push($products, ['product_id' => 7, 'amount' => 1]);
+            // Test if all product are for the announced event
+            if ($products->contains(function ($item) use ($event_id) {
+                return is_null($item['data']) || $item['data']->event_id != $event_id;
+            }))
+                return response()->json(['error' => "One or more products doesn't exists or are from the wrong event"], 422);
 
-                $winnerTimestamp->value = 0;
-                $winnerTimestamp->save();
+            // Test if there is only one tournament subscription AND if they are still available
+            $outOfStock = [];
+            if ($products->reduce(function ($acc, $item) use (&$outOfStock) {
+                    if ($item['data']->quantity_max != null && $item['data']->sales() >= $item['data']->quantity_max)
+                        $outOfStock[] = $item['data']->description;
+                    return ($item['data']->product_type_id === 1) ? $acc + $item['amount'] : $acc;
+                }) > 1)
+                return response()->json(['error' => "More than one inscription"], 422);
+
+            // Message for out-of-stock condition
+            if (count($outOfStock))
+                return response()->json(['error' => "No more tickets available for the next items", "infos" => $outOfStock], 422);
+
+            // Check if free burger (contest) have been added by forging request
+            if ($products->pluck('product_id')->contains(self::FREE_BURGER_ID))
+                return response()->json(['error' => 'Go fuck yourself'], 418);
+
+            // Create order
+            $order = Order::create([
+                'user_id' => Auth::user()->id,
+                'event_id' => $event_id,
+                'payment_type_id' => '1',
+                'data' => json_encode($request->all())
+            ]);
+
+            // Check teams
+            $teamMngm = $this->manageTeam($request, $order);
+            if($teamMngm['error'])
+                return response()->json($teamMngm['infoError'], 422);
+
+            // Go on specific payment method
+            switch ($request->get('payment_type_id')) {
+                case 1:
+                    return $this->bankTransferPayment($order, $products, $this->burgerContest($products));
+                case 2:
+                    return $this->paypalPayment($order, $products, $this->burgerContest($products));
+                default:
+                    return response()->json(['error' => 'Unknown payment method']);
             }
-
-            //TODO find better way than a foreach
-            foreach ($products as $product) {
-                $ProductDetails = Product::findOrFail($product['product_id']);
-
-                //test if products are all from the same event
-                if ($ProductDetails->event_id !== $request->get('event_id')) {
-                    DB::rollback();
-                    return response()->json(['error' => 'Product not from the same event'], 422);
-                }
-
-                //we find an subscription
-                if ($ProductDetails->product_types_id === 1) {
-                    ++$nbSubscription;
-                    //test if there is not more then 1 subscription
-                    if ($nbSubscription > 1 || $product['amount'] > 1) {
-                        DB::rollback();
-                        return response()->json(['error' => 'More than one inscription'], 422);
-                    }
-                }
-
-                //here test if the items are available
-                if ($ProductDetails->quantity_max != null && $ProductDetails->sold >= $ProductDetails->quantity_max) {
-                    DB::rollback();
-                    return response()->json(['error' => 'No more tickets available'], 422);
-                }
-
-                $ProductDetails->sold += $product['amount'];
-                $ProductDetails->save();
-                $order->products()->save($ProductDetails, ['amount' => $product['amount']]);
-                $total += $ProductDetails->price * $product['amount'];
-            }
-
-            if ($request->has('team')) {
-                $team = Team::firstOrNew(array('name' => $request->get('team')));
-                $team->save();
-                $order->team()->attach($team->id, ['captain' => false, 'user_id' => $currentUser->id]);
-            }
-            $order->save();
-
-            $user = $order->user()->get()[0];
-            Mail::to($user->email, $user->username)->send(new BankingWireTransfertMail($user, $order, $total));
-            DB::commit();
-            if ($winner)
-                return response()->json(['success' => 'Bank transfer subscription valid', 'state' => 'win'], 200);
-            else
-                return response()->json(['success' => 'Bank transfer subscription valid', 'state' => 'success'], 200);
-        } catch (Throwable $e) {
+        }
+        catch (\Throwable $e) {
             DB::rollback();
-            return response()->json(['error' => 'request was well-formed but was unable to be followed due to semantic errors'], 422);
+            return response()->json(['error' => 'Request was well-formed but was unable to be followed due to semantic errors'], 422);
         }
     }
 
-
-    public function paypalPayment(Request $request)
+    private function burgerContest(Collection &$products)
     {
-        $currentUser = JWTAuth::user();
-        $data = $request->all();
-        $data['user_id'] = $currentUser->id;
-
-        //check event_id
-        if (!$request->has('event_id'))
-            return response()->json(['error' => 'add event id']);
-
-        //TODO with eloquent
-        //check if user already registered a payment order with event_id to his name
-        $existingPayment = $currentUser->orders()->where('event_id', $data['event_id'])->get();
-        if ($existingPayment->isNotEmpty()) // TODO: Check if also valid
-            return response()->json(['error' => 'You have already created an order for this event']);
-
-        if (!$request->has('checked_legal') || !$request->get('checked_legal'))
-            return response()->json(['error' => 'Please accept the general sales conditions']);
-
-        if (!$request->has('products'))
-            return response()->json(['error' => 'Please select products']);
-
-
-        $products = $request->get('products');
-        $total = 0;
-        $nbSubscription = 0;
         $winner = false;
 
-        if (array_search(7, array_column($products, 'product_id')))
-            return response()->json(['error' => 'Go fuck yourself'], 422);
+        $winnerTimestamp = Configuration::where('name', "timestamp-winner-" . self::EVENT_YEAR)->first();
 
-        $winnerTimestamp = Configuration::where('name', 'winner-timestamp')->first();
+        if (!is_null($winnerTimestamp) && time() > $winnerTimestamp->value && $winnerTimestamp->value != 0) {
+            //check if the user has ordered a burger (in that case we subtract a burger)
+            $index = $products->search(function ($item) {
+                return $item['product_id'] == self::BURGER_ID;
+            });
 
-        if (time() > $winnerTimestamp->value && $winnerTimestamp->value != 0) {
-            $winner = true;
-            //check if the user has order a burger (in that case we subtract a burger)
-            $key = array_search(5, array_column($products, 'product_id'));
-
-            if ($key) {
-                --$products[$key]['amount'];
-                if ($products[$key]['amount'] == 0)
-                    unset($products[$key]);
+            if($index) {
+                $burgers = $products->get($index);
+                $burgers['amount'] -= 1;
+                if ($burgers['amount'] == 0)
+                    $products->forget($index);
+                else
+                    $products->put($index, $burgers);
             }
 
-            array_push($products, ['product_id' => 7, 'amount' => 1]);
-
+            $products->push(['product_id' => self::FREE_BURGER_ID, 'amount' => 1, 'data' => Product::find(self::FREE_BURGER_ID)]);
             $winnerTimestamp->value = 0;
             $winnerTimestamp->save();
+            $winner = true;
         }
 
-        $payer = PayPal::Payer();
+        return $winner;
+    }
+
+    private function manageTeam(Request $request ,Order $order)
+    {
+        $result = ['error' => false];
+        if ($request->has('team_code')) {
+            $result['team'] = Team::where('code', '=', $request->get('team_code'))->first();
+            if(is_null($result['team'])){
+                $result['error'] = true;
+                $result['infoError'] = ['error' => 'Wrong team code'];
+                DB::rollback();
+                return $result;
+            }
+            $order->team()->attach($result['team']->id, ['captain' => false, 'user_id' => Auth::user()->id]);
+        }
+        else if ($request->has('team')) {
+            if(!is_null(Team::where('alias', '=', Team::generateAlias($request->get('team')))->first())) {
+                $result['error'] = true;
+                $result['infoError'] = ['error' => 'Team already exists.'];
+                DB::rollback();
+                return $result;
+            }
+            $result['team'] = Team::create(['name' => $request->get('team')]);
+            $result['team']->save();
+            $order->team()->attach($result['team']->id, ['captain' => true, 'user_id' => Auth::user()->id]);
+            $order->save();
+        }
+        return $result;
+    }
+
+    private function cancelOrder($order) {
+        if(!is_null($order)) {
+            $user = $order->user()->first();
+            $team = $order->team()->first();
+
+            if (!is_null($team)) {
+                if ($team->captain->id == $user->id)
+                    $team->delete();
+                else
+                    $team->users()->detach($user->id);
+            }
+
+            $order->delete();
+        }
+    }
+
+    // Bank & PayPal Stuff
+
+    public function bankTransferPayment(Order $order, Collection $products, $winner = false)
+    {
+        $products->each(function($product) use($order, &$total) {
+            $product['data']->sold += $product['amount'];
+            $product['data']->save();
+            $order->products()->save($product['data'], ['amount' => $product['amount']]);
+        });
+
+        $user = $order->user()->first();
+        $team = $order->team()->first();
+        if(!is_null($team) && $team->captain->id == Auth::user()->id)
+            Mail::to($user->email, $user->username)->send(new TeamOwnerMail($user, $team));
+
+        Mail::to($user->email, $user->username)->send(new BankingWireTransfertMail($user, $order));
+
+        // Save info only if mail have been sent correctly
+        DB::commit();
+
+        return response()->json(['success' => 'Bank transfer subscription valid', 'state' => ($winner) ? 'win' : 'success'], 200);
+    }
+
+    public function paypalPayment(Order $order, Collection $products, $winner = false)
+    {
+        $payer = new Payer();
         $payer->setPaymentMethod('paypal');
+        $itemList = new ItemList();
 
-        $itemList = PayPal::ItemList();
-        //TODO find better way than a foreach
-        foreach ($products as $product) {
-            $ProductDetails = Product::findOrFail($product['product_id']);
-
-            //test if products are all from the same event
-            if ($ProductDetails->event_id !== $request->get('event_id')) {
-                return response()->json(['error' => 'Product not from the same event'], 422);
-            }
-
-            //we find an subscription
-            if ($ProductDetails->product_types_id === 1) {
-                ++$nbSubscription;
-                //test if there is not more then 1 subscription
-                if ($nbSubscription > 1 || $product['amount'] > 1) {
-                    return response()->json(['error' => 'More than one inscription'], 422);
-                }
-            }
-
-            //here test if the items are available
-            if ($ProductDetails->quantity_max != null && $ProductDetails->sold >= $ProductDetails->quantity_max) {
-                return response()->json(['error' => 'No more tickets available'], 422);
-            }
-
-            $item = PayPal::Item();
-            $item->setName($ProductDetails->name)
+        $products->each(function($product) use($order, &$itemList) {
+            $item = new Item();
+            $item->setName($product['data']->name)
                 ->setCurrency('CHF')
                 ->setQuantity($product['amount'])
-                ->setPrice($ProductDetails->price);
+                ->setPrice($product['data']->price);
             $itemList->addItem($item);
 
-            $total += $ProductDetails->price * $product['amount'];
-        }
+            $product['data']->sold += $product['amount'];
+            $product['data']->save();
+            $order->products()->save($product['data'], ['amount' => $product['amount']]);
+        });
 
-        $data['products'] = $products;
+        $data['order_id'] = $order->id;
+        $cryptData = Crypt::encrypt($data);
 
-        $amount = PayPal::Amount();
+        $amount = new Amount();
         $amount->setCurrency('CHF');
-        $amount->setTotal($total);
+        $amount->setTotal($order->total);
 
-        $transaction = PayPal::Transaction();
+        $transaction = new Transaction();
         $transaction->setAmount($amount);
         $transaction->setItemList($itemList);
         $transaction->setDescription('Payment description');
         $transaction->setInvoiceNumber(uniqid());
 
+        $redirectUrls = new RedirectUrls();
+        $redirectUrls->setReturnUrl(action('OrderController@paypalDone', ['data' => $cryptData]));
+        $redirectUrls->setCancelUrl(action('OrderController@paypalCancel', ['data' => $cryptData]));
 
-        $redirectUrls = PayPal:: RedirectUrls();
-
-        $cryptData = Crypt::encrypt($data);
-        $cryptTotal = Crypt::encrypt($total);
-        $redirectUrls->setReturnUrl(action('OrderController@paypalDone', ['data' => $cryptData, 'total' => $cryptTotal]));
-        $redirectUrls->setCancelUrl(action('OrderController@paypalCancel'));
-
-
-        $payment = PayPal::Payment();
+        $payment = new Payment();
         $payment->setIntent('sale');
         $payment->setPayer($payer);
         $payment->setRedirectUrls($redirectUrls);
         $payment->setTransactions(array($transaction));
 
         try {
-            $response = $payment->create($this->_apiContext);
+            $response = $payment->create($this->apiContext);
             $redirectUrl = $response->links[1]->href;
 
+            // Save info only if Paypal request have been sent correctly
+            DB::commit();
+
             return response()->json(['success' => 'Ready for PayPal transaction', 'link' => $redirectUrl], 200);
-        } catch (Exception $ex) {
+        }
+        catch (Exception $e) {
             return response()->json(['error' => 'paypal error'], 200);
         }
     }
 
+    /**
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\RedirectResponse|\Illuminate\Routing\Redirector
+     */
     public function paypalDone(Request $request)
     {
-        $id = $request->get('paymentId');
-        $payer_id = $request->get('PayerID');
+        try {
+            $id = $request->get('paymentId');
+            $payer_id = $request->get('PayerID');
 
-        $paymentExecution = PayPal::PaymentExecution();
-        $paymentExecution->setPayerId($payer_id);
+            $paymentExecution = new PaymentExecution();
+            $paymentExecution->setPayerId($payer_id);
 
-        $data = Crypt::decrypt($request->get('data'));
-        $total = Crypt::decrypt($request->get('total'));
+            $data = Crypt::decrypt($request->get('data'));
+            $order = Order::findOrFail($data['order_id']);
+        }
+        catch (Exception $e) {
+            return redirect('https://www.festigeek.ch/#!/checkout?state=error');
+        }
+
         try {
             DB::beginTransaction();
-            $order = Order::create($data);
-            $order->data = json_encode($data);
-            $products = $data['products'];
-
-            foreach ($products as $product) {
-                $ProductDetails = Product::findOrFail($product['product_id']);
-
-                //here test if the items are available
-                if ($ProductDetails->quantity_max != null && $ProductDetails->sold >= $ProductDetails->quantity_max) {
-                    DB::rollback();
-                    return response()->json(['error' => 'No more tickets available'], 422);
-                }
-
-                $ProductDetails->sold += $product['amount'];
-                $ProductDetails->save();
-                $order->products()->save($ProductDetails, ['amount' => $product['amount']]);
-                // $total += $ProductDetails->price * $product['amount'];
-            }
-
-            if (array_key_exists('team', $data)){
-                $team = Team::firstOrNew(array('name' => $data['team']));
-                $team->save();
-                $order->team()->attach($team->id, ['captain' => false, 'user_id' => $data['user_id']]);
-            }
-            $order->save();
 
             $order->state = 1;
             $order->paypal_paymentId = $id;
             $order->save();
 
-            DB::commit();
-            $payment = PayPal::getById($id, $this->_apiContext);
-            $executePayment = $payment->execute($paymentExecution, $this->_apiContext);
+            // Executing payment... I think...
+            $payment = Payment::get($id, $this->apiContext);
+            $payment->execute($paymentExecution, $this->apiContext);
 
-            $win = $order->products()->where('product_id', 7)->count();
-            $user = $order->user()->get()[0];
-            Mail::to($user->email, $user->username)->send(new PaypalConfirmation($user, $order, $total));
-            if ($win)
-                return redirect('https://www.festigeek.ch/#!/checkout?state=win');
-            else
-                return redirect('https://www.festigeek.ch/#!/checkout?state=success');
-        } catch (Exception $ex) {
+            DB::commit();
+
+            $win = $order->products()->where('product_id', self::FREE_BURGER_ID)->count() > 0;
+            $user = $order->user()->first();
+            $team = $order->team()->first();
+
+            if(!is_null($team) && $team->captain->id === $user->id)
+                Mail::to($user->email, $user->username)->send(new TeamOwnerMail($user, $team));
+
+            Mail::to($user->email, $user->username)->send(new PaypalConfirmation($user, $order, $order->total));
+
+            $url = ($win) ? 'https://www.festigeek.ch/#!/checkout?state=win' : 'https://www.festigeek.ch/#!/checkout?state=success';
+            return redirect($url);
+
+        }
+        catch (Exception $e) {
             DB::rollback();
+
+            // If something goes wrong, soft delete everything
+            $this->cancelOrder($order);
+
             return redirect('https://www.festigeek.ch/#!/checkout?state=error');
         }
     }
 
     public function paypalCancel(Request $request)
     {
-        return redirect('https://www.festigeek.ch/#!/checkout?state=cancelled');
-    }
+        $data = Crypt::decrypt($request->get('data'));
 
-  public function patch(Request $request, $order_id)
-  {
-    try {
-      $order = Order::findOrFail($order_id);
-    }
-    catch (\Exception $e) {
-      return response()->json(['error' => 'Order not Found'], 404);
-    }
+        try {
+            $order = Order::findOrFail($data['order_id']);
+            // If something goes wrong, soft delete everything
+            $this->cancelOrder($order);
 
-    $inputs = $request->only([
-      'state',
-      'code_lan'
-    ]);
-
-    $validator = Validator::make($inputs, [
-      'state' => 'nullable|numeric',
-      'code_lan' => 'nullable|string',
-    ]);
-
-    if ($validator->fails())
-      return response()->json(['error' => 'Validation error.', 'validation' => $validator], 400);
-
-    if($request->has("state"))
-      $order->state =$request->get("state");
-    if($request->has("code_lan"))
-      $order->code_lan = $request->get("code_lan");
-
-    $order->save();
-    return response()->json($order);
-  }
-
-  public function consumeProduct(Request $request, $order_id, $product_id){
-    try {
-      $order = Order::findOrFail($order_id);
-    }
-    catch (\Exception $e) {
-      return response()->json(['error' => 'Order not Found'], 404);
-    }
-
-    $inputs = $request->only(['consume']);
-
-    $validator = Validator::make($inputs, [
-      'consume' => 'required|numeric'
-    ]);
-
-    if ($validator->fails())
-      return response()->json(['error' => 'Validation error.', 'validation' => $validator], 400);
-
-    $consume = $request->get("consume");
-    $product = $order->products()->where('product_id', $product_id)->first();
-
-    if(intval($consume) <= $product->pivot->amount) {
-      $order->products()->updateExistingPivot((int)$product_id, ['consume' => intval($consume)]);
-    }else
-      return response()->json(['error' => 'Try to consume more then ordered.', 'validation' => $validator], 400);
-
-    return response()->json($order);
-  }
-
-    public function destroy($id){
-        //get order
-
-        DB::beginTransaction();
-        try{
-            $order = Order::find($id);
-            foreach($order->products()->get() as $product){
-                $product->sold -= $product->pivot->amount;
-
-
-                $product->save();
-            }
-
-            $order->products()->detach();
-            $order->delete();
-
-            DB::commit();
-            return response()->json(['success']);
-
-
-        }catch (\Throwable $e) {
-            DB::rollback();
-
-            return response()->json(['error'=>$e]);
+            return redirect('https://www.festigeek.ch/#!/checkout?state=cancelled');
         }
+        catch (Exception $e) {
+            return redirect('https://www.festigeek.ch/#!/checkout?state=error');
+        }
+    }
+
+    /**
+     * Update an order
+     * @param Request $request
+     * @param Integer $order_id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function patch(Request $request, $order_id)
+    {
+        try {
+            $order = Order::findOrFail($order_id);
+        }
+        catch (\Exception $e) {
+            return response()->json(['error' => 'Order not Found'], 404);
+        }
+
+        $inputs = $request->only([
+            'state',
+            'code_lan'
+        ]);
+
+        $validator = Validator::make($inputs, [
+            'state' => 'nullable|numeric',
+            'code_lan' => 'nullable|string',
+        ]);
+
+        if ($validator->fails())
+            return response()->json(['error' => 'Validation error.', 'validation' => $validator], 400);
+
+        if($request->has("state"))
+            $order->state =$request->get("state");
+        if($request->has("code_lan"))
+            $order->code_lan = $request->get("code_lan");
+
+        $order->save();
+        return response()->json($order);
+    }
+
+    /**
+     * Delete an order
+     * @param Integer $order_id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function delete($order_id)
+    {
+        // Role:admin middleware, no stress boyz ;)
+        $order = Order::find($order_id);
+
+        if(is_null($order))
+            return response()->json(['error' => 'Order not Found'], 404);
+
+        $order->products()->get()->each(function($product) {
+            $product->sold -= $product->pivot->amount;
+            $product->save();
+        });
+
+        $order->products()->delete();
+        $order->delete();
+
+        return response()->json(['success']);
+    }
+
+    /**
+     * Get the team associate to an order
+     * @param Integer $order_id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getTeam($order_id) {
+        $order = Order::find($order_id);
+        if(!is_null($order)) {
+            if(is_null($order->team))
+                return response()->json(['error' => 'No team found for this order'], 404);
+                
+            $team = (auth()->user() && $order->team->hasUser(auth()->user()->id)) ? $order->team->makeVisible('code') : $order->team;
+            return response()->json($team, 200);
+        }
+        else
+            return response()->json(['error' => 'Order not Found'], 404);
     }
 }

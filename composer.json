@@ -4,34 +4,36 @@
     "keywords": ["framework", "laravel"],
     "license": "MIT",
     "type": "project",
-    "minimum-stability": "rc",
-    "prefer-stable": true,
     "require": {
-        "php": "^7.0",
-        "laravel/framework": "^5.5.0",
-        "tymon/jwt-auth": "^1.0",
-        "simplesoftwareio/simple-qrcode": "~1.4.0",
-        "paypal/rest-api-sdk-php": "*",
-        "predis/predis": "^1.0",
+        "php": "^7.2",
+        "laravel/framework": "~5.6.0",
+        "laravel/passport": "*",
         "laravel/tinker": "^1.0",
-        "netshell/paypal": "dev-master",
+        "doctrine/dbal": "^2.0",
+        "simplesoftwareio/simple-qrcode": "~1.4.0",
+        "paypal/rest-api-sdk-php": ">=1.13.0",
         "santigarcor/laratrust": "3.2.*",
-        "guzzlehttp/guzzle": "^6.2",
         "maatwebsite/excel": "^2.1.0",
         "h4cc/wkhtmltopdf-amd64": "0.12.x",
         "h4cc/wkhtmltoimage-amd64": "0.12.x",
         "barryvdh/laravel-cors": "^0.11.0",
-        "barryvdh/laravel-snappy": "^0.4.0"
+        "barryvdh/laravel-snappy": "^0.4.0",
+        "phpunit/phpunit": "~7.0",
+        "laravel-notification-channels/discord": "^1.0",
+        "laravelcollective/html": "^5.6"
     },
     "require-dev": {
         "fzaninotto/faker": "~1.4",
         "mockery/mockery": "0.9.*",
-        "phpunit/phpunit": "~6.0",
-        "symfony/css-selector": "3.1.*",
-        "symfony/dom-crawler": "3.1.*",
+        "symfony/css-selector": "~4.0",
+        "symfony/dom-crawler": "~4.0",
         "filp/whoops": "~2.0"
     },
     "autoload": {
+        "files": [
+            "vendor/laravel/framework/src/Illuminate/Foundation/helpers.php",
+            "vendor/laravel/framework/src/Illuminate/Support/helpers.php"
+        ],
         "classmap": [
             "database"
         ],
@@ -48,7 +50,8 @@
         "post-install-cmd": [
             "php -r \"file_exists('.env') || copy('.env.example', '.env');\"",
             "php artisan fg:generateKey -f",
-            "php artisan jwt:secret -f",
+            "php artisan passport:install",
+            "php artisan passport:keys",
             "Illuminate\\Foundation\\ComposerScripts::postInstall"
         ],
         "post-update-cmd": [

@@ -5,17 +5,18 @@ namespace App;
 use Hash;
 use Crypt;
 
+use Laravel\Passport\HasApiTokens;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Http\Request;
 
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
-use Tymon\JWTAuth\Contracts\JWTSubject as JWTSubject;
 use Laratrust\Traits\LaratrustUserTrait;
 
-class User extends Authenticatable implements JWTSubject
+class User extends Authenticatable
 {
-    use Notifiable, LaratrustUserTrait, SoftDeletes;
+    use HasApiTokens, Notifiable, LaratrustUserTrait, SoftDeletes;
 
     /**
      * The attributes that are mass assignable.
@@ -94,11 +95,34 @@ class User extends Authenticatable implements JWTSubject
 //    }
 
     /**
+     * Boot function for using with User Events
+     *
+     * @return void
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($model)
+        {
+            $model->generateRegistrationToken();
+        });
+    }
+
+    /**
      * Get the teams of the user.
      */
     protected function teams()
     {
         return $this->belongsToMany('App\Team')->withPivot('captain')->withTimestamps();
+    }
+
+    /**
+     * Get the orders for the user.
+     */
+    public function orders()
+    {
+        return $this->hasMany('App\Order');
     }
 
     /**
@@ -108,7 +132,14 @@ class User extends Authenticatable implements JWTSubject
      */
     public function setPasswordAttribute($password)
     {
-        $this->attributes['password'] = Hash::make($password);
+        // check if the value is already a hash
+        // (Regex: String begins with '$2y$##$' followed by at least 50 characters)
+        if (preg_match('/^\$2y\$[0-9]*\$.{50,}$/', $password)){
+            $this->attributes['password'] = $password;
+        }
+        else {
+            $this->attributes['password'] = Hash::make($password);
+        }
     }
 
     /**
@@ -139,41 +170,6 @@ class User extends Authenticatable implements JWTSubject
     }
 
     /**
-     * Boot function for using with User Events
-     *
-     * @return void
-     */
-    protected static function boot()
-    {
-        parent::boot();
-
-        static::creating(function ($model)
-        {
-            $model->generateRegistrationToken();
-        });
-    }
-
-    /**
-     * Get the identifier that will be stored in the subject claim of the JWT
-     *
-     * @return mixed
-     */
-    public function getJWTIdentifier()
-    {
-        return $this->getKey();
-    }
-
-    /**
-     * Return a key value array, containing any custom claims to be added to the JWT
-     *
-     * @return array
-     */
-    public function getJWTCustomClaims()
-    {
-        return [];
-    }
-
-    /**
      * Return a base_64 generated qrcode based on user informations
      *
      * @return String
@@ -188,57 +184,4 @@ class User extends Authenticatable implements JWTSubject
         QrCode::backgroundColor(250,250,250);
         return base64_encode(QrCode::encoding('UTF-8')->merge('/public/images/logo_carre.jpg', .2)->generate($payload));
     }
-
-    /**
-     * Get the orders for the user.
-     */
-    public function orders()
-    {
-        return $this->hasMany('App\Order');
-    }
-
-
-//    /**
-//     * Get the first address for the user or instantiate an empty one.
-//     */
-//    public function getAddressAttribute()
-//    {
-//        return $this->addresses()->first();
-//    }
-
-
-    /*
-     * ===============================================================================================================
-     * ===============================================================================================================
-     * TODO: Part to rewrite
-     * ===============================================================================================================
-     * ===============================================================================================================
-     */
-    //
-
-    //
-    // /**
-    //  * Get the inscriptions for the user
-    //  * TODO: moche, très moche. dès qu'on a fait le checkin --> vérifier used dans abstract_product à 1
-    //  */
-    // public function inscriptions($userId)
-    // {
-    //     // Tableau des inscriptions
-    //    // return $this->hasMany('App\Order');
-    //     //return $this->morphedByMany('App\Inscription', 'abstract_products', 'orders')->withPivot('used');
-    //
-    //
-    //     $inscriptions = DB::table('users')
-    //         ->select('abstract_products.*')
-    //         ->join('orders', 'users.id', '=', 'orders.user_id') //bon
-    //         ->join('abstract_products', 'abstract_products.order_id', '=', 'orders.id')
-    //
-    //        ->join('inscriptions', 'abstract_products.abstract_products_id', '=', 'inscriptions.id')
-    //         ->where('users.id', '=', $userId)
-    //         ->where('abstract_products.abstract_products_type', "=", "App\\Inscription")
-    //        // ->groupBy('inscriptions.id')
-    //         ->get();
-    //
-    //     return $inscriptions;
-    // }
 }

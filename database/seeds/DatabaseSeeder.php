@@ -10,6 +10,7 @@ use App\Team;
 use App\User;
 use App\PaymentType;
 
+//use Database\Seeds\DatabaseSeederv2;
 use Carbon\Carbon;
 use Illuminate\Database\Seeder;
 use Illuminate\Database\Eloquent\Model;
@@ -57,7 +58,8 @@ class DatabaseSeeder extends Seeder
 
         // Configurations
 
-        Configuration::create(['name' => 'winner-timestamp', 'value' => time()]);
+//        Configuration::create(['name' => 'timestamp-winner-2017', 'value' => time()]);
+      //  Configuration::create(['name' => 'timestamp-winner-2018', 'value' => time()]);
 
         // Users
 
@@ -88,8 +90,13 @@ class DatabaseSeeder extends Seeder
             'begins_at' => Carbon::create(2017, 05, 26, 20)->toDateTimeString(),
             'ends_at' => Carbon::create(2017, 05, 28, 18)->toDateTimeString()]);
 
-        // Products
+        //TODO seeder update
+        Event::create(['name' => 'LAN 2018',
+              'begins_at' => Carbon::create(2018, 05, 26, 20)->toDateTimeString(),
+              'ends_at' => Carbon::create(2018, 05, 28, 18)->toDateTimeString()]);
 
+        // Products
+        //2017
         $p1 = Product::create(['name' => 'League Of Legend', 'description' => 'Inscription LoL 2017.', 'price' => '20.00','quantity_max' => '80', 'sold' => '0', 'event_id' => 1, 'product_type_id' => 1, 'need_team'=>1]);
         $p2 = Product::create(['name' => 'Overwatch', 'description' => 'Inscription Overwatch 2017.', 'price' => '20.00', 'quantity_max' => '48', 'sold' => '0', 'event_id' => 1, 'product_type_id' => 1, 'need_team'=>1]);
         $p3 = Product::create(['name' => 'Counter-Strike: GO', 'description' => 'Inscription CS:GO 2017.', 'price' => '20.00', 'quantity_max' => '40', 'sold' => '0', 'event_id' => 1, 'product_type_id' => 1, 'need_team'=>1]);
@@ -108,6 +115,7 @@ class DatabaseSeeder extends Seeder
         // Orders
 //
         Order::create(['state' => '1', 'user_id' => '1', 'event_id' => '1', 'payment_type_id' => '1'])->products()->sync([$p1->id, $p5->id => ['amount' => '2']]);
+        //create an existing order to test the joining of a team
 //        Order::create(['state' => '0', 'user_id' => '2', 'event_id' => '1', 'payment_type_id' => '2'])->products()->sync([$p2->id, $p5->id, $p6->id]);
 
 //        Order::create(['state' => '1', 'user_id' => '1'])->products()->sync([$p1->id, $p5->id => ['amount' => '2']]);
@@ -118,39 +126,9 @@ class DatabaseSeeder extends Seeder
         Team::create(['name' => "RageQuit"])->users()->sync([$adminUser->id => ['captain' => true, 'order_id' => '1']]);
 
 
-        //////////////////
-        //     CMS
-        //////////////////
-
-        // ContentsTypes
-
-        // DB::table('contents_types')->delete();
-        // ContentsType::create(['name' => 'Page']);
-        // ContentsType::create(['name' => 'Article']);
-
-        // DatasTypes
-
-        // DB::table('datas_types')->delete();
-        // DatasType::create(['name' => 'Texte Brut']);
-        // DatasType::create(['name' => 'HTML']);
-
-        // Datas
-
-        // Data::create([]);
-
-        // Contents
-
-        // Content::create([]);
-
-        // Links
-
-        // $lien1 = Link::create(['display_text' => "L'association", 'content_id' => '1']);
-        // $lien2 = Link::create(['display_text' => "Contact", 'url' => '/contact']);
-
-        // Menus
-
-        // Menu::create(['name' => 'Principal'])->sync([$lien1, $lien2]);
-
+        // $this->call([
+        //   DatabaseSeederv2::class,
+        // ]);
 
         Model::reguard();
     }
