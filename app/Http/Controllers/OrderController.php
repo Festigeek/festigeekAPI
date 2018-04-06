@@ -35,9 +35,9 @@ use App\Configuration;
 class OrderController extends Controller
 {
     // WARNING To adapt each year !
-    private const EVENT_YEAR = 2017;
-    private const BURGER_ID = 13;
-    private const FREE_BURGER_ID = 15;
+    private const EVENT_YEAR = 2018;
+    private const BURGER_ID = 14;
+    private const FREE_BURGER_ID = 16;
 
     private $apiContext;
     private $client_id;
