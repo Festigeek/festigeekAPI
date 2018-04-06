@@ -12,11 +12,11 @@
             Au cas ou cette demande ne serait pas de votre fait, vous pouvez simplement ignorer ce mail.
             <br />
             <br />
-
         	Cliquez sur le lien ci-dessous pour modifier le mot de passe de votre compte :
             <br />
             {{ URL::to('https://www.festigeek.ch/#!/resetPassword/' . $reset_token . "/" . $email) }}<br/>
         </div>
 
+        <img src="https://www.festigeek.ch/images/logo.225ad333.png" alt="Logo Festigeek" style="width:50%;" />
     </body>
 </html>
