@@ -24,7 +24,10 @@ class DataBaseSeederProd2018 extends Seeder
             'begins_at' => Carbon::create(2018, 05, 26, 20)->toDateTimeString(),
             'ends_at' => Carbon::create(2018, 05, 28, 18)->toDateTimeString()]);
         //free burger config
-        Configuration::create(['name' => 'timestamp-winner-2018', 'value' => time()]);//TODO time jusquau 7 mai
+        //creating the timestamp for 2018
+        $winningTimeStamp = mt_rand(time(), 1525219200);
+
+        Configuration::create(['name' => 'timestamp-winner-2018', 'value' => $winningTimeStamp]);
         //products
         $p7 = Product::create(['name' => 'League Of Legend', 'description' => 'Inscription LoL 2018.', 'price' => '20.00','quantity_max' => '84', 'sold' => '0', 'event_id' => 2, 'product_type_id' => 1, 'need_team'=>1]);
         $p8 = Product::create(['name' => 'Overwatch', 'description' => 'Inscription Overwatch 2018.', 'price' => '20.00', 'quantity_max' => '48', 'sold' => '0', 'event_id' => 2, 'product_type_id' => 1, 'need_team'=>1]);
