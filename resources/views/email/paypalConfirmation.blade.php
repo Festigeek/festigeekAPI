@@ -71,6 +71,9 @@
       A+<br/>
       L'équipe FestiGeek
     </p>
+    
+    <br />
+    {{ HTML::image('images/logo.full.png', 'Logo Festigeek', array('style' => 'width:50%;')) }}
 
   </div>
 </body>
