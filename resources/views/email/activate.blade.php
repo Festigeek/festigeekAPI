@@ -18,7 +18,7 @@
 
         <br />
         <br />
-        {{ HTML::image('images/logo.full.png', 'Logo Festigeek', array('style' => 'width:50%;')) }}
+        {{ Html::image('images/logo.full.png', 'Logo Festigeek', array('style' => 'width:50%;')) }}
 
     </body>
 </html>
