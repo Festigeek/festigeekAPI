@@ -256,7 +256,7 @@ class OrderController extends Controller
             $order = Order::create([
                 'user_id' => Auth::user()->id,
                 'event_id' => $event_id,
-                'payment_type_id' => '1',
+                'payment_type_id' => $request->get('payment_type_id'),
                 'data' => json_encode($request->all())
             ]);
 
