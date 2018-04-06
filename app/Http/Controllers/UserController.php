@@ -133,7 +133,11 @@ class UserController extends Controller
         if($this->isAdminOrOwner($id)) {
             $event = ($request->filled('event_id')) ? $request->get('event_id') : null;
             $state = ($request->filled('state')) ? $request->get('state') : null;
-            $order = User::find($id)->orders()->get()->filter(function($order) use ($event, $state) {
+            $user = User::find($id);
+            if(is_null($user))
+                return response()->json(['error' => 'User not found'], 404);
+
+            $order = $user->orders()->get()->filter(function($order) use ($event, $state) {
                 return ( (!is_null($event)) ? $order->event_id == $event : true ) 
                     && ( (!is_null($state)) ? $order->state == $state : true );
             })->all();
