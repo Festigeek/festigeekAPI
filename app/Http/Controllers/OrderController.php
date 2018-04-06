@@ -2,16 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Mail\TeamOwnerMail;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use App\Mail\BankingWireTransfertMail;
-use App\Mail\PaypalConfirmation;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Http\Request;
-use Maatwebsite\Excel\Facades\Excel;
-use Mockery\Exception;
 
 use Crypt;
 use Validator;
@@ -26,6 +21,12 @@ use PayPal\Api\Payment;
 use PayPal\Api\PaymentExecution;
 use PayPal\Api\RedirectUrls;
 use PayPal\Api\Transaction;
+use Maatwebsite\Excel\Facades\Excel;
+use Mockery\Exception;
+
+use App\Mail\TeamOwnerMail;
+use App\Mail\BankingWireTransfertMail;
+use App\Mail\PaypalConfirmation;
 
 use App\Order;
 use App\Product;
@@ -330,7 +331,7 @@ class OrderController extends Controller
                 DB::rollback();
                 return $result;
             }
-            $result['team'] = Team::create(array('name' => $request->get('team')));
+            $result['team'] = Team::create(['name' => $request->get('team')]);
             $result['team']->save();
             $order->team()->attach($result['team']->id, ['captain' => true, 'user_id' => Auth::user()->id]);
             $order->save();
