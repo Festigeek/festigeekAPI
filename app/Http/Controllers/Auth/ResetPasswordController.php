@@ -49,7 +49,7 @@ class ResetPasswordController extends Controller
         catch (\Exception $e) {
             return response()->json(['error' => 'Wrong or missing parameter.'], 422);
         }
-
+        
         // Here we will attempt to reset the user's password. If it is successful we
         // will update the password on an actual user model and persist it to the
         // database. Otherwise we will parse the error and return the response.
@@ -57,6 +57,7 @@ class ResetPasswordController extends Controller
             $this->credentials($request), function ($user, $password) {
 //                $this->resetPassword($user, $password);
                 $user->password = $password;
+                $user->activated = 1;
                 $user->setRememberToken(Str::random(60));
                 $user->save();
                 event(new PasswordReset($user));
