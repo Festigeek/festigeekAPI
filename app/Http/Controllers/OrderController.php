@@ -464,12 +464,7 @@ class OrderController extends Controller
 
             $data = Crypt::decrypt($request->get('data'));
             $order = Order::findOrFail($data['order_id']);
-        }
-        catch (Exception $e) {
-            return redirect('https://www.festigeek.ch/#!/checkout?state=error');
-        }
 
-        try {
             DB::beginTransaction();
 
             $order->state = 1;
