@@ -184,17 +184,14 @@ class OrderController extends Controller
      */
     public function show(Request $request, $order_id)
     {
-        try {
-            $order = Order::findOrFail($order_id);
-            $user = $order->user()->first()->makeVisible(['QRCode']);
+        $order = Order::findOrFail($order_id);
+        if(is_null($order))
+            return response()->json(['error' => 'Order not found.'], 404);
 
-        }
-        catch(Exception $e) {
-            return response()->json(['error' => 'Order and/or User not found.'], 404);
-        }
+        $user = $order->user()->first()->makeVisible(['QRCode']);
 
         if($this->isAdminOrOwner($order->user_id)) {
-            $format = $request->has('format') ? $request->get('format') : 'json';
+            $format = $request->filled('format') ? $request->get('format') : 'json';
             switch ($format) {
                 case 'pdf':
                     $html =  view('pdf.ticket', ['order' => $order, 'user' => $user]);
