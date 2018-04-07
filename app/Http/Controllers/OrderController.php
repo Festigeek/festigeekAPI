@@ -150,10 +150,12 @@ class OrderController extends Controller
     public function index(Request $request)
     {
         $eventId = ($request->filled('eventId')) ? $request->get('eventId') : null;
+
         $orders = Order::all();
+
         if(!is_null($eventId))
             $orders = $orders->filter(function($order) use($eventId) {
-                return $order->event_id === $eventId;
+                return $order->event_id == $eventId;
             });
 
         $format = ($request->filled('format')) ? $request->get('format') : 'json';
@@ -347,7 +349,7 @@ class OrderController extends Controller
                 $result['error'] = true;
                 $result['infoError'] = ['error' => 'You need a team !'];
                 DB::rollback();
-                return $result; 
+                return $result;
             }
         }
         return $result;
@@ -587,7 +589,7 @@ class OrderController extends Controller
         if(!is_null($order)) {
             if(is_null($order->team))
                 return response()->json(['error' => 'No team found for this order'], 404);
-                
+
             $team = (auth()->user() && $order->team->hasUser(auth()->user()->id)) ? $order->team->makeVisible('code') : $order->team;
             return response()->json($team, 200);
         }
