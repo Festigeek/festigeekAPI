@@ -149,8 +149,14 @@ class OrderController extends Controller
      */
     public function index(Request $request)
     {
+        $eventId = ($request->filled('eventId')) ? $request->get('eventId') : null;
         $orders = Order::all();
-        $format = ($request->has('format')) ? $request->get('format') : 'json';
+        if(!is_null($eventId))
+            $orders = $orders->filter(function($order) use($eventId) {
+                return $order->event_id === $eventId;
+            });
+
+        $format = ($request->filled('format')) ? $request->get('format') : 'json';
 
         switch ($format) {
             case 'txt':
