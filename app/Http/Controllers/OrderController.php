@@ -184,7 +184,7 @@ class OrderController extends Controller
      */
     public function show(Request $request, $order_id)
     {
-        $order = Order::findOrFail($order_id);
+        $order = Order::find($order_id);
         if(is_null($order))
             return response()->json(['error' => 'Order not found.'], 404);
 
