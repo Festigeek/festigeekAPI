@@ -47,7 +47,7 @@ class EventController extends Controller
         if(!$request->has('captain'))
             return response()->json(['error' => 'Missing parameters.'], 422);
 
-        $username = $request->get('captain');
+        $email = $request->get('captain');
         $event = Event::find($event_id);
         if(is_null($event))
             return response()->json(['error' => 'Event not found.'], 404);
@@ -56,7 +56,7 @@ class EventController extends Controller
         if(is_null($team))
             return response()->json(['error' => 'Team not found.'], 404);
 
-        $newCaptain = $team->users()->where('username', $username)->first();
+        $newCaptain = $team->users()->where('email', $email)->first();
         if(is_null($newCaptain))
             return response()->json(['error' => 'Request was well-formed but was unable to be followed due to content errors'], 422);
 
