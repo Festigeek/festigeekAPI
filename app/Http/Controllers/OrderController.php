@@ -270,8 +270,10 @@ class OrderController extends Controller
 
             // Check teams
             $teamMngm = $this->manageTeam($request, $order);
-            if($teamMngm['error'])
+            if($teamMngm['error']){
+                DB::rollback();
                 return response()->json($teamMngm['infoError'], 422);
+            }
 
             // Go on specific payment method
             switch ($request->get('payment_type_id')) {
@@ -327,7 +329,6 @@ class OrderController extends Controller
             if(is_null($result['team'])){
                 $result['error'] = true;
                 $result['infoError'] = ['error' => 'Wrong team code'];
-                DB::rollback();
                 return $result;
             }
             $order->team()->attach($result['team']->id, ['captain' => false, 'user_id' => Auth::user()->id]);
@@ -336,7 +337,6 @@ class OrderController extends Controller
             if(!is_null(Team::where('alias', '=', Team::generateAlias($request->get('team')))->first())) {
                 $result['error'] = true;
                 $result['infoError'] = ['error' => 'Team already exists.'];
-                DB::rollback();
                 return $result;
             }
             $result['team'] = Team::create(['name' => $request->get('team')]);
@@ -348,7 +348,6 @@ class OrderController extends Controller
             if($order->products()->get()->contains('need_team', 1)) {
                 $result['error'] = true;
                 $result['infoError'] = ['error' => 'You need a team !'];
-                DB::rollback();
                 return $result;
             }
         }
