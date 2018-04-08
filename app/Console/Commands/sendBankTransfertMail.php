@@ -41,6 +41,6 @@ class sendBankTransfertMail extends Command
         $user = $order->user()->first();
         Mail::to($user->email, $user->username)->send(new BankingWireTransfertMail($user, $order));
         
-        return $this->comment('Mail sent.');
+        return $this->comment('Mail sent to ' . $user->email);
     }
 }
