@@ -41,9 +41,8 @@ class sendTickets extends Command
             $orderList = Order::where('event_id', $this->event->id)->get();
 
             // let's be sure you want to do this
-            $confirmed = $this->confirm('Are you sure you want to send ' . $orderList->count() . ' e-mail(s) ?');
-            if ($confirmed) {
-                $orderList->each(function($order){
+            if ($this->confirm('Are you sure you want to send ' . $orderList->count() . ' e-mail(s) ?')) {
+                $orderList->each(function($order) {
                     try {
                         $this->sendTicketMails($order);
                     }
@@ -51,46 +50,15 @@ class sendTickets extends Command
                         $this->error('Error when sending mail for order #' . $order->id);
                     }
                 });
-            } else {
+            } 
+            else 
                 return $this->comment('Ok, cancelling mails sending...');
-            }
-
         }
-
-        if ($order instanceof Model) {
-            // check if state != (not cancelled)
-              if($order->state != 3) {
-                  Mail::to($order->user->email, $order->user->username)
-                      ->send(new ConfirmationTicketMail($order->user, $order));
-                  $this->comment('Mail sent => order: ' . $order->id . ', user: ' . $order->user->username);
-              }
+        else {
+            Mail::to($order->user->email, $order->user->username) ->send(new ConfirmationTicketMail($order->user, $order));
+            $this->comment('Mail sent => order: ' . $order->id . ', user: ' . $order->user->username);
             return;
         }
-    }
-
-    /**
-     * Create a new command instance.
-     *
-     * @return void
-     */
-    public function __construct()
-    {
-        parent::__construct();
-
-        // if(\Config::get('mail.driver') === 'smtp') {
-        //     // Send email notification
-        //     $transport = \Swift_SmtpTransport::newInstance(
-        //         \Config::get('mail.host'),
-        //         \Config::get('mail.port'),
-        //         \Config::get('mail.encryption'))
-        //         ->setUsername(\Config::get('mail.username'))
-        //         ->setPassword(\Config::get('mail.password'))
-        //         ->setStreamOptions(['ssl' => \Config::get('mail.ssloptions')]);
-
-        //     $mailer = \Swift_Mailer::newInstance($transport);
-        //     Mail::setSwiftMailer($mailer);
-        // }
-
     }
 
     /**
@@ -100,31 +68,17 @@ class sendTickets extends Command
      */
     public function handle()
     {
-        try {
-            $this->event = Event::where('id', (int)$this->argument('event'))->firstOrFail();
-
-        }
-        catch(Exception $e) {
+        $this->event = Event::find($this->argument('event'));
+        if(is_null($this->event))
             return $this->error('Event not found.');
-        }
 
-        try {
-
-            $order = (($this->argument('order')==='null') && $this->option('all')) ? null : Order::findOrFail($this->argument('order'));
-            //return $this->comment($order);
+        if(!$this->option('all')) {
+            $order = Order::find($this->argument('order'));
+            if(is_null($order))
+                return $this->error('Order not found.');
         }
-        catch(Exception $e) {
-            return $this->error('All flag or Order not found.');
-        }
-
-      $this->sendTicketMails($order);
-        try {
-//            $this->sendTicketMails($order);
-        }
-        catch(Exception $e) {
-            return $this->error('Error when sending mail for order #' . $order->id);
-        }
-
+        
+        $this->sendTicketMails($order);
         return $this->comment('Command successful.');
     }
 }
