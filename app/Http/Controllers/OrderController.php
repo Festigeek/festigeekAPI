@@ -291,7 +291,7 @@ class OrderController extends Controller
         }
         else if ($request->filled('team')) {
             $collisions = Team::where('alias', '=', Team::generateAlias($request->get('team')))->get();
-            if(!is_null($collisions)) {
+            if($collisions->isNotEmpty()) {
                 $collisionOrder = $collisions->last()->orders()->first();
                 if(!is_null($collisionOrder) && $collisionOrder->event_id === $order->event_id) {
                     $result['error'] = true;
@@ -379,10 +379,10 @@ class OrderController extends Controller
 
         $order->products()->get()->each(function($product) use($order, &$itemList) {
             $item = new Item();
-            $item->setName($product['data']->name)
+            $item->setName($product->name)
                 ->setCurrency('CHF')
-                ->setQuantity($product['amount'])
-                ->setPrice($product['data']->price);
+                ->setQuantity($product->pivot->amount)
+                ->setPrice($product->price);
             $itemList->addItem($item);
 //
 //            $product['data']->sold += $product['amount'];
@@ -390,7 +390,9 @@ class OrderController extends Controller
 //            $order->products()->save($product['data'], ['amount' => $product['amount']]);
         });
 
+        $order_number = rand(10, 99) . $this->order->id . rand(10, 99);
         $data['order_id'] = $order->id;
+        $data['order_number'] = $order_number;
         $cryptData = Crypt::encrypt($data);
 
         $amount = new Amount();
@@ -401,6 +403,7 @@ class OrderController extends Controller
         $transaction->setAmount($amount);
         $transaction->setItemList($itemList);
         $transaction->setDescription('Payment description');
+        $transaction->setReferenceId($order_number);
         $transaction->setInvoiceNumber(uniqid());
 
         $redirectUrls = new RedirectUrls();
@@ -520,10 +523,9 @@ class OrderController extends Controller
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function getPayment(Request $request)
+    public function getPayment($order_id, Request $request)
     {
-        $order = Order::find($request->get('orderId'));
-
+        $order = Order::find($order_id);
         if(is_null($order))
             return response()->json(['error' => 'Order not found.'], 404);
 
@@ -563,17 +565,14 @@ class OrderController extends Controller
             $data = Crypt::decrypt($request->get('data'));
             $order = Order::findOrFail($data['order_id']);
 
-            DB::beginTransaction();
-
             $order->state = 1;
+            $order->payment_type_id = 2;
             $order->paypal_paymentId = $id;
             $order->save();
 
             // Executing payment... I think...
             $payment = Payment::get($id, $this->apiContext);
             $payment->execute($paymentExecution, $this->apiContext);
-
-            DB::commit();
 
             $user = $order->user()->first();
             $team = $order->team()->first();
