@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\PaymentType;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -49,8 +50,8 @@ class OrderController extends Controller
     {
         parent::__construct();
         $this->middleware('auth:api', ['except' => ['paypalDone', 'paypalCancel']]);
-        $this->middleware('role:admin|comite', ['only' => ['index', 'patch', 'consumeProduct']]);
-        $this->middleware('role:admin', ['only' => ['delete']]);
+        $this->middleware('role:admin|comite', ['only' => ['index']]);
+        $this->middleware('role:admin', ['only' => ['patch', 'delete']]);
 
         $this->settings = config('paypal.settings');
         // Detect if we are running in live mode or sandbox
@@ -69,6 +70,12 @@ class OrderController extends Controller
         $this->apiContext->setConfig($this->settings);
     }
 
+    /**
+     * Generate a CSV version of the order index.
+     *
+     * @param Collection $orders
+     * @return mixed
+     */
     private function getCSV(Collection $orders)
     {
         $datetime = new DateTime();
@@ -96,6 +103,7 @@ class OrderController extends Controller
             'Présent'
         ];
 
+        // TODO Update Excel library
         return Excel::create("orders_" . $datetime->format('Y_m_d_His'), function($excel) use ($datetime, $headers, $orders) {
             $excel->sheet("feuille_1", function($sheet) use ($headers, $orders) {
 
@@ -139,8 +147,6 @@ class OrderController extends Controller
         });
     }
 
-    // CRUD
-
     /**
      * Show all orders.
      *
@@ -162,6 +168,7 @@ class OrderController extends Controller
 
         switch ($format) {
             case 'txt':
+            case 'pdf':
             case 'xls':
                 return response()->json(['error' => 'Unsupported format.']);
                 break;
@@ -202,11 +209,227 @@ class OrderController extends Controller
                     return response()->json($order);
             }
         }
-        else abort(403);
+        else
+            return response()->json(['error' => 'Permission denied.'], 401);
+    }
+
+    // CREATE FUNCTIONS
+
+    /**
+     * Redirect payment workflow to the desired payment method.
+     *
+     * @param $payment_type_id
+     * @param $order
+     * @return \Illuminate\Http\JsonResponse
+     */
+    private function paymentRouting($payment_type_id, $order){
+        // Go on specific payment method
+        switch ($payment_type_id) {
+            case 1:
+                return $this->bankTransferPayment($order);
+            case 2:
+                return $this->paypalPayment($order);
+            default:
+                return response()->json(['error' => 'Unknown payment method']);
+        }
     }
 
     /**
-     * Creates a new order based on type
+     * Automatically choose a random customer for a free burger.
+     *
+     * @param Collection $products
+     * @return bool
+     */
+    private function burgerContest(Collection &$products)
+    {
+        $winner = false;
+
+        $winnerTimestamp = Configuration::where('name', "timestamp-winner-" . self::EVENT_YEAR)->first();
+
+        if (!is_null($winnerTimestamp) && time() > $winnerTimestamp->value && $winnerTimestamp->value != 0) {
+            //check if the user has ordered a burger (in that case we subtract a burger)
+            $index = $products->search(function ($item) {
+                return $item['product_id'] == self::BURGER_ID;
+            });
+
+            if($index) {
+                $burgers = $products->get($index);
+                $burgers['amount'] -= 1;
+                if ($burgers['amount'] == 0)
+                    $products->forget($index);
+                else
+                    $products->put($index, $burgers);
+            }
+
+            $products->push(['product_id' => self::FREE_BURGER_ID, 'amount' => 1, 'data' => Product::find(self::FREE_BURGER_ID)]);
+            $winnerTimestamp->value = 0;
+            $winnerTimestamp->save();
+            $winner = true;
+        }
+
+        return $winner;
+    }
+
+    /**
+     * Create or add team to an order.
+     *
+     * @param Request $request
+     * @param Order $order
+     * @return array
+     */
+    private function manageTeam(Request $request , Order $order)
+    {
+        $result = ['error' => false];
+        if ($request->filled('team_code')) {
+            $result['team'] = Team::where('code', '=', $request->get('team_code'))->get();
+            if(is_null($result['team'])){
+                $result['error'] = true;
+                $result['infoError'] = ['error' => 'Wrong team code'];
+                return $result;
+            }
+            $order->team()->attach($result['team']->id, ['captain' => false, 'user_id' => Auth::user()->id]);
+        }
+        else if ($request->filled('team')) {
+            $collisions = Team::where('alias', '=', Team::generateAlias($request->get('team')))->get();
+            if(!is_null($collisions)) {
+                $collisionOrder = $collisions->last()->orders()->first();
+                if(!is_null($collisionOrder) && $collisionOrder->event_id === $order->event_id) {
+                    $result['error'] = true;
+                    $result['infoError'] = ['error' => 'Team already exists.'];
+                    return $result;
+                }
+            }
+            $result['team'] = Team::create(['name' => $request->get('team')]);
+            $result['team']->save();
+            $order->team()->attach($result['team']->id, ['captain' => true, 'user_id' => Auth::user()->id]);
+            $order->save();
+        }
+        else {
+            if($order->products()->get()->contains('need_team', 1)) {
+                $result['error'] = true;
+                $result['infoError'] = ['error' => 'You need a team !'];
+                return $result;
+            }
+        }
+        return $result;
+    }
+
+    /**
+     * Delete an order properly (manage impacted team).
+     *
+     * @param $order
+     */
+    private function cancelOrder($order) {
+        if(!is_null($order)) {
+            $user = $order->user()->first();
+            $team = $order->team()->first();
+
+            if (!is_null($team)) {
+                if ($team->captain->id == $user->id)
+                    $team->delete();
+                else
+                    $team->users()->detach($user->id);
+            }
+
+            $order->delete();
+        }
+    }
+
+    // Bank & PayPal Stuff
+
+    /**
+     * Send informations mails to make a bank transfer.
+     *
+     * @param Order $order
+     * @return \Illuminate\Http\JsonResponse
+     */
+    private function bankTransferPayment(Order $order)
+    {
+//        $products->each(function($product) use($order, &$total) {
+//            $product['data']->sold += $product['amount'];
+//            $product['data']->save();
+//            $order->products()->save($product['data'], ['amount' => $product['amount']]);
+//        });
+//
+        $user = $order->user()->first();
+        $team = $order->team()->first();
+
+        if(!is_null($team) && $team->captain->id == Auth::user()->id)
+            Mail::to($user->email, $user->username)->send(new TeamOwnerMail($user, $team));
+
+        Mail::to($user->email, $user->username)->send(new BankingWireTransfertMail($user, $order));
+
+        return response()->json(['success' => 'Bank transfer subscription valid', 'state' => (!is_null($order->products()->where('product_id', self::FREE_BURGER_ID)->first())) ? 'win' : 'success'], 200);
+    }
+
+    /**
+     * Generate a Paypal invoice.
+     *
+     * @param Order $order
+     * @return \Illuminate\Http\JsonResponse
+     */
+    private function paypalPayment(Order $order)
+    {
+        if(is_null($order))
+            return response()->json(['error' => 'Order not found.'], 404);
+
+        $payer = new Payer();
+        $payer->setPaymentMethod('paypal');
+        $itemList = new ItemList();
+
+        $order->products()->get()->each(function($product) use($order, &$itemList) {
+            $item = new Item();
+            $item->setName($product['data']->name)
+                ->setCurrency('CHF')
+                ->setQuantity($product['amount'])
+                ->setPrice($product['data']->price);
+            $itemList->addItem($item);
+//
+//            $product['data']->sold += $product['amount'];
+//            $product['data']->save();
+//            $order->products()->save($product['data'], ['amount' => $product['amount']]);
+        });
+
+        $data['order_id'] = $order->id;
+        $cryptData = Crypt::encrypt($data);
+
+        $amount = new Amount();
+        $amount->setCurrency('CHF');
+        $amount->setTotal($order->total);
+
+        $transaction = new Transaction();
+        $transaction->setAmount($amount);
+        $transaction->setItemList($itemList);
+        $transaction->setDescription('Payment description');
+        $transaction->setInvoiceNumber(uniqid());
+
+        $redirectUrls = new RedirectUrls();
+        $redirectUrls->setReturnUrl(action('OrderController@paypalDone', ['data' => $cryptData]));
+        $redirectUrls->setCancelUrl(action('OrderController@paypalCancel', ['data' => $cryptData]));
+
+        $payment = new Payment();
+        $payment->setIntent('sale');
+        $payment->setPayer($payer);
+        $payment->setRedirectUrls($redirectUrls);
+        $payment->setTransactions(array($transaction));
+
+        try {
+            $response = $payment->create($this->apiContext);
+            $redirectUrl = $response->links[1]->href;
+
+            // Save info only if Paypal request have been sent correctly
+            DB::commit();
+
+            return response()->json(['success' => 'Ready for PayPal transaction', 'link' => $redirectUrl], 200);
+        }
+        catch (Exception $e) {
+            return response()->json(['error' => 'paypal error'], 200);
+        }
+    }
+
+    /**
+     * Creates a new order.
+     *
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
@@ -272,15 +495,18 @@ class OrderController extends Controller
                 return response()->json($teamMngm['infoError'], 422);
             }
 
-            // Go on specific payment method
-            switch ($request->get('payment_type_id')) {
-                case 1:
-                    return $this->bankTransferPayment($order, $products, $this->burgerContest($products));
-                case 2:
-                    return $this->paypalPayment($order, $products, $this->burgerContest($products));
-                default:
-                    return response()->json(['error' => 'Unknown payment method']);
-            }
+            // Check winner
+            $this->burgerContest($products);
+
+            $products->each(function($product) use($order, &$total) {
+                $product['data']->sold += $product['amount'];
+                $product['data']->save();
+                $order->products()->save($product['data'], ['amount' => $product['amount']]);
+            });
+
+            DB::commit();
+
+            return $this->paymentRouting($order->payment_type_id, $order);
         }
         catch (\Throwable $e) {
             DB::rollback();
@@ -288,166 +514,40 @@ class OrderController extends Controller
         }
     }
 
-    private function burgerContest(Collection &$products)
+    /**
+     * Recall the order payment method.
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getPayment(Request $request)
     {
-        $winner = false;
+        $order = Order::find($request->get('orderId'));
 
-        $winnerTimestamp = Configuration::where('name', "timestamp-winner-" . self::EVENT_YEAR)->first();
+        if(is_null($order))
+            return response()->json(['error' => 'Order not found.'], 404);
 
-        if (!is_null($winnerTimestamp) && time() > $winnerTimestamp->value && $winnerTimestamp->value != 0) {
-            //check if the user has ordered a burger (in that case we subtract a burger)
-            $index = $products->search(function ($item) {
-                return $item['product_id'] == self::BURGER_ID;
-            });
+        if($this->isAdminOrOwner($order->user_id)) {
+            if ($request->filled('paymentType')) {
+                $payment_type = PaymentType::all();
+                $desired_type = $request->get('paymentType');
 
-            if($index) {
-                $burgers = $products->get($index);
-                $burgers['amount'] -= 1;
-                if ($burgers['amount'] == 0)
-                    $products->forget($index);
-                else
-                    $products->put($index, $burgers);
+                if (!$payment_type->contains('id', $desired_type))
+                    return response()->json(['error' => 'Unknown payment type.'], 422);
+
+                $order->payment_type_id = $desired_type;
+                $order->save();
             }
 
-            $products->push(['product_id' => self::FREE_BURGER_ID, 'amount' => 1, 'data' => Product::find(self::FREE_BURGER_ID)]);
-            $winnerTimestamp->value = 0;
-            $winnerTimestamp->save();
-            $winner = true;
+            return $this->paymentRouting($order->payment_type_id, $order);
         }
-
-        return $winner;
+        else
+            return response()->json(['error' => 'Permission denied.'], 401);
     }
 
-    private function manageTeam(Request $request ,Order $order)
-    {
-        $result = ['error' => false];
-        if ($request->filled('team_code')) {
-            $result['team'] = Team::where('code', '=', $request->get('team_code'))->first();
-            if(is_null($result['team'])){
-                $result['error'] = true;
-                $result['infoError'] = ['error' => 'Wrong team code'];
-                return $result;
-            }
-            $order->team()->attach($result['team']->id, ['captain' => false, 'user_id' => Auth::user()->id]);
-        }
-        else if ($request->filled('team')) {
-            if(!is_null(Team::where('alias', '=', Team::generateAlias($request->get('team')))->first())) {
-                $result['error'] = true;
-                $result['infoError'] = ['error' => 'Team already exists.'];
-                return $result;
-            }
-            $result['team'] = Team::create(['name' => $request->get('team')]);
-            $result['team']->save();
-            $order->team()->attach($result['team']->id, ['captain' => true, 'user_id' => Auth::user()->id]);
-            $order->save();
-        }
-        else {
-            if($order->products()->get()->contains('need_team', 1)) {
-                $result['error'] = true;
-                $result['infoError'] = ['error' => 'You need a team !'];
-                return $result;
-            }
-        }
-        return $result;
-    }
-
-    private function cancelOrder($order) {
-        if(!is_null($order)) {
-            $user = $order->user()->first();
-            $team = $order->team()->first();
-
-            if (!is_null($team)) {
-                if ($team->captain->id == $user->id)
-                    $team->delete();
-                else
-                    $team->users()->detach($user->id);
-            }
-
-            $order->delete();
-        }
-    }
-
-    // Bank & PayPal Stuff
-
-    public function bankTransferPayment(Order $order, Collection $products, $winner = false)
-    {
-        $products->each(function($product) use($order, &$total) {
-            $product['data']->sold += $product['amount'];
-            $product['data']->save();
-            $order->products()->save($product['data'], ['amount' => $product['amount']]);
-        });
-
-        $user = $order->user()->first();
-        $team = $order->team()->first();
-        if(!is_null($team) && $team->captain->id == Auth::user()->id)
-            Mail::to($user->email, $user->username)->send(new TeamOwnerMail($user, $team));
-
-        Mail::to($user->email, $user->username)->send(new BankingWireTransfertMail($user, $order));
-
-        // Save info only if mail have been sent correctly
-        DB::commit();
-
-        return response()->json(['success' => 'Bank transfer subscription valid', 'state' => ($winner) ? 'win' : 'success'], 200);
-    }
-
-    public function paypalPayment(Order $order, Collection $products, $winner = false)
-    {
-        $payer = new Payer();
-        $payer->setPaymentMethod('paypal');
-        $itemList = new ItemList();
-
-        $products->each(function($product) use($order, &$itemList) {
-            $item = new Item();
-            $item->setName($product['data']->name)
-                ->setCurrency('CHF')
-                ->setQuantity($product['amount'])
-                ->setPrice($product['data']->price);
-            $itemList->addItem($item);
-
-            $product['data']->sold += $product['amount'];
-            $product['data']->save();
-            $order->products()->save($product['data'], ['amount' => $product['amount']]);
-        });
-
-        $data['order_id'] = $order->id;
-        $cryptData = Crypt::encrypt($data);
-
-        $amount = new Amount();
-        $amount->setCurrency('CHF');
-        $amount->setTotal($order->total);
-
-        $transaction = new Transaction();
-        $transaction->setAmount($amount);
-        $transaction->setItemList($itemList);
-        $transaction->setDescription('Payment description');
-        $transaction->setInvoiceNumber(uniqid());
-
-        $redirectUrls = new RedirectUrls();
-        $redirectUrls->setReturnUrl(action('OrderController@paypalDone', ['data' => $cryptData]));
-        $redirectUrls->setCancelUrl(action('OrderController@paypalCancel', ['data' => $cryptData]));
-
-        $payment = new Payment();
-        $payment->setIntent('sale');
-        $payment->setPayer($payer);
-        $payment->setRedirectUrls($redirectUrls);
-        $payment->setTransactions(array($transaction));
-
-        try {
-            $response = $payment->create($this->apiContext);
-            $redirectUrl = $response->links[1]->href;
-
-            // Save info only if Paypal request have been sent correctly
-            DB::commit();
-
-            return response()->json(['success' => 'Ready for PayPal transaction', 'link' => $redirectUrl], 200);
-        }
-        catch (Exception $e) {
-            return response()->json(['error' => 'paypal error'], 200);
-        }
-    }
+    // PAYPAL CALLBACKS
 
     /**
-     *
      * @param Request $request
      * @return \Illuminate\Http\RedirectResponse|\Illuminate\Routing\Redirector
      */
@@ -475,7 +575,6 @@ class OrderController extends Controller
 
             DB::commit();
 
-            $win = $order->products()->where('product_id', self::FREE_BURGER_ID)->count() > 0;
             $user = $order->user()->first();
             $team = $order->team()->first();
 
@@ -484,7 +583,7 @@ class OrderController extends Controller
 
             Mail::to($user->email, $user->username)->send(new PaypalConfirmation($user, $order, $order->total));
 
-            $url = ($win) ? 'https://www.festigeek.ch/#!/checkout?state=win' : 'https://www.festigeek.ch/#!/checkout?state=success';
+            $url = (!is_null($order->products()->where('product_id', self::FREE_BURGER_ID)->first())) ? 'https://www.festigeek.ch/#!/checkout?state=win' : 'https://www.festigeek.ch/#!/checkout?state=success';
             return redirect($url);
 
         }
@@ -522,12 +621,9 @@ class OrderController extends Controller
      */
     public function patch(Request $request, $order_id)
     {
-        try {
-            $order = Order::findOrFail($order_id);
-        }
-        catch (\Exception $e) {
+        $order = Order::find($order_id);
+        if(is_null($order))
             return response()->json(['error' => 'Order not Found'], 404);
-        }
 
         $inputs = $request->only([
             'state',

@@ -66,6 +66,7 @@ Route::get('events/{id}/products', 'EventController@products');
  */
 Route::get('orders', 'OrderController@index');
 Route::post('orders', 'OrderController@create'); //creates a new order, based on type (paypal or banking)
+Route::get('orders/{id}/getPayment', 'OrderController@getPayment');
 Route::get('orders/done', 'OrderController@paypalDone');
 Route::get('orders/cancel', 'OrderController@paypalCancel');
 Route::get('orders/{id}', 'OrderController@show');
