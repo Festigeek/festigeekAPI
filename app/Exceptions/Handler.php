@@ -80,19 +80,15 @@ class Handler extends ExceptionHandler
             return response()->json(['error' => 'Wrong HTTP Method'], 405);
 
         // oAuth Exception(s)
-        if($exception instanceof \App\Exceptions\Festigeek\FailedInternalRequestException ||
-            $exception->getPrevious() instanceof \App\Exceptions\Festigeek\FailedInternalRequestException)
-            if (\App::environment('production'))
-                return response()->json(['error' => 'oAuth proxy error'], 500);
-            else
-                return response()->json(['error' => 'oAuth proxy error', 'infos' => json_encode($exception->getRequest())], 500);
-
         if ($exception instanceof \Illuminate\Auth\AuthenticationException ||
             $exception->getPrevious() instanceof \Illuminate\Auth\AuthenticationException)
             if (\App::environment('production'))
                 return response()->json(['error' => 'Authentication error'], 401);
-            else
-                return response()->json(['error' => 'Authentication error', 'infos' => $exception->getMessage()], 401);
+
+        if($exception instanceof \App\Exceptions\Festigeek\FailedInternalRequestException ||
+            $exception->getPrevious() instanceof \App\Exceptions\Festigeek\FailedInternalRequestException)
+            if (\App::environment('production'))
+                return response()->json(['error' => 'Authentication error'], 500);
 
         // Other Exceptions in production
         if (\App::environment('production'))
@@ -115,7 +111,7 @@ class Handler extends ExceptionHandler
         if($exception instanceof \PayPal\Exception\PayPalMissingCredentialException)
             return response()->json(['error' => 'PayPal Missing Credential Exception'], 502);
 
-        dd($exception); // Only for BIG trouble.
+//        dd($exception); // Only for BIG trouble.
 
         // TODO Delete if not needed
 //        return parent::render($request, $exception);

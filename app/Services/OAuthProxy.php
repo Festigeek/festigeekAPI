@@ -5,8 +5,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\DB;
 
-use App\Exceptions\Festigeek\InvalidCredentialsException;
-
 class OAuthProxy extends Proxy
 {
     const REFRESH_TOKEN = 'refreshToken';
@@ -20,32 +18,27 @@ class OAuthProxy extends Proxy
      *
      * @param string $email
      * @param string $password
+     * @throws \App\Exceptions\Festigeek\FailedInternalRequestException
      */
     public function attemptLogin($email, $password)
     {
-
-        try {
-            $response = $this->request('password', [
-                'username' => $email,
-                'password' => $password
-            ]);
-
-            return $response;
-        } catch (InvalidCredentialsException $exception) {
-            return response()->json(['error' => 'Authentication error', 'infos' => $exception->getMessage()], 401);
-        }
+        return $response = $this->request('password', [
+            'username' => $email,
+            'password' => $password
+        ]);
     }
 
     /**
      * Attempt to refresh the access token used a refresh token that
-     * has been saved in a cookie
+     * has been saved in a cookie.
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
      */
     public function attemptRefresh(Request $request)
     {
-        $refreshToken = $request->cookie(self::REFRESH_TOKEN);
-
         return $this->proxy('refresh_token', [
-            'refresh_token' => $refreshToken
+            'refresh_token' => $request->cookie(self::REFRESH_TOKEN)
         ]);
     }
 
@@ -54,7 +47,7 @@ class OAuthProxy extends Proxy
      *
      * @param string $grantType what type of grant type should be proxied
      * @param array $data the data to send to the server
-     * @throws InvalidCredentialsException
+     * @throws \App\Exceptions\Festigeek\FailedInternalRequestException
      */
     private function request($grantType, array $data = [])
     {
@@ -88,6 +81,9 @@ class OAuthProxy extends Proxy
     /**
      * Logs out the user. We revoke access token and refresh token.
      * Also instruct the client to forget the refresh cookie.
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
      */
     public function logout(Request $request)
     {
