@@ -24,9 +24,17 @@ class EventController extends Controller
             return response()->json(['error' => 'Event not found.'], 404);
 
         $game = ($request->filled('game')) ? $request->get('game') : null;
-        $orders = (!is_null($game)) ? Order::where('event_id', $id)->has('products', $game)->get() : Order::where('event_id', $id)->get();
-        $teams = $event->teams();
 
+        if(!is_null($game)) {
+            $orders = $event->orders()->whereHas('products', function($query) use($game) {
+                return $query->where('product_id', $game);
+            })->get();
+        }
+        else {
+            $orders = $event->orders()->get();
+        }
+        
+        $teams = $event->teams();
         $filteredTeams = $teams->filter(function($team) use($orders) {
             return $orders->pluck('team')->contains('id', $team->id);
         })->all();

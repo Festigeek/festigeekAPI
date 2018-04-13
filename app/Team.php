@@ -33,7 +33,7 @@ class Team extends Model
      * @var array
      */
     protected $appends = [
-        'users', 'captain'
+        'users', 'captain', 'game'
     ];
 
     /**
@@ -112,6 +112,26 @@ class Team extends Model
     {
         $this->attributes['name'] = $value;
         $this->attributes['alias'] = self::generateAlias($value);
+    }
+
+    /**
+     * Get the corresponding product_id of the captain
+     *
+     * @return Integer
+     */
+    public function getGameAttribute()
+    {
+        if(!is_null($this->captain)) {
+            $order = $this->orders()->first();
+            if(!is_null($order)) {
+                $product = $order->products()->where('product_type_id', 1)->first();
+                if(!is_null($product)){
+                    return $product->id;
+                }
+            }
+        }
+        
+        return null;
     }
 
     /**
