@@ -155,14 +155,14 @@ class OrderController extends Controller
      */
     public function index(Request $request)
     {
-        $eventId = ($request->filled('eventId')) ? $request->get('eventId') : null;
-
         $orders = Order::all();
 
-        if(!is_null($eventId))
-            $orders = $orders->filter(function($order) use($eventId) {
+        if($request->filled('eventId')) {
+            $eventId = $request->get('eventId');
+            $orders = $orders->filter(function ($order) use ($eventId) {
                 return $order->event_id == $eventId;
             });
+        }
 
         $format = ($request->filled('format')) ? $request->get('format') : 'json';
 
@@ -173,7 +173,7 @@ class OrderController extends Controller
                 return response()->json(['error' => 'Unsupported format.']);
                 break;
             case 'csv':
-                $this->getCSV($orders)->download('csv');
+                $this->getCSV($orders)->download('csv', ['Access-Control-Allow-Origin' => '*']);
                 break;
             case 'json':
             default:
@@ -550,66 +550,88 @@ class OrderController extends Controller
     // PAYPAL CALLBACKS
 
     /**
+     * Callback for successful paypal transaction
+     *
      * @param Request $request
      * @return \Illuminate\Http\RedirectResponse|\Illuminate\Routing\Redirector
      */
     public function paypalDone(Request $request)
     {
-        try {
-            $id = $request->get('paymentId');
-            $payer_id = $request->get('PayerID');
 
-            $paymentExecution = new PaymentExecution();
-            $paymentExecution->setPayerId($payer_id);
+        $id = $request->get('paymentId');
+        $payer_id = $request->get('PayerID');
 
+        $paymentExecution = new PaymentExecution();
+        $paymentExecution->setPayerId($payer_id);
+
+        if($request->filled('data'))
             $data = Crypt::decrypt($request->get('data'));
-            $order = Order::findOrFail($data['order_id']);
+        else
+            return response()->json(['error' => 'Bad request'], 400);
 
-            $order->state = 1;
+        $order = Order::find($data['order_id']);
+
+        if(!is_null($order)) {
             $order->payment_type_id = 2;
-            $order->paypal_paymentId = $id;
-            $order->save();
 
-            // Executing payment... I think...
-            $payment = Payment::get($id, $this->apiContext);
-            $payment->execute($paymentExecution, $this->apiContext);
+            try {
+                // Executing payment... I think...
+                $payment = Payment::get($id, $this->apiContext);
+                $payment->execute($paymentExecution, $this->apiContext);
+
+                $order->paypal_paymentId = $id;
+                $order->state = 1;
+                $order->save();
+            }
+            catch (Exception $e) {
+                // If something goes wrong, soft delete everything
+                if ($order->state === 0)
+                    $this->cancelOrder($order);
+
+                return redirect('https://www.festigeek.ch/#!/checkout?state=error');
+            }
 
             $user = $order->user()->first();
             $team = $order->team()->first();
 
-            if(!is_null($team) && $team->captain->id === $user->id)
+            if (!is_null($team) && !is_null($user) && $team->captain->id === $user->id)
                 Mail::to($user->email, $user->username)->send(new TeamOwnerMail($user, $team));
 
             Mail::to($user->email, $user->username)->send(new PaypalConfirmation($user, $order, $order->total));
 
             $url = (!is_null($order->products()->where('product_id', self::FREE_BURGER_ID)->first())) ? 'https://www.festigeek.ch/#!/checkout?state=win' : 'https://www.festigeek.ch/#!/checkout?state=success';
             return redirect($url);
-
         }
-        catch (Exception $e) {
-            DB::rollback();
-
-            // If something goes wrong, soft delete everything
-            $this->cancelOrder($order);
-
+        else
             return redirect('https://www.festigeek.ch/#!/checkout?state=error');
-        }
+//            return response()->json(['error' => 'Paypal was referencing an unknown order'], 404);
     }
 
+    /**
+     * @param Request $request
+     * @return \Illuminate\Http\RedirectResponse|\Illuminate\Routing\Redirector
+     */
     public function paypalCancel(Request $request)
     {
-        $data = Crypt::decrypt($request->get('data'));
+        if($request->filled('data'))
+            $data = Crypt::decrypt($request->get('data'));
+        else
+            return response()->json(['error' => 'Bad request'], 400);
 
-        try {
-            $order = Order::findOrFail($data['order_id']);
+        $order = Order::find($data['order_id']);
+
+        if(!is_null($order)) {
+            $order->payment_type_id = 2;
+
             // If something goes wrong, soft delete everything
-            $this->cancelOrder($order);
+            if ($order->state === 0)
+                $this->cancelOrder($order);
 
             return redirect('https://www.festigeek.ch/#!/checkout?state=cancelled');
         }
-        catch (Exception $e) {
+        else
             return redirect('https://www.festigeek.ch/#!/checkout?state=error');
-        }
+//            return response()->json(['error' => 'Paypal was referencing an unknown order'], 404);
     }
 
     /**
