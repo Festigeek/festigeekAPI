@@ -125,14 +125,14 @@
         </tr>
         <tr>
           <td class="deco-1">&nbsp;</td>
-          <td class="reglage">Du 26 au 28 Mai 2017<br/><span class="mini">(Ouverture des portes à 16h00)</span></td>
+          <td class="reglage">Du 11 au 13 Mai 2018<br/><span class="mini">(Ouverture des portes à 16h00)</span></td>
           <td rowspan="4" colspan="2" class="qrcode">
             <img src="data:image/png;base64,{{ $user->QRCode }}" alt="QR Code FestiGeek" height="200" />
           </td>
         </tr>
         <tr>
           <td colspan="3" class="data titre">
-            <span class="purple">E</span>ntrée <span class="purple">P</span>ersonnelle <span class="purple">L</span>AN <span class="purple">2</span>017
+            <span class="purple">E</span>ntrée <span class="purple">P</span>ersonnelle <span class="purple">L</span>AN <span class="purple">2</span>018
           </td>
         </tr>
         <tr>
@@ -142,7 +142,7 @@
         </tr>
         <tr>
           <td colspan="3" class="data infos mini">
-            Commande No. 20{{ $order->id }}13
+            >>>20>>>{{ $order->id }}>>>13>>>
           </td>
         </tr>
       </table>
