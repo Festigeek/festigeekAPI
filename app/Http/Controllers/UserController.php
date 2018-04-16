@@ -51,7 +51,7 @@ class UserController extends Controller
      * @return Response
      */
     public function show($user_id) {
-        $id = ($user_id === 'me') ? Auth::user()->id : $user_id;
+        $id = ($user_id === 'me') ? Auth::id() : $user_id;
         if($this->isAdminOrOwner($id)) {
             try {
                 $user = User::findOrFail($id);
@@ -74,7 +74,7 @@ class UserController extends Controller
      */
     public function update(Request $request, $user_id)
     {
-        $id = ($user_id === 'me') ? Auth::user()->id : $user_id;
+        $id = ($user_id === 'me') ? Auth::id() : $user_id;
         if($this->isAdminOrOwner($id)) {
             try {
                 $user = User::findOrFail($id);
@@ -148,7 +148,7 @@ class UserController extends Controller
             
             return response()->json($order);
         }
-        else 
+        else
             return response()->json(['error' => 'Unauthorized.'], 401);
     }
 
