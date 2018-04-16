@@ -173,7 +173,10 @@ class OrderController extends Controller
                 return response()->json(['error' => 'Unsupported format.']);
                 break;
             case 'csv':
-                $this->getCSV($orders)->download('csv', ['Access-Control-Allow-Origin' => '*']);
+                $this->getCSV($orders)->download('csv', [
+                    'Access-Control-Allow-Origin' => '*',
+                    'Access-Control-Allow-Methods' => '*',
+                    'Access-Control-Allow-Headers' => '*']);
                 break;
             case 'json':
             default:
@@ -202,7 +205,12 @@ class OrderController extends Controller
             switch ($format) {
                 case 'pdf':
                     $html =  view('pdf.ticket', ['order' => $order, 'user' => $user]);
-                    return \PDF::loadHTML($html)->setPaper('a4')->setOption('margin-bottom', 0)->inline('ticket_lan.pdf');
+                    $pdf = \PDF::loadHTML($html)->setPaper('a4')->setOption('margin-bottom', 0);
+                    // dd($pdf);
+                    header('Access-Control-Allow-Origin: *');
+                    header('Access-Control-Allow-Methods: *');
+                    header('Access-Control-Allow-Headers: *');
+                    return $pdf->inline('ticket_lan.pdf');
                     break;
                 case 'json':
                 default:
@@ -345,12 +353,9 @@ class OrderController extends Controller
      */
     private function bankTransferPayment(Order $order)
     {
-//        $products->each(function($product) use($order, &$total) {
-//            $product['data']->sold += $product['amount'];
-//            $product['data']->save();
-//            $order->products()->save($product['data'], ['amount' => $product['amount']]);
-//        });
-//
+        $order->payment_type_id = 1;
+        $order->save();
+
         $user = $order->user()->first();
         $team = $order->team()->first();
 
@@ -372,6 +377,9 @@ class OrderController extends Controller
     {
         if(is_null($order))
             return response()->json(['error' => 'Order not found.'], 404);
+        
+        $order->payment_type_id = 2;
+        $order->save();
 
         $payer = new Payer();
         $payer->setPaymentMethod('paypal');
@@ -384,13 +392,9 @@ class OrderController extends Controller
                 ->setQuantity($product->pivot->amount)
                 ->setPrice($product->price);
             $itemList->addItem($item);
-//
-//            $product['data']->sold += $product['amount'];
-//            $product['data']->save();
-//            $order->products()->save($product['data'], ['amount' => $product['amount']]);
         });
 
-        $order_number = rand(10, 99) . $this->order->id . rand(10, 99);
+        $order_number = rand(10, 99) . $order->id . rand(10, 99);
         $data['order_id'] = $order->id;
         $data['order_number'] = $order_number;
         $cryptData = Crypt::encrypt($data);
@@ -536,9 +540,6 @@ class OrderController extends Controller
 
                 if (!$payment_type->contains('id', $desired_type))
                     return response()->json(['error' => 'Unknown payment type.'], 422);
-
-                $order->payment_type_id = $desired_type;
-                $order->save();
             }
 
             return $this->paymentRouting($order->payment_type_id, $order);
