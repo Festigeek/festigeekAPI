@@ -61,7 +61,8 @@ class UserController extends Controller
                 return response()->json(['error' => 'User not found'], 404);
             }
         }
-        else abort(403);
+        else
+            return response()->json(['error' => 'Unauthorized.'], 401);
     }
 
     /**
@@ -121,7 +122,8 @@ class UserController extends Controller
             $user->fill($inputs)->save();
             return response()->json($user);
         }
-        else abort(403);
+        else
+            return response()->json(['error' => 'Unauthorized.'], 401);
     }
 
     /**
@@ -129,11 +131,13 @@ class UserController extends Controller
      * @param String $id
      */
     public function getOrders(Request $request, $user_id) {
-        $id = ($user_id === 'me') ? Auth::user()->id : $user_id;
+        $id = ($user_id === 'me') ? Auth::id() : $user_id;
+
         if($this->isAdminOrOwner($id)) {
             $event = ($request->filled('event_id')) ? $request->get('event_id') : null;
             $state = ($request->filled('state')) ? $request->get('state') : null;
             $user = User::find($id);
+
             if(is_null($user))
                 return response()->json(['error' => 'User not found'], 404);
 
@@ -144,7 +148,8 @@ class UserController extends Controller
             
             return response()->json($order);
         }
-        else abort(403);
+        else 
+            return response()->json(['error' => 'Unauthorized.'], 401);
     }
 
     ///////////////////////
