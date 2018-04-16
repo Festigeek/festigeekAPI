@@ -6,4 +6,8 @@ use Laratrust\LaratrustRole;
 
 class Role extends LaratrustRole
 {
+    protected $visible = [
+        'name',
+        'description'
+    ];
 }

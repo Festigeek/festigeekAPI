@@ -63,7 +63,8 @@ class User extends Authenticatable
      */
     protected $appends = [
 //        'address',
-        'QRCode'
+        'QRCode',
+        'roles'
     ];
 
     /**
@@ -183,5 +184,9 @@ class User extends Authenticatable
         QrCode::margin(0);
         QrCode::backgroundColor(250,250,250);
         return base64_encode(QrCode::encoding('UTF-8')->merge('/public/images/logo_carre.jpg', .2)->generate($payload));
+    }
+
+    public function getRolesAttribute() {
+        return $this->roles()->get();
     }
 }
