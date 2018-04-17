@@ -288,9 +288,9 @@ class OrderController extends Controller
      */
     private function manageTeam(Request $request , Order $order)
     {
-        Log::log("TEST - manageTeam");
-        Log::info(Auth::user());
-        Log::info(Auth::id());
+        Log::debug("TEST - manageTeam");
+        Log::debud(Auth::user());
+        Log::debug(Auth::id());
 
         $result = ['error' => false];
         if ($request->filled('team_code')) {
@@ -367,9 +367,9 @@ class OrderController extends Controller
         $user = $order->user()->first();
         $team = $order->team()->first();
 
-        Log::log("TEST - bankTransferPayment");
-        Log::info(Auth::user());
-        Log::info(Auth::id());
+        Log::debug("TEST - bankTransferPayment");
+        Log::debug(Auth::user());
+        Log::debug(Auth::id());
 
         if(!is_null($team) && $team->captain->id == Auth::id())
             Mail::to($user->email, $user->username)->send(new TeamOwnerMail($user, $team));
@@ -502,9 +502,9 @@ class OrderController extends Controller
             if ($products->pluck('product_id')->contains(self::FREE_BURGER_ID))
                 return response()->json(['error' => 'Go fuck yourself'], 418);
 
-            Log::log("TEST - create");
-            Log::info(Auth::user());
-            Log::info(Auth::id());
+            Log::debug("TEST - create");
+            Log::debug(Auth::user());
+            Log::debug(Auth::id());
 
             // Create order
             $order = Order::create([
