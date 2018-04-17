@@ -289,7 +289,7 @@ class OrderController extends Controller
     private function manageTeam(Request $request , Order $order)
     {
         Log::debug("TEST - manageTeam");
-        Log::debud(Auth::user());
+        Log::debug(Auth::user());
         Log::debug(Auth::id());
 
         $result = ['error' => false];
