@@ -297,9 +297,6 @@ class OrderController extends Controller
                 return $result;
             }
 
-            Log::info("-----");
-            Log::error($result["team"]);
-
             $order->team()->attach($result['team']->id, ['captain' => false, 'user_id' => Auth::id()]);
         }
         else if ($request->filled('team')) {
