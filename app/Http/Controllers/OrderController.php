@@ -290,7 +290,7 @@ class OrderController extends Controller
     {
         $result = ['error' => false];
         if ($request->filled('team_code')) {
-            $result['team'] = Team::where('code', '=', $request->get('team_code'))->get();
+            $result['team'] = Team::where('code', $request->get('team_code'))->orderBy('created_at', 'desc')->first();
             if(is_null($result['team'])){
                 $result['error'] = true;
                 $result['infoError'] = ['error' => 'Wrong team code'];
@@ -298,7 +298,7 @@ class OrderController extends Controller
             }
 
             Log::info("-----");
-            Log::error($result);
+            Log::error($result["team"]);
 
             $order->team()->attach($result['team']->id, ['captain' => false, 'user_id' => Auth::id()]);
         }
