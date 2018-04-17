@@ -6,6 +6,7 @@ use App\PaymentType;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Http\Request;
 
@@ -523,6 +524,7 @@ class OrderController extends Controller
         }
         catch (\Throwable $e) {
             DB::rollback();
+            Log::error($e->getTraceAsString());
             return response()->json(['error' => 'Request was well-formed but was unable to be followed due to semantic errors'], 422);
         }
     }
