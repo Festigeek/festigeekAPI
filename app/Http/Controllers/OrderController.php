@@ -288,10 +288,6 @@ class OrderController extends Controller
      */
     private function manageTeam(Request $request , Order $order)
     {
-        Log::debug("TEST - manageTeam");
-        Log::debug(Auth::user());
-        Log::debug(Auth::id());
-
         $result = ['error' => false];
         if ($request->filled('team_code')) {
             $result['team'] = Team::where('code', '=', $request->get('team_code'))->get();
@@ -300,7 +296,11 @@ class OrderController extends Controller
                 $result['infoError'] = ['error' => 'Wrong team code'];
                 return $result;
             }
-            $order->team()->attach($result['team']->id, ['captain' => false, 'user_id' => $request->user()->id]);
+
+            Log::info("-----");
+            Log::error($result);
+
+            $order->team()->attach($result['team']->id, ['captain' => false, 'user_id' => Auth::id()]);
         }
         else if ($request->filled('team')) {
             $collisions = Team::where('alias', '=', Team::generateAlias($request->get('team')))->get();
@@ -314,7 +314,7 @@ class OrderController extends Controller
             }
             $result['team'] = Team::create(['name' => $request->get('team')]);
             $result['team']->save();
-            $order->team()->attach($result['team']->id, ['captain' => true, 'user_id' => $request->user()->id]);
+            $order->team()->attach($result['team']->id, ['captain' => true, 'user_id' => Auth::id()]);
             $order->save();
         }
         else {
@@ -366,10 +366,6 @@ class OrderController extends Controller
 
         $user = $order->user()->first();
         $team = $order->team()->first();
-
-        Log::debug("TEST - bankTransferPayment");
-        Log::debug(Auth::user());
-        Log::debug(Auth::id());
 
         if(!is_null($team) && $team->captain->id == Auth::id())
             Mail::to($user->email, $user->username)->send(new TeamOwnerMail($user, $team));
@@ -501,10 +497,6 @@ class OrderController extends Controller
             // Check if free burger (contest) have been added by forging request
             if ($products->pluck('product_id')->contains(self::FREE_BURGER_ID))
                 return response()->json(['error' => 'Go fuck yourself'], 418);
-
-            Log::debug("TEST - create");
-            Log::debug(Auth::user());
-            Log::debug(Auth::id());
 
             // Create order
             $order = Order::create([
