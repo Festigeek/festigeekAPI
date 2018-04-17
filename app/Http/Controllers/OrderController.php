@@ -230,7 +230,7 @@ class OrderController extends Controller
      * @param $order
      * @return \Illuminate\Http\JsonResponse
      */
-    private function paymentRouting($payment_type_id, $order){
+    private function paymentRouting($payment_type_id = 1, $order){
         // Go on specific payment method
         switch ($payment_type_id) {
             case 1:
@@ -238,7 +238,7 @@ class OrderController extends Controller
             case 2:
                 return $this->paypalPayment($order);
             default:
-                return response()->json(['error' => 'Unknown payment method']);
+                return response()->json(['error' => 'Unknown payment method'], 400);
         }
     }
 
@@ -295,7 +295,7 @@ class OrderController extends Controller
                 $result['infoError'] = ['error' => 'Wrong team code'];
                 return $result;
             }
-            $order->team()->attach($result['team']->id, ['captain' => false, 'user_id' => Auth::user()->id]);
+            $order->team()->attach($result['team']->id, ['captain' => false, 'user_id' => Auth::id()]);
         }
         else if ($request->filled('team')) {
             $collisions = Team::where('alias', '=', Team::generateAlias($request->get('team')))->get();
@@ -309,7 +309,7 @@ class OrderController extends Controller
             }
             $result['team'] = Team::create(['name' => $request->get('team')]);
             $result['team']->save();
-            $order->team()->attach($result['team']->id, ['captain' => true, 'user_id' => Auth::user()->id]);
+            $order->team()->attach($result['team']->id, ['captain' => true, 'user_id' => Auth::id()]);
             $order->save();
         }
         else {
@@ -353,13 +353,16 @@ class OrderController extends Controller
      */
     private function bankTransferPayment(Order $order)
     {
+        if(is_null($order))
+            return response()->json(['error' => 'Order not found.'], 404);
+
         $order->payment_type_id = 1;
         $order->save();
 
         $user = $order->user()->first();
         $team = $order->team()->first();
 
-        if(!is_null($team) && $team->captain->id == Auth::user()->id)
+        if(!is_null($team) && $team->captain->id == Auth::id())
             Mail::to($user->email, $user->username)->send(new TeamOwnerMail($user, $team));
 
         Mail::to($user->email, $user->username)->send(new BankingWireTransfertMail($user, $order));
@@ -430,7 +433,7 @@ class OrderController extends Controller
             return response()->json(['success' => 'Ready for PayPal transaction', 'link' => $redirectUrl], 200);
         }
         catch (Exception $e) {
-            return response()->json(['error' => 'paypal error'], 200);
+            return response()->json(['error' => 'PayPal error'], 500);
         }
     }
 
@@ -448,6 +451,9 @@ class OrderController extends Controller
             $event_id = $request->get('event_id');
             if (is_null($event_id))
                 return response()->json(['error' => 'add event id']);
+
+            if (is_null(Auth::user()))
+                return response()->json(['error' => 'Authentication error'], 401);
 
             if (Auth::user()->orders()->where('event_id', $request->get('event_id'))->get()->isNotEmpty())
                 return response()->json(['error' => 'You have already created an order for this event'], 422);
@@ -489,7 +495,7 @@ class OrderController extends Controller
 
             // Create order
             $order = Order::create([
-                'user_id' => Auth::user()->id,
+                'user_id' => Auth::id(),
                 'event_id' => $event_id,
                 'payment_type_id' => $request->get('payment_type_id'),
                 'data' => json_encode($request->all())
@@ -558,7 +564,6 @@ class OrderController extends Controller
      */
     public function paypalDone(Request $request)
     {
-
         $id = $request->get('paymentId');
         $payer_id = $request->get('PayerID');
 
