@@ -18,6 +18,6 @@ class Controller extends BaseController
     public function __construct() { }
 
     protected function isAdminOrOwner($ressource_user_id) {
-        return Auth::id() === $ressource_user_id || Auth::user()->hasRole('admin');
+        return Auth::id() == $ressource_user_id || Auth::user()->hasRole('admin');
     }
 }
