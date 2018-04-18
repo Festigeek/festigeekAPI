@@ -21,17 +21,35 @@ class ProductController extends Controller
      */
     public function index(Request $request)
     {
+        // TODO: prefer typeId instead of type_id, delete it with next front-end
         if($request->filled('type_id')) {
             $products = Product::where('product_type_id', $request->get('type_id'))->get();
         }
+        else if($request->filled('typeId')) {
+            $products = Product::where('product_type_id', $request->get('typeId'))->get();
+        }
+        // TODO: prefer typeName instead of type, delete it with next front-end
         else if ($request->filled('type')) {
             $type = $request->get('type');
             $products = Product::whereHas('product_type', function($query) use ($type) {
                 $query->whereRaw('LOWER(name) LIKE ?' , $type);
             })->get();
         }
+        else if ($request->filled('typeName')) {
+            $type = $request->get('typeName');
+            $products = Product::whereHas('product_type', function($query) use ($type) {
+                $query->whereRaw('LOWER(name) LIKE ?' , $type);
+            })->get();
+        }
         else {
             $products = Product::all();
+        }
+
+        if($request->filled('eventId')) {
+            $event_id = $request->get('eventId');
+            $products = $products->filter(function($product) use ($event_id) {
+                return $product->event_id == $event_id;
+            });
         }
 
         return response()->json($products);
