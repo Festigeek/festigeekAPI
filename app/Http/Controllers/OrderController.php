@@ -40,6 +40,7 @@ class OrderController extends Controller
     // WARNING To adapt each year !
     private const EVENT_YEAR = 2018;
     private const BURGER_ID = 14;
+    private const DEJ_ID = 15;
     private const FREE_BURGER_ID = 16;
 
     private $apiContext;
@@ -82,6 +83,7 @@ class OrderController extends Controller
         $datetime = new DateTime();
         $headers = [
             'Numéro de commande',
+            'ID commande',
             'Nom',
             'Prénom',
             'Nom d\'utilisateur',
@@ -109,18 +111,21 @@ class OrderController extends Controller
             $excel->sheet("feuille_1", function($sheet) use ($headers, $orders) {
 
                 $sheet->appendRow($headers);
-                $orders->each(function ($item) use ($sheet) {
+                $orders->filter(function($order){
+                    return $order->created_at->year === self::EVENT_YEAR;
+                })->each(function ($item) use ($sheet) {
 
                     $age = ((new DateTime($item->user->birthdate))->diff(new DateTime()))->y;
                     $total = $item->products->filter(function($value) { return !is_null($value); })
                         ->sum(function($value) { return $value->pivot->amount * $value->price; });
                     $tournoi = $item->products->first(function($val){ return $val->product_type_id == 1; });
-                    $burgers = $item->products->first(function($val){ return $val->id == 5; });
-                    $dejs = $item->products->first(function($val){ return $val->id == 6; });
+                    $burgers = $item->products->first(function($val){ return $val->id == self::BURGER_ID; });
+                    $dejs = $item->products->first(function($val){ return $val->id == self::DEJ_ID; });
                     $bGratuits = $item->products->first(function($val){ return $val->id == self::FREE_BURGER_ID; });
 
                     $sheet->appendRow([
-                        "XX" . $item->id . "XX (ID# $item->id)", // Numéro de commande
+                        "XX" . $item->id . "XX", // Numéro de commande (tel qu'envoyé au joueur)
+                        $item->id, // ID réel
 
                         $item->user->lastname, // Nom
                         $item->user->firstname, // Prénom
