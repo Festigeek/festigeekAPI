@@ -100,7 +100,15 @@ class Team extends Model
      */
     public function defaultProduct()
     {
-        return $this->orders()->first()->products->where('product_type_id', 1)->first();
+        $captainOrder = $this->orders()->where('captain', 1)->first();
+        if(!is_null($captainOrder)) {
+            return $captainOrder->products->where('product_type_id', 1)->first();
+        }
+        else {
+            $order = $this->orders()->first();
+            return (!is_null($order)) ? $order->products->where('product_type_id', 1)->first() : null;
+        }
+
     }
 
     /**
@@ -141,10 +149,6 @@ class Team extends Model
      */
     public function getUsersAttribute()
     {
-        // TODO write different value if user is in the team (or admin) maybe create user->isInTeam($team_id) ?
-//        $users = $this->users()->get(['username', 'gender'])->makeHidden(['QRCode', 'pivot']);
-
-
         // Get correct users for a specific team
         $orders = $this->orders()->where('state', '<>', 3)->get();
         $users = $orders->map(function($order) {
@@ -177,7 +181,7 @@ class Team extends Model
      */
     public function getCaptainAttribute()
     {
-        return $this->users()->where('captain', '=', 1)->first();
+        return $this->users()->where('captain',  1)->first();
     }
 
     /**
