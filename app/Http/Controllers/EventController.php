@@ -10,6 +10,9 @@ use Illuminate\Http\Request;
 
 class EventController extends Controller
 {
+    // TODO: make this dynamic
+    private const FREE_PLAYERS = 13;
+
     /**
      * Get subcribed teams
      *
@@ -17,7 +20,7 @@ class EventController extends Controller
      * @param String $id
      * @param mixed $game (product_id)
      */
-    public function teams(Request $request, $id){
+    public function teams(Request $request, $id) {
         $event = Event::find($id);
 
         if(is_null($event))
@@ -26,20 +29,36 @@ class EventController extends Controller
         $game = ($request->filled('game')) ? $request->get('game') : null;
 
         if(!is_null($game)) {
-            $orders = $event->orders()->whereHas('products', function($query) use($game) {
+            $orders = $event->orders()->where('event_id', $event->id)->whereHas('products', function($query) use($game) {
                 return $query->where('product_id', $game);
             })->get();
         }
         else {
-            $orders = $event->orders()->get();
+            $orders = $event->orders()->where('event_id', $event->id)->get();
         }
-        
-        $teams = $event->teams();
-        $filteredTeams = $teams->filter(function($team) use($orders) {
-            return $orders->pluck('team')->contains('id', $team->id);
-        })->all();
 
-        return response()->json($filteredTeams);
+        $usersWithNoTeam = collect();
+        $teams = $orders->map(function($order) use ($usersWithNoTeam) {
+            if(is_null($order->team))
+                $usersWithNoTeam->push($order->user);
+            return $order->team;
+        })->unique()->filter()->values();
+
+        if($usersWithNoTeam->isNotEmpty()) {
+            $noFriendsTeam["name"] = "Forever Alone";
+            $noFriendsTeam["alias"] = "foreveralone";
+            $noFriendsTeam["users"] = $usersWithNoTeam->map(function($user) {
+                $u = collect($user->toArray())->only(['username', 'gender']);
+                $u["roaster"] = true;
+                $u["captain"] = false;
+                return $u;
+            });
+            $noFriendsTeam["game"] = self::FREE_PLAYERS;
+
+            $teams->push($noFriendsTeam);
+        }
+
+        return response()->json($teams);
     }
 
     public function teamFromCode(Request $request, $event_id, $team_code) {

@@ -37,7 +37,7 @@ use App\Configuration;
 
 class OrderController extends Controller
 {
-    // WARNING To adapt each year !
+    // TODO: make this dynamic
     private const EVENT_YEAR = 2018;
     private const BURGER_ID = 14;
     private const DEJ_ID = 15;
