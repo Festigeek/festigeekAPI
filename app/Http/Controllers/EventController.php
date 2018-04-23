@@ -42,7 +42,7 @@ class EventController extends Controller
             if(is_null($order->team))
                 $usersWithNoTeam->push($order->user);
             return $order->team;
-        })->unique()->filter()->values();
+        })->unique('id')->filter()->values();
 
         if($usersWithNoTeam->isNotEmpty()) {
             $noFriendsTeam["name"] = "Forever Alone";
