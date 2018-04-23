@@ -130,7 +130,7 @@ class Team extends Model
     public function getGameAttribute()
     {
         if(!is_null($this->captain)) {
-            $order = $this->orders()->where('captain', $this->captain->id)->first();
+            $order = $this->orders()->where('captain', 1)->first();
             if(!is_null($order)) {
                 $product = $order->products()->where('product_type_id', 1)->first();
                 if(!is_null($product)){
