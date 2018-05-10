@@ -101,6 +101,6 @@ class sendTickets extends Command
             return $this->error('Error when sending mail for order #' . $order->id);
         }
         return $this->comment('Command successful.');
-        }
+        
     }
 }
