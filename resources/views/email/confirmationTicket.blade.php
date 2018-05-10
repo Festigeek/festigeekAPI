@@ -79,8 +79,9 @@
     <p>
       Les portes ouvrent le <strong>vendredi 11 mai, à 16h00</strong>. Tu trouveras toutes les informations importantes sur notre page d'information, sous la rubrique FAQ:
     </p>
-    <a href="https://festigeek.ch/#!/infolan" style="background-color:#3f2e79;border:1px solid #1e3650;border-radius:10px;color:#ffffff;display:inline-block;font-family:sans-serif;font-size:13px;font-weight:bold;line-height:40px;text-align:center;text-decoration:none;width:200px;-webkit-text-size-adjust:none;mso-hide:all;">Informations LAN</a>
-
+    <div style="text-align:center;">
+      <a href="https://festigeek.ch/#!/infolan" style="background-color:#3f2e79;border:1px solid #1e3650;border-radius:10px;color:#ffffff;display:inline-block;font-family:sans-serif;font-size:13px;font-weight:bold;line-height:40px;text-align:center;text-decoration:none;width:200px;-webkit-text-size-adjust:none;mso-hide:all;">Informations LAN</a>
+    </div>
 
 
     <p>
@@ -94,7 +95,7 @@
     </p>
 
     <br />
-    {{ Html::image('images/logo.full.png', 'Logo Festigeek', array('style' => 'width:50%;')) }}
+    {{ Html::image('https://festigeek.ch/images/logo.225ad333.png', 'Logo Festigeek', array('style' => 'width:50%;')) }}
 
   </body>
 </html>
