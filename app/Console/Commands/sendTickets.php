@@ -68,24 +68,13 @@ class sendTickets extends Command
      */
     public function handle()
     {
-        // $this->event = Event::find($this->argument('event'));
-        // if(is_null($this->event))
-        //     return $this->error('Event not found.');
-        //
-        // if(!$this->option('all')) {
-        //     $order = Order::find($this->argument('order'));
-        //     if(is_null($order))
-        //         return $this->error('Order not found.');
-        // }
-        //
-        // $this->sendTicketMails($order);
-        // return $this->comment('Command successful.');
         try {
             $this->event = Event::where('id', (int)$this->argument('event'))->firstOrFail();
         }
         catch(Exception $e) {
             return $this->error('Event not found.');
         }
+
         try {
             $order = (($this->argument('order')==='null') && $this->option('all')) ? null : Order::findOrFail($this->argument('order'));
             //return $this->comment($order);
@@ -93,9 +82,10 @@ class sendTickets extends Command
         catch(Exception $e) {
             return $this->error('All flag or Order not found.');
         }
+
         $this->sendTicketMails($order);
         try {
-        //            $this->sendTicketMails($order);
+        // $this->sendTicketMails($order);
         }
         catch(Exception $e) {
             return $this->error('Error when sending mail for order #' . $order->id);
