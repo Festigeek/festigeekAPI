@@ -25,7 +25,7 @@
         color: white;
       }
     </style>
-    <title>Ton billet pour la LAN<</title>
+    <title>Ton billet pour la LAN FestiGeek 2018</title>
   </head>
 
   <body>
@@ -41,15 +41,15 @@
 
     @if ($order->state == 0)
       <div style="background-color:#ffaaaa;width:550px;margin:20px auto;border-radius:5px;text-align:center;">
-          Nous n'avons <strong>toujours pas reçu ton paiement</strong>. Dans le cas où le paiement serait parti trop tard, nous te remercions d'avance de nous faire part d'une preuve de paiement. Sinon, il est encore possible de payer sur place, à titre exceptionel.
+          Nous n'avons <strong>toujours pas reçu ton paiement</strong>. Dans le cas où le paiement serait parti trop tard, nous te remercions d'avance de nous faire part d'une preuve de paiement. Sinon, il est encore possible de payer sur place <strong>en liquide uniquement</strong>, à titre exceptionel.
       </div>
     @endif
 
     @if (\Carbon\Carbon::createFromFormat('Y-m-d', $user->birthdate)->diffInYears(\Carbon\Carbon::now()) < 18)
       <div style="background-color:#ffaaaa;width:550px;margin:20px auto;border-radius:5px;text-align:center;">
         Minute ! On dirait bien que tu es <strong>mineur</strong> !<br />
-        N'oublies pas de venir avec le formulaire d'autorisation pour mineurs !<br />
-        {{ URL::to('https://www.festigeek.ch/assets/FG2017_consentement_parental.pdf') }}
+        N'oublies pas de venir avec le formulaire d'autorisation signé !<br />
+        {{ URL::to('https://www.festigeek.ch/files/autorisation_mineur.pdf') }}
       </div>
     @endif
 
@@ -77,7 +77,9 @@
     </div>
 
     <p>
-      Les portes ouvrent le <strong>vendredi 11 mai, à 16h00</strong>. Tu trouveras toutes les informations importantes <a href="https://festigeek.ch/#!/infolan">ici</a>.
+      Les portes ouvrent le <strong>vendredi 11 mai, à 16h00</strong>. Tu trouveras toutes les informations importantes sur notre page d'information, sous la rubrique FAQ:
+      <a href="https://festigeek.ch/#!/infolan" style="background-color:#3f2e79;border:1px solid #1e3650;border-radius:10px;color:#ffffff;display:inline-block;font-family:sans-serif;font-size:13px;font-weight:bold;line-height:40px;text-align:center;text-decoration:none;width:200px;-webkit-text-size-adjust:none;mso-hide:all;">Informations LAN</a>
+
     </p>
 
     <p>
