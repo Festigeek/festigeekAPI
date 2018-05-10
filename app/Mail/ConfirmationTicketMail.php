@@ -42,7 +42,7 @@ class ConfirmationTicketMail extends Mailable
     public function build()
     {
       return $this->view('email.confirmationTicket')
-        ->subject('Ton ticket d\'entrée FestiGeek 2017')
+        ->subject('Ton ticket d\'entrée FestiGeek 2018')
         ->with([
           'order' => $this->order,
           'user' => $this->user,
