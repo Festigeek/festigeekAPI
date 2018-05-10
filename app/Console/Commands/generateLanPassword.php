@@ -15,11 +15,8 @@ class generateLanPassword extends Command
      */
 
     protected $signature = 'fg:generateLanPassword {order=null}
-    {--renew: Re-generate all LAN keys.}
+    {--renew : Re-generate all LAN keys.}
     {--f|force : Skip confirmation when overwriting an existing key.}';
-
-
-
 
     /**
      * The console command description.
