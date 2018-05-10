@@ -15,8 +15,7 @@ class generateLanPassword extends Command
      * @var string
      */
 
-    protected $signature = 'fg:generateLanPassword {order=null}
-    {--renew : Re-generate all LAN keys.}
+    protected $signature = 'fg:generateLanPassword {event=null}
     {--f|force : Skip confirmation when overwriting an existing key.}';
 
     /**
