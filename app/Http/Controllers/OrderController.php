@@ -161,14 +161,10 @@ class OrderController extends Controller
      */
     public function index(Request $request)
     {
-        $orders = Order::all();
-
-        if($request->filled('eventId')) {
-            $eventId = $request->get('eventId');
-            $orders = $orders->filter(function ($order) use ($eventId) {
-                return $order->event_id == $eventId;
-            });
-        }
+        if($request->filled('eventId'))
+            $orders = Order::where('event_id', $request->get('eventId'))->get();
+        else
+            $orders = Order::all();
 
         $format = ($request->filled('format')) ? $request->get('format') : 'json';
 
